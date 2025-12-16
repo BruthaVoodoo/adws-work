@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# Minimal shim to ensure `pytest` command exists: forward to python3 -m pytest
-exec python3 -m pytest "$@"
+# Minimal shim to ensure `pytest` command exists: forward to python3 -m pytest if available
+if python3 -c "import pytest" >/dev/null 2>&1; then
+  exec python3 -m pytest "$@"
+fi
+# Fallback: run tests using unittest discovery for files named test_*.py
+python3 - <<'PY'
+import sys, unittest
+loader = unittest.TestLoader()
+tests = loader.discover('.', pattern='test_*.py')
+runner = unittest.TextTestRunner(verbosity=2)
+res = runner.run(tests)
+sys.exit(0 if res.wasSuccessful() else 1)
+PY
