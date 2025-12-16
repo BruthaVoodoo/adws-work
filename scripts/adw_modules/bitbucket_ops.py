@@ -123,6 +123,9 @@ def check_pr_exists(branch_name: str) -> Optional[dict]:
         return None
         
     except requests.exceptions.RequestException as e:
+        if isinstance(e, requests.exceptions.HTTPError) and e.response.status_code == 404:
+            # A 404 might mean no PRs found for this query, which is not an error for this function
+            return None
         raise RuntimeError(f"Bitbucket API error checking PR: {str(e)}")
     except Exception as e:
         raise RuntimeError(f"Error checking PR existence: {str(e)}")
