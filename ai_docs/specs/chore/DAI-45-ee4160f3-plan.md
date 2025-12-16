@@ -48,5 +48,3 @@ Execute every command to validate the chore is complete with zero regressions.
 - The change should be minimal and non-disruptive to existing documentation
 - This serves as a validation of the ADW system's end-to-end workflow capabilities
 - The business value is in validating the complete development workflow rather than the documentation update itself
-</boltAction>
-</boltArtifact>
