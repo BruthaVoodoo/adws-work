@@ -1,6 +1,6 @@
 #!/usr/bin/env -S uv run
 # /// script
-# dependencies = ["python-dotenv", "pydantic", "boto3", "requests", "jira", "rich"]
+# dependencies = ["python-dotenv", "pydantic", "boto3", "requests", "jira", "rich", "pyyaml"]
 # ///
 
 """
@@ -254,10 +254,10 @@ def main():
     
     # Attempt to extract from antsible:function_calls for 'create' command with '-plan.md'
     antsible_match = re.search(
-        r'<antsible:invoke name="str_replace_editor">
+        r'''<antsible:invoke name="str_replace_editor">
 <antsible:parameter name="command">create</antsible:parameter>
 <antsible:parameter name="path">[^\"]+-plan.md</antsible:parameter>
-<antsible:parameter name="file_text">(.*?)</antsible:parameter>',
+<antsible:parameter name="file_text">(.*?)</antsible:parameter>''',
         plan_response.output,
         re.DOTALL
     )
@@ -273,8 +273,8 @@ def main():
             plan_content = content_match.group(1).strip()
         else:
             # Fallback to finding the start of the markdown plan
-            fallback_match = re.search(r"^# (Feature|Bug|Chore):.*
-", plan_response.output, re.MULTILINE)
+            fallback_match = re.search(r'''^# (Feature|Bug|Chore):.*
+''', plan_response.output, re.MULTILINE)
             if fallback_match:
                 plan_content = plan_response.output[fallback_match.start():]
     
@@ -384,8 +384,7 @@ def main():
     state.save("adw_plan")
     
     # Post final state summary to issue
-    jira_make_issue_comment(issue_number, f"{adw_id}_ops: 📋 Final planning state:\n```json\n{json.dumps(state.data, indent=2)}
-```")
+    jira_make_issue_comment(issue_number, f"{adw_id}_ops: 📋 Final planning state:\n```json\n{json.dumps(state.data, indent=2)}\n```")
 
 
 if __name__ == "__main__":
