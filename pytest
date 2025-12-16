@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# Minimal shim to ensure `pytest` command exists: install pytest if not present and run it.
+if ! python3 -c "import pytest" >/dev/null 2>&1; then
+  echo "pytest not found, installing via pip..."
+  python3 -m pip install --user --upgrade pip >/dev/null 2>&1 || true
+  python3 -m pip install --user pytest >/dev/null 2>&1
+fi
+exec python3 -m pytest "$@"
