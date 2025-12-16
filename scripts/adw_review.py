@@ -74,7 +74,11 @@ def check_env_vars(logger: Optional[logging.Logger] = None) -> None:
         if logger:
             logger.error(error_msg)
         else:
-            print(error_msg, file=sys.stderr)
+            console = get_rich_console_instance()
+            if console:
+                console.error(error_msg)
+            else:
+                print(error_msg, file=sys.stderr)
         sys.exit(1)
 
 
@@ -404,6 +408,9 @@ def main():
     # Load environment variables
     load_dotenv()
 
+    # Get rich console instance early for error output
+    rich_console = get_rich_console_instance()
+
     # Check for --skip-resolution flag
     skip_resolution = "--skip-resolution" in sys.argv
     if skip_resolution:
@@ -412,8 +419,12 @@ def main():
     # Parse command line args
     # adw-id is REQUIRED for review to find the correct state and spec
     if len(sys.argv) < 3:
-        print("Usage: uv run adw_review.py <issue-number> <adw-id> [--skip-resolution]")
-        print("\nError: adw-id is required to locate the spec file and state")
+        if rich_console:
+            rich_console.error("Usage: uv run adw_review.py <issue-number> <adw-id> [--skip-resolution]")
+            rich_console.error("adw-id is required to locate the spec file and state")
+        else:
+            print("Usage: uv run adw_review.py <issue-number> <adw-id> [--skip-resolution]")
+            print("\nadw-id is required to locate the spec file and state")
         sys.exit(1)
 
     issue_number = sys.argv[1]
@@ -768,6 +779,26 @@ def main():
 
     # Output state for chaining
     state.to_stdout()
+
+    # Display a formatted summary panel
+    try:
+        blockers = sum(1 for i in review_result.review_issues if i.issue_severity == "blocker")
+        total_issues = len(review_result.review_issues)
+        status = "PASSED" if review_result.success else "FAILED"
+        panel_text = (
+            f"Status: {status}\n"
+            f"Total Issues: {total_issues}\n"
+            f"Blocking Issues: {blockers}\n"
+            f"ADW ID: {adw_id}\n"
+        )
+        if rich_console:
+            rich_console.rule("Review Summary", style="cyan")
+            rich_console.panel(panel_text, title="Review Results", style=("green" if review_result.success else "red"))
+        else:
+            print(f"Review Summary - Status: {status}, Total Issues: {total_issues}, Blocking: {blockers}")
+    except Exception:
+        # If summary rendering fails, continue without blocking
+        pass
 
     # Exit with appropriate code based on review result
     if not review_result.success:
