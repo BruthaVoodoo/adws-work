@@ -71,3 +71,5 @@ Ensure the following environment variables are set (in `.env` or system):
 - `AWS_ENDPOINT_URL` (for AI proxy)
 - `AWS_MODEL_KEY` (for AI proxy)
 - `AWS_MODEL` (optional, default: sonnet/opus)
+
+Last updated: December 16, 2025
