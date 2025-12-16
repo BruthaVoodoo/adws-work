@@ -1,0 +1,19 @@
+# ADW configuration file
+
+# Root directory of the project (default: current directory)
+project_root: "."
+
+# Directory where source code lives (default: "src")
+source_dir: "src"
+
+# Directory where tests live (default: "tests")
+test_dir: "tests"
+
+# Command to run tests (default: "uv run pytest")
+test_command: "uv run pytest"
+
+# Directory for ADW logs and plans (default: "ai_docs")
+docs_dir: "ai_docs"
+
+# Language of the project (default: "python")
+language: "python"

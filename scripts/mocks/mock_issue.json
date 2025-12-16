@@ -1,0 +1,30 @@
+{
+  "number": 123,
+  "title": "Test Issue: Add a new feature for user authentication",
+  "body": "We need to implement a new user authentication feature. This should include:\n\n- A login page\n- A registration page\n- Password hashing\n\nThis is a high-priority feature for the next release.",
+  "state": "OPEN",
+  "author": {
+    "login": "testuser"
+  },
+  "assignees": [],
+  "labels": [
+    {
+      "id": "l1",
+      "name": "feature",
+      "color": "a2eeef",
+      "description": "New feature or request"
+    },
+    {
+      "id": "l2",
+      "name": "high-priority",
+      "color": "d73a4a",
+      "description": "High priority"
+    }
+  ],
+  "milestone": null,
+  "comments": [],
+  "createdAt": "2025-11-18T10:00:00Z",
+  "updatedAt": "2025-11-18T10:00:00Z",
+  "closedAt": null,
+  "url": "http://fake-github.com/issue/123"
+}

@@ -1,0 +1,16 @@
+{
+  "number": 124,
+  "title": "Chore: Update project dependencies to latest versions",
+  "body": "The following dependencies are out of date and need to be updated to their latest stable versions:\n- pydantic\n- requests\n- boto3\n\nAfter updating, run all tests to ensure no breaking changes were introduced.",
+  "state": "OPEN",
+  "author": {
+    "login": "testuser"
+  },
+  "labels": [
+    {
+      "name": "chore",
+      "color": "f7f7f7",
+      "description": "Routine maintenance"
+    }
+  ]
+}

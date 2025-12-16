@@ -1,0 +1,16 @@
+{
+  "number": 125,
+  "title": "Bug: User login fails with incorrect password",
+  "body": "When a user tries to log in with an incorrect password, the system should display an 'Invalid credentials' error. Instead, it crashes with a 500 internal server error.",
+  "state": "OPEN",
+  "author": {
+    "login": "testuser"
+  },
+  "labels": [
+    {
+      "name": "bug",
+      "color": "d73a4a",
+      "description": "Something isn't working"
+    }
+  ]
+}
