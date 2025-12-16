@@ -1,6 +1,6 @@
 #!/usr/bin/env -S uv run
 # /// script
-# dependencies = ["python-dotenv", "pydantic", "boto3>=1.26.0", "requests", "jira", "rich"]
+# dependencies = ["python-dotenv", "pydantic", "boto3>=1.26.0", "requests", "jira", "rich", "pyyaml"]
 # ///
 
 """
