@@ -467,8 +467,7 @@ def main():
             rich_console.success("Found existing ADW state - resuming review")
         jira_make_issue_comment(
             issue_number,
-            f"{adw_id}_ops: 🔍 Found existing state - starting review\n```json\n{json.dumps(state.data, indent=2)}
-```",
+            f"{adw_id}_ops: 🔍 Found existing state - starting review\n```json\n{json.dumps(state.data, indent=2)}\n```",
         )
     else:
         # No existing state found
