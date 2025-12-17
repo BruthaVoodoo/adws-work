@@ -1,0 +1,17 @@
+# Github Issue Command Selection
+Based on the `Jira Issue` below, follow the `Instructions` to select the appropriate command to execute based on the `Command Mapping`.
+
+## Instructions
+- Based on the details in the `Jira Issue`, select the appropriate command to execute.
+- IMPORTANT: Respond exclusively with '/' followed by the command to execute based on the `Command Mapping` below.
+- Use the command mapping to help you decide which command to respond with.
+- Don't examine the codebase just focus on the `Jira Issue` and the `Command Mapping` below to determine the appropriate command to execute.
+
+## Command Mapping
+- Respond with `/chore` if the issue is a chore.
+- Respond with `/bug` if the issue is a bug.
+- Respond with `/feature` if the issue is a feature.
+- Respond with `0` if the issue isn't any of the above.
+
+## Jira Issue
+{"number":47,"summary":"Refine adw_review.py console output to strictly align with plan/build/test scripts.","description":"*Story Format*\nAs a developer, I want the {{adw_review.py}} script to have the exact same visual structure (headers, phase markers, spinners) as the other ADW scripts, so that the CLI experience is completely seamless and predictable.\n\n*Acceptance Criteria*\n\n* *Initial Header*: Add the missing blue start-up rule: {{rich_console.rule(f\"ADW Review - Issue {issue_number}\", style=\"blue\")}} immediately after {{main()}} start.\n* *Phase Markers*: Add cyan rules ({{rich_console.rule(..., style=\"cyan\")}}) for:\n** \"Reviewing Implementation\"\n** \"Resolving Issues\" (if entering resolution loop)\n** \"Committing Results\"\n** \"Finalizing Git Operations\"\n* *Spinners*:\n** Wrap the {{run_review}} execution in a spinner (e.g., \"Running AI review analysis...\").\n** Wrap the patch creation and implementation steps within the resolution loop in spinners.\n* *Resolution Loop Visibility*: Use {{rich_console.step()}} or clear formatting to distinguish between multiple issues being resolved in the loop.\n* *Final Summary*: Ensure the final {{Review Summary}} panel matches the style of {{Build Summary}} and {{Test Summary}} (Green/Red styling, consistent metadata fields).\n\n*Traceability To Epic*\n\n* Epic: ADW System Maturation\n\n*Optional (Recommended)*\n\n* *Business Value*: Eliminates visual context switching costs for developers moving between workflow phases."}

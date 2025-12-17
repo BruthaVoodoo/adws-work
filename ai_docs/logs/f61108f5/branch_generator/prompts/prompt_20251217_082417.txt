@@ -1,0 +1,31 @@
+# Generate Git Branch Name
+Based on the `Instructions` below, take the `Variables` follow the `Run` section to generate a concise Git branch name following the specified format. Then follow the `Report` section to report the results of your work.
+
+## Variables
+issue_class: chore
+adw_id: f61108f5
+issue: {"key":"DAI-47","number":47,"summary":"Refine adw_review.py console output to strictly align with plan/build/test scripts.","description":"*Story Format*\nAs a developer, I want the {{adw_review.py}} script to have the exact same visual structure (headers, phase markers, spinners) as the other ADW scripts, so that the CLI experience is completely seamless and predictable.\n\n*Acceptance Criteria*\n\n* *Initial Header*: Add the missing blue start-up rule: {{rich_console.rule(f\"ADW Review - Issue {issue_number}\", style=\"blue\")}} immediately after {{main()}} start.\n* *Phase Markers*: Add cyan rules ({{rich_console.rule(..., style=\"cyan\")}}) for:\n** \"Reviewing Implementation\"\n** \"Resolving Issues\" (if entering resolution loop)\n** \"Committing Results\"\n** \"Finalizing Git Operations\"\n* *Spinners*:\n** Wrap the {{run_review}} execution in a spinner (e.g., \"Running AI review analysis...\").\n** Wrap the patch creation and implementation steps within the resolution loop in spinners.\n* *Resolution Loop Visibility*: Use {{rich_console.step()}} or clear formatting to distinguish between multiple issues being resolved in the loop.\n* *Final Summary*: Ensure the final {{Review Summary}} panel matches the style of {{Build Summary}} and {{Test Summary}} (Green/Red styling, consistent metadata fields).\n\n*Traceability To Epic*\n\n* Epic: ADW System Maturation\n\n*Optional (Recommended)*\n\n* *Business Value*: Eliminates visual context switching costs for developers moving between workflow phases.","status_name":"In Progress","reporter_user":{"displayName":"Jason Van Vuren"},"labels_list":[]}
+
+## Instructions
+- Generate a branch name in the format: `<issue_class>-issue-<issue_number>-adw-<adw_id>-<concise_name>`
+- The `<concise_name>` should be:
+  - 3-6 words maximum
+  - All lowercase
+  - Words separated by hyphens
+  - Descriptive of the main task/feature
+  - No special characters except hyphens
+- Examples:
+  - `feat-issue-123-adw-a1b2c3d4-add-user-auth`
+  - `bug-issue-456-adw-e5f6g7h8-fix-login-error`
+  - `chore-issue-789-adw-i9j0k1l2-update-dependencies`
+  - `test-issue-323-adw-m3n4o5p6-fix-failing-tests`
+- Extract the issue number, title, and body from the issue JSON
+
+## Run
+Run `git checkout main` to switch to the main branch
+Run `git pull` to pull the latest changes from the main branch
+Run `git checkout -b <branch_name>` to create and switch to the new branch
+
+## Report
+After generating the branch name:
+Return ONLY the branch name that was created (no other text)
