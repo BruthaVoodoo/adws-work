@@ -314,6 +314,8 @@ Now, please proceed with the implementation.
             errors=parsed.errors if parsed.errors else None,
             validation_status=final_validation_status
         )
+        
+        return response
 
     except FileNotFoundError:
         error_msg = "The 'copilot' command was not found. Please ensure it is installed and in your PATH."
