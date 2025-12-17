@@ -1,0 +1,26 @@
+# Generate Git Commit
+Based on the `Instructions` below, take the `Variables` follow the `Run` section to create a git commit with a properly formatted message.
+
+## Variables
+agent_name: sdlc_planner
+issue_class: chore
+issue: {"key":"DAI-50","number":50,"summary":"Add a unique timestamped comment to README.md to verify build pipeline functionality.","description":"*Story Format*\nAs a developer, I want to add a unique, timestamped comment to the project's README.md file, so that I can quickly verify that the ADW build pipeline (specifically prompt adherence and commit logic) is functioning correctly without performing complex logic changes.\n\n*Acceptance Criteria*\n\n# A new comment line is added to the end of {{README.md}}.\n# The comment follows the format: {{<!-- ADW Verification Test: [TIMESTAMP] -->}}\n# The change is detected by {{adw_build.py}} as an uncommitted file modification.\n# {{adw_build.py}} successfully commits the change itself.\n\n*Traceability To Epic*\nEpic: ADW-1 Core Framework Stability\n\n*Business Value*\nProvides a lightweight, reusable smoke test for verifying the ADW pipeline's critical path (Plan -> Build -> Commit) after configuration or prompt changes.\n\n*Dependencies*\nNone.","status_name":"In Progress","reporter_user":{"displayName":"Jason Van Vuren"},"labels_list":[]}
+
+## Instructions
+- Generate a concise commit message in the format: `<agent_name>: <issue_class>: <commit message>`
+- The `<commit message>` should be:
+  - Present tense (e.g., "add", "fix", "update", not "added", "fixed", "updated")
+  - 50 characters or less
+  - Descriptive of the actual changes made
+  - No period at the end
+- Examples:
+  - `sdlc_planner: feat: add user authentication module`
+  - `sdlc_implementor: bug: fix login validation error`
+  - `sdlc_planner: chore: update dependencies to latest versions`
+- Extract context from the issue JSON to make the commit message relevant
+- IMPORTANT: Return ONLY the generated commit message and absolutely nothing else. No conversational filler, no explanations, no markdown formatting around the commit message.
+
+## Run
+1. Run `git diff HEAD` to understand what changes have been made
+2. Run `git add -A` to stage all changes
+3. Run `git commit -m "<generated_commit_message>"` to create the commit
