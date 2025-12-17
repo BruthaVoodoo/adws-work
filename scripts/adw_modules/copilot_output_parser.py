@@ -94,6 +94,19 @@ def extract_metrics(output: str) -> Tuple[int, int, int]:
         if matches:
             files_changed = int(matches[-1])
             break
+            
+    # Fallback: Count natural language indicators if no explicit number found
+    if files_changed == 0:
+        nl_patterns = [
+            r'(?:Created|Updated|Modified|Wrote to)\s+file\s+',
+            r'File\s+(?:created|updated|modified|written)',
+            r'Writing\s+to\s+file',
+        ]
+        count = 0
+        for pattern in nl_patterns:
+            count += len(re.findall(pattern, output, re.IGNORECASE))
+        if count > 0:
+            files_changed = count
     
     # Try to find lines added metrics
     patterns_added = [
@@ -221,6 +234,7 @@ def determine_validation_status(keywords: Dict[str, List[str]],
         "Implementation Summary",
         "All Acceptance Criteria Met",
         "Implementation complete and working perfectly",
+        "Plan analyzed and implemented",
     ]
     for phrase in copilot_overall_success_phrases:
         if phrase in output:
