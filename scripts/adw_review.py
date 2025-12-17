@@ -193,9 +193,13 @@ def resolve_review_issues(
     )
 
     for idx, issue in enumerate(blocker_issues):
-        logger.info(
-            f"\n=== Resolving blocker issue {idx + 1}/{len(blocker_issues)}: Issue #{issue.review_issue_number} ==="
-        )
+        # Use rich_console step to mark issue resolution steps if available
+        if get_rich_console_instance():
+            get_rich_console_instance().step(f"Resolving blocker issue {idx + 1}/{len(blocker_issues)}: Issue #{issue.review_issue_number}")
+        else:
+            logger.info(
+                f"\n=== Resolving blocker issue {idx + 1}/{len(blocker_issues)}: Issue #{issue.review_issue_number} ==="
+            )
 
         # Create and implement patch
         # Prepare unique agent names with iteration and issue number for tracking
@@ -212,12 +216,21 @@ def resolve_review_issues(
         )
 
         # Create patch plan using the new workflow operation
-        patch_file = create_patch_plan(
-            issue=issue,
-            spec_path=spec_file,
-            adw_id=adw_id,
-            logger=logger
-        )
+        if rich_console:
+            with rich_console.spinner(f"Creating patch plan for issue #{issue.review_issue_number}..."):
+                patch_file = create_patch_plan(
+                    issue=issue,
+                    spec_path=spec_file,
+                    adw_id=adw_id,
+                    logger=logger
+                )
+        else:
+            patch_file = create_patch_plan(
+                issue=issue,
+                spec_path=spec_file,
+                adw_id=adw_id,
+                logger=logger
+            )
 
         if not patch_file:
             failed_count += 1
@@ -241,7 +254,11 @@ def resolve_review_issues(
         # Implement the patch plan using the existing implement_plan function
         target_dir = str(config.project_root)
         
-        implement_response = implement_plan(patch_file, adw_id, logger, target_dir)
+        if rich_console:
+            with rich_console.spinner(f"Implementing patch for issue #{issue.review_issue_number}..."):
+                implement_response = implement_plan(patch_file, adw_id, logger, target_dir)
+        else:
+            implement_response = implement_plan(patch_file, adw_id, logger, target_dir)
 
         # Check implementation result
         if implement_response.success:
@@ -432,6 +449,9 @@ def main():
 
     # Get rich console instance
     rich_console = get_rich_console_instance()
+    if rich_console:
+        rich_console.rule(f"ADW Review - Issue {issue_number}", style="blue")
+        rich_console.info(f"ADW ID: {adw_id}")
 
     # Set up temp logger for initialization (console only)
     temp_logger = setup_logger(adw_id, "adw_review", enable_file_logging=False)
@@ -546,6 +566,10 @@ def main():
         attempt += 1
         logger.info(f"\n=== Review Attempt {attempt}/{max_attempts} ===")
 
+        # === REVIEWING IMPLEMENTATION PHASE ===
+        if rich_console:
+            rich_console.rule("Reviewing Implementation", style="cyan")
+
         # Run the review
         logger.info("Running review against specification")
         jira_make_issue_comment(
@@ -553,11 +577,15 @@ def main():
             format_issue_message(
                 adw_id,
                 AGENT_REVIEWER,
-                f"✅ Reviewing implementation against specification (attempt {attempt}/{max_attempts})",
+                f"\u2705 Reviewing implementation against specification (attempt {attempt}/{max_attempts})",
             ),
         )
 
-        review_result = run_review(spec_file, adw_id, logger)
+        if rich_console:
+            with rich_console.spinner("Running AI review analysis..."):
+                review_result = run_review(spec_file, adw_id, logger)
+        else:
+            review_result = run_review(spec_file, adw_id, logger)
 
         # Process screenshots (legacy R2 upload removed)
         process_screenshots(review_result, adw_id, state, logger)
@@ -615,7 +643,10 @@ def main():
                     )
                 break
 
-            # Resolution workflow
+            # === RESOLVING ISSUES PHASE ===
+            if rich_console:
+                rich_console.rule("Resolving Issues", style="cyan")
+
             logger.info("\n=== Starting resolution workflow ===")
             jira_make_issue_comment(
                 issue_number,
@@ -647,6 +678,10 @@ def main():
                     ),
                 )
 
+                # === COMMITTING RESULTS PHASE ===
+                if rich_console:
+                    rich_console.rule("Committing Results", style="cyan")
+
                 # Commit the resolution changes
                 logger.info("Committing resolution changes")
                 raw_review_issue = jira_fetch_issue(issue_number)
@@ -659,7 +694,12 @@ def main():
                 )
 
                 if not error:
-                    success, error = commit_changes(commit_msg)
+                    if rich_console:
+                        with rich_console.spinner("Committing resolution to git..."):
+                            success, error = commit_changes(commit_msg)
+                    else:
+                        success, error = commit_changes(commit_msg)
+
                     if success:
                         logger.info(f"Committed resolution: {commit_msg}")
                         jira_make_issue_comment(
@@ -793,7 +833,8 @@ def main():
         )
         if rich_console:
             rich_console.rule("Review Summary", style="cyan")
-            rich_console.panel(panel_text, title="Review Results", style=("green" if review_result.success else "red"))
+            # Match Build/Test styling: green for pass, red for fail
+            rich_console.panel(panel_text, title="Review Summary", style=("green" if review_result.success else "red"))
         else:
             print(f"Review Summary - Status: {status}, Total Issues: {total_issues}, Blocking: {blockers}")
     except Exception:
