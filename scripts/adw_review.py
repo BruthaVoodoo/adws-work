@@ -526,9 +526,18 @@ def main():
 
     # Checkout the branch from state
     branch_name = state.get("branch_name")
-    result = subprocess.run(
-        ["git", "checkout", branch_name], capture_output=True, text=True
-    )
+    # Preparing Workspace phase (match adw_build.py)
+    if rich_console:
+        rich_console.rule("Preparing Workspace", style="cyan")
+        with rich_console.spinner(f"Checking out branch: {branch_name}..."):
+            result = subprocess.run(
+                ["git", "checkout", branch_name], capture_output=True, text=True
+            )
+    else:
+        result = subprocess.run(
+            ["git", "checkout", branch_name], capture_output=True, text=True
+        )
+
     if result.returncode != 0:
         logger.error(f"Failed to checkout branch {branch_name}: {result.stderr}")
         jira_make_issue_comment(
@@ -537,8 +546,12 @@ def main():
                 adw_id, "ops", f"❌ Failed to checkout branch {branch_name}"
             ),
         )
+        if rich_console:
+            rich_console.error(f"Failed to checkout branch {branch_name}: {result.stderr}")
         sys.exit(1)
     logger.info(f"Checked out branch: {branch_name}")
+    if rich_console:
+        rich_console.success(f"Checked out branch: {branch_name}")
 
     jira_make_issue_comment(
         issue_number, format_issue_message(adw_id, "ops", "✅ Starting review phase")
@@ -789,8 +802,13 @@ def main():
         )
         sys.exit(1)
 
-    # Commit the review results
-    success, error = commit_changes(commit_msg)
+    # === COMMITTING CHANGES PHASE ===
+    if rich_console:
+        rich_console.rule("Committing Changes", style="cyan")
+        with rich_console.spinner("Committing review to git..."):
+            success, error = commit_changes(commit_msg)
+    else:
+        success, error = commit_changes(commit_msg)
 
     if not success:
         logger.error(f"Error committing review: {error}")
@@ -800,16 +818,26 @@ def main():
                 adw_id, AGENT_REVIEWER, f"❌ Error committing review: {error}"
             ),
         )
+        if rich_console:
+            rich_console.error(f"Error committing review: {error}")
         sys.exit(1)
 
     logger.info(f"Committed review: {commit_msg}")
+    if rich_console:
+        rich_console.success("Review committed successfully")
     jira_make_issue_comment(
         issue_number,
         format_issue_message(adw_id, AGENT_REVIEWER, "✅ Review committed"),
     )
 
-    # Finalize git operations (push and PR)
-    finalize_git_operations(state, logger)
+    # === FINALIZATION PHASE ===
+    if rich_console:
+        rich_console.rule("Finalizing Git Operations", style="cyan")
+        with rich_console.spinner("Pushing changes and updating PR..."):
+            finalize_git_operations(state, logger)
+        rich_console.success("Git operations completed")
+    else:
+        finalize_git_operations(state, logger)
 
     logger.info("Review phase completed successfully")
     jira_make_issue_comment(
@@ -822,7 +850,7 @@ def main():
     # Output state for chaining
     state.to_stdout()
 
-    # Display a formatted summary panel
+    # Display a formatted summary panel matching adw_build styling
     try:
         blockers = sum(1 for i in review_result.review_issues if i.issue_severity == "blocker")
         total_issues = len(review_result.review_issues)
@@ -834,8 +862,11 @@ def main():
             f"ADW ID: {adw_id}\n"
         )
         if rich_console:
-            rich_console.rule("Review Summary", style="cyan")
-            # Match Build/Test styling: green for pass, red for fail
+            # Conditional completion rule: green success or red failure with emoji
+            if review_result.success:
+                rich_console.rule("✅ Review Complete", style="green")
+            else:
+                rich_console.rule("❌ Review Failed", style="red")
             rich_console.panel(panel_text, title="Review Summary", style=("green" if review_result.success else "red"))
         else:
             print(f"Review Summary - Status: {status}, Total Issues: {total_issues}, Blocking: {blockers}")

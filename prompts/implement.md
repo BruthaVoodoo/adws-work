@@ -6,7 +6,7 @@ Follow the `Instructions` to implement the `Plan` then `Report` the completed wo
 - Execute every step in the "Step by Step Tasks" section of the plan in order, top to bottom.
 - Make sure to run all validation commands at the end to confirm the implementation is complete.
 - If you encounter any issues, think through them carefully and adjust the implementation as needed.
-- Commit your changes as you go with descriptive commit messages.
+- **DO NOT** commit your changes. The system will handle the final commit in a later phase. Leave all changes as modified files on the file system.
 
 ## Plan
 Read and implement the plan from the following:
