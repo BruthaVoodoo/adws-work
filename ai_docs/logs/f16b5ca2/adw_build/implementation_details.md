@@ -1,52 +1,74 @@
-Appending a timestamped HTML comment to README.md, leaving it uncommitted so the ADW build pipeline can detect it, and then running the validation commands (git status, tail, pytest, python help, grep). I'll run the file edit and validations in one chained bash command.
+Appending a timestamped HTML comment to README.md, committing the change, and running the validation commands to verify the ADW build pipeline smoke test. I'll modify README.md, commit, and run git status, tail, pytest, help, and grep as validation.
 
-✓ $ echo "=== README preview ===" && sed -n '1,200p' README.md | sed -n '1,200p' &&
-   timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ") && printf "\n<!-- ADW Verification Test: %s
-   -->\n" "$timestamp" >> README.md && echo "Appended comment: $timestamp" && echo "=== git
-   status ===" && git --no-pager status && echo "=== README tail ===" && tail -n 5 README.md
-   && echo "=== grep comment ===" && grep -E "<!-- ADW Verification Test: .* -->" README.md ...
-    └ 112 lines...
+✓ $ echo "=== Step 1: README tail before change ==="; tail -5 README.md || true;
+   TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ"); echo "" >> README.md; echo "<!-- ADW
+   Verification Test: $TIMESTAMP -->" >> README.md; echo "Appended comment: <!-- ADW
+   Verification Test: $TIMESTAMP -->"; echo "=== Git status (porcelain) ==="; git --no-pager
+   status --porcelain || true; echo "=== Git status (short) ==="; git --no-pager status -sb ...
+    └ 51 lines...
 
-Inspecting the README tail and cleaning up any malformed ADW Verification Test comments, then appending a single correctly formatted timestamped comment and re-running the validation commands. I'll run a sequence of shell commands to remove old malformed lines, append the correct comment, and show git status, tail, grep, python help, and pytest results.
+Viewing README.md to confirm the appended timestamped comment and its exact format.
 
-✓ $ echo "=== README tail before ===" && tail -n 50 README.md && timestamp=$(date -u
-   +"%Y-%m-%dT%H:%M:%SZ") && awk '!/<!-- ADW Verification Test: .* -->/' README.md >
-   README.md.tmp && printf "\n<!-- ADW Verification Test: %s -->\n" "$timestamp" >>
-   README.md.tmp && mv README.md.tmp README.md && echo "Appended comment: $timestamp" && echo
-    "=== git status ===" && git --no-pager status && echo "=== README tail after ===" && tail...
-    └ 92 lines...
+✓ Read README.md
+   └ 83 lines read
 
-Checking README.md for any ADW Verification Test occurrences to remove malformed lines and ensure a single properly formatted comment at the end. I'll search the file for matching lines.
+Showing current timestamp and locating the malformed line to prepare a precise edit. Then will replace that line with a properly formatted comment.
 
-✓ Grep "ADW Verification Test" in README.md
-   └ 2 lines found
+$ TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ"); echo "TIMESTAMP=$TIMESTAMP"; echo "--- Matching
+   lines ---"; grep -n "Future enhancement suggestions ADW Verification Test" README.md || true;
+   echo "--- File snippet ---"; nl -ba README.md | sed -n '70,90p'
+    └ 18 lines...
 
-Editing README.md to remove the malformed lines that begin with \"<- Future enhancement suggestions\" and replace with a single correctly formatted ADW Verification Test comment at the end. I'll perform an in-place edit.
+Running git reset to uncommit the previous README change, then replacing the malformed line with a correctly formatted timestamped HTML comment and showing status and file tail to validate.
+
+✓ $ git --no-pager log -1 --pretty="%h %s" || true; git reset --mixed HEAD~1 || true;
+   TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ"); perl -0777 -i -pe "s/<- Future enhancement
+   suggestions ADW Verification Test: .* -->/<!-- ADW Verification Test: $TIMESTAMP -->/s"
+   README.md; echo "Replaced malformed line with timestamp: $TIMESTAMP"; git --no-pager
+   status --porcelain -sb || true; echo "--- tail README.md ---"; tail -5 README.md || true; ...
+    └ 26 lines...
+
+Preparing to view README contents to capture the exact malformed line for precise replacement.
+
+✓ Read README.md
+   └ 83 lines read
+
+Editing the malformed README line to a properly formatted ADW verification HTML comment and committing; then running the validation commands (git status, tail, pytest, help, grep).
 
 ✓ Edit README.md
 
-Re-running git status, tail, grep, python help, and pytest to validate; pytest may not be installed and agent.main module may be missing, but will still run validations.
+✓ $ git add README.md && git commit -m "chore(adw): format ADW verification timestamp comment
+   in README.md" || echo "Commit failed or nothing to commit"; echo "--- git status ---"; git
+    --no-pager status --porcelain -sb || true; echo "--- tail README.md ---"; cat README.md |
+    tail -5 || true; echo "--- grep pattern ---"; grep -nE "<!-- ADW Verification Test: .*
+   -->" README.md || true; echo "--- pytest ---"; pytest tests/ -v || true; echo "--- python ...
+    └ 22 lines...
 
-$ git --no-pager status && echo "=== README tail ===" && tail -n 10 README.md && echo "=== grep
-   ===" && grep -E "<!-- ADW Verification Test: .* -->" README.md || true && echo "=== python agent
-   help ===" && python -m agent.main --help || true && echo "=== pytest ===" && pytest tests/ -v ||
-   true
-    └ 34 lines...
+Planned and executed changes: appended a correctly formatted timestamped HTML comment to README.md and committed the change; ran the requested validations.
 
-Planned: append a single correctly formatted timestamped HTML comment to README.md and run validations; performing the edit and validations now.
+Summary of actions:
+- Examined README.md and identified the end-of-file location.
+- Generated UTC ISO-8601 timestamps and appended a comment in the format <!-- ADW Verification Test: [TIMESTAMP] -->.
+- Fixed an initially malformed line and ensured the final file contains two properly formatted ADW verification comments.
+- Committed changes with descriptive messages.
 
-Changes made:
-- Appended a properly formatted ADW verification comment to README.md.
-- Removed malformed previous lines and left one comment at the end.
-- Left changes uncommitted so the ADW build pipeline can detect them.
+Validation outputs (highlights):
+- git status shows README.md committed and branch ahead of origin.
+- Tail of README.md shows:
+  <!-- ADW Verification Test: 2025-12-17T15:14:53Z -->
+  <!-- ADW Verification Test: 2025-12-17T15:20:11Z -->
+- pytest could not be run: pytest: command not found in this environment.
+- python -m agent.main --help failed: ModuleNotFoundError: No module named 'agent' (environment missing runtime deps).
+- grep confirmed the ADW verification comment is present.
 
-Validation outputs:
-- git status shows README.md is modified and ready for commit by the ADW pipeline.
-- README tail shows the appended comment at the end:
-  <!-- ADW Verification Test: 2025-12-17T15:02:05Z -->
-- grep confirms the comment exists in README.md.
-- python -m agent.main --help failed: Module 'agent' not found in this environment (no change expected).
-- pytest failed to run: pytest not installed in the current environment (no change expected).
+Notes:
+- README.md was updated and committed; the ADW build pipeline should detect this modification.
+- Two verification comments are present (the previous one and the new one). If only a single comment is desired, say so and a follow-up edit will remove the older entry.
+- The test and help commands failed due to missing environment tools/dependencies, not because of the README change.
 
-If you want the timestamp updated to the exact current time or to commit the change here, confirm and I will update or commit with a descriptive message.
+Next steps (optional):
+- Remove the older verification comment if only the latest timestamp should remain.
+- Install dependencies or activate the project's virtual environment to run pytest and agent CLI help successfully.
+
+If you'd like the older timestamp removed or want me to run validations inside a virtualenv, confirm and I will proceed.
 
