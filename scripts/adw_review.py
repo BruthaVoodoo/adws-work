@@ -174,6 +174,8 @@ def resolve_review_issues(
     resolved_count = 0
     failed_count = 0
     adw_id = state.get("adw_id")
+    # Ensure we have a rich console instance for UI feedback in this helper
+    rich_console = get_rich_console_instance()
 
     # Filter to only handle blocker issues
     blocker_issues = [i for i in review_issues if i.issue_severity == "blocker"]
