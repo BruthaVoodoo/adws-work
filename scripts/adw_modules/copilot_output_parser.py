@@ -222,7 +222,8 @@ def extract_executed_steps(output: str) -> List[str]:
 def determine_validation_status(keywords: Dict[str, List[str]], 
                                errors: List[str],
                                warnings: List[str],
-                               output: str) -> str:
+                               output: str,
+                               files_changed: int = 0) -> str:
     """Determine overall validation status based on parsed indicators."""
     has_success_indicators = bool(keywords['success_indicators'])
     has_error_indicators = bool(keywords['error_indicators'])
@@ -255,6 +256,12 @@ def determine_validation_status(keywords: Dict[str, List[str]],
             return "partial"
         else:
             return "passed"
+            
+    # If files were changed, it's a strong indicator of work done
+    if files_changed > 0:
+        if warnings:
+            return "partial"
+        return "passed"
     
     # Ambiguous case
     return "unknown"
@@ -301,7 +308,7 @@ def parse_copilot_output(output: str) -> ParsedCopilotOutput:
         executed_steps = extract_executed_steps(clean_output)
         
         # Determine validation status
-        validation_status = determine_validation_status(keywords, errors, warnings, clean_output)
+        validation_status = determine_validation_status(keywords, errors, warnings, clean_output, files_changed)
         
         # Determine overall success
         success = validation_status == "passed" or (
