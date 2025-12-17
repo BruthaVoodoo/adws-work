@@ -267,7 +267,7 @@ Now, please proceed with the implementation.
         
         # Parse the output to extract metrics and validation status
         parsed = parse_copilot_output(output)
-        logger.info(f"Parsed output: success={parsed.success}, "
+        logger.debug(f"Log analysis result: success={parsed.success}, "
                    f"files_changed={parsed.files_changed}, "
                    f"validation_status={parsed.validation_status}")
         
@@ -278,22 +278,30 @@ Now, please proceed with the implementation.
             logger.warning(f"Missing steps: {', '.join(plan_validation.missing_steps)}")
         
         # Verify actual git changes if needed
+        git_verified = False
+        files_changed_in_git = 0
         try:
             git_changeset = get_file_changes(cwd=target_dir)
-            logger.info(f"Git verification: {git_changeset.total_files_changed} files changed, "
+            files_changed_in_git = git_changeset.total_files_changed
+            logger.info(f"Git verification: {files_changed_in_git} files changed, "
                        f"{git_changeset.total_additions} additions, {git_changeset.total_deletions} deletions")
+            git_verified = True
         except Exception as e:
             logger.warning(f"Could not verify git changes: {e}")
         
         # Build enhanced response with all extracted metrics
-        # If files were changed in git, consider it a success even if parser missed the text confirmation
-        files_changed_in_git = 0
-        try:
-            files_changed_in_git = git_changeset.total_files_changed
-        except NameError:
-            pass
-
-        final_success = parsed.success or (files_changed_in_git > 0)
+        # Combine log analysis with definitive git verification
+        
+        # If log analysis passed, we are good.
+        # If log analysis failed/unknown, but we have git changes, we trust git.
+        
+        final_success = parsed.success
+        final_validation_status = parsed.validation_status
+        
+        if not final_success and files_changed_in_git > 0:
+            final_success = True
+            final_validation_status = "passed"
+            logger.info(f"Outcome: Log analysis inconclusive, but Git verification confirms {files_changed_in_git} files changed. Marking implementation as successful.")
         
         response = AgentPromptResponse(
             output=output,
@@ -304,12 +312,8 @@ Now, please proceed with the implementation.
             test_results=parsed.test_results if parsed.test_results else None,
             warnings=parsed.warnings if parsed.warnings else None,
             errors=parsed.errors if parsed.errors else None,
-            validation_status="passed" if final_success else parsed.validation_status
+            validation_status=final_validation_status
         )
-        
-        logger.info(f"Implementation completed. Response: success={response.success}, "
-                   f"validation_status={response.validation_status}")
-        return response
 
     except FileNotFoundError:
         error_msg = "The 'copilot' command was not found. Please ensure it is installed and in your PATH."
