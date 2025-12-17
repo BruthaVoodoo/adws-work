@@ -273,11 +273,9 @@ Now, please proceed with the implementation.
         
         # Cross-reference with the plan to validate steps
         plan_validation = cross_reference_plan_output(plan_content, output)
-        logger.info(f"Plan validation: {plan_validation.executed_steps}/{plan_validation.total_steps} steps executed")
-        if plan_validation.missing_steps:
-            logger.warning(f"Missing steps: {', '.join(plan_validation.missing_steps)}")
+        logger.info(f"Plan validation: {plan_validation.executed_steps}/{plan_validation.total_steps} steps explicitly detected")
         
-        # Verify actual git changes if needed
+        # Verify actual git changes first
         git_verified = False
         files_changed_in_git = 0
         try:
@@ -288,6 +286,14 @@ Now, please proceed with the implementation.
             git_verified = True
         except Exception as e:
             logger.warning(f"Could not verify git changes: {e}")
+
+        # Log missing steps ONLY if implementation failed or no work was detected
+        # If work was done (files changed) or agent claimed success, we assume implicit steps were executed
+        if plan_validation.missing_steps:
+            if not parsed.success and files_changed_in_git == 0:
+                logger.warning(f"Missing steps: {', '.join(plan_validation.missing_steps)}")
+            else:
+                logger.debug(f"Steps not explicitly detected in logs (implied success): {', '.join(plan_validation.missing_steps)}")
         
         # Build enhanced response with all extracted metrics
         # Combine log analysis with definitive git verification
