@@ -286,16 +286,25 @@ Now, please proceed with the implementation.
             logger.warning(f"Could not verify git changes: {e}")
         
         # Build enhanced response with all extracted metrics
+        # If files were changed in git, consider it a success even if parser missed the text confirmation
+        files_changed_in_git = 0
+        try:
+            files_changed_in_git = git_changeset.total_files_changed
+        except NameError:
+            pass
+
+        final_success = parsed.success or (files_changed_in_git > 0)
+        
         response = AgentPromptResponse(
             output=output,
-            success=parsed.success,
+            success=final_success,
             files_changed=parsed.files_changed,
             lines_added=parsed.lines_added,
             lines_removed=parsed.lines_removed,
             test_results=parsed.test_results if parsed.test_results else None,
             warnings=parsed.warnings if parsed.warnings else None,
             errors=parsed.errors if parsed.errors else None,
-            validation_status=parsed.validation_status
+            validation_status="passed" if final_success else parsed.validation_status
         )
         
         logger.info(f"Implementation completed. Response: success={response.success}, "

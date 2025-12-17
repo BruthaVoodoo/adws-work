@@ -76,9 +76,11 @@ def get_file_changes(cwd: Optional[str] = None) -> GitChangeSet:
         ["git", "diff", "--cached", "--stat"],
         cwd=cwd
     )
+    
+    # Calculate total files changed regardless of staged status
+    changeset.total_files_changed = len(changeset.files_added) + len(changeset.files_modified)
+
     if success and stdout:
-        # Parse stats output for total counts
-        changeset.total_files_changed = len(changeset.files_added) + len(changeset.files_modified)
         # Extract insertion/deletion counts from stats
         import re
         for line in stdout.split('\n'):
