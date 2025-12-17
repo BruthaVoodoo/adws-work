@@ -98,9 +98,10 @@ def extract_metrics(output: str) -> Tuple[int, int, int]:
     # Fallback: Count natural language indicators if no explicit number found
     if files_changed == 0:
         nl_patterns = [
-            r'(?:Created|Updated|Modified|Wrote to)\s+file\s+',
-            r'File\s+(?:created|updated|modified|written)',
+            r'(?:Created|Updated|Modified|Wrote to|Edit)\s+(?:file\s+)?',
+            r'File\s+(?:created|updated|modified|written|edited)',
             r'Writing\s+to\s+file',
+            r'Edit\s+.*',
         ]
         count = 0
         for pattern in nl_patterns:
