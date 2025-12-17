@@ -102,6 +102,7 @@ def extract_executed_steps_from_output(output: str) -> List[str]:
         r'(?:✓|✔)\s+(.+?)(?:\n|$)',
         r'Completed[:\s]+(?:Step\s+)?(\d+)?:?\s*(.+?)(?:\n|$)',
         r'Successfully\s+(?:executed|ran|completed)[:\s]+(.+?)(?:\n|$)',
+        r'(?:Step|step)\s+(\d+).*?:?\s*(.+?)(?:\n|$)',
     ]
     
     for pattern in patterns:
