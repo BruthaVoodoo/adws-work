@@ -1,0 +1,122 @@
+# Agent Chore Planning
+
+Create a new plan to resolve a chore in an AI agent using the exact specified markdown `Plan Format`. Follow the `Instructions` to create the plan and use the `Relevant Files` to focus on the right areas.
+
+## Instructions
+
+- IMPORTANT: You're writing a plan to resolve a chore in an AI agent that will add value to the agent's codebase (e.g., refactoring, dependency updates, architecture improvements).
+- IMPORTANT: The `Chore` describes the chore that will be resolved. Remember we're not resolving the chore, we're creating the plan that will be used to resolve the chore based on the `Plan Format` below.
+- You're writing a plan to resolve a chore. It should be simple but thorough and precise so we don't miss anything or waste time with any second round of changes.
+- Create the plan in the `ADW/ai_docs/specs/chore/` directory with filename: `50-f16b5ca2-plan.md`
+- Use the plan format below to create the plan.
+- Research the codebase and put together a plan to accomplish the chore.
+- IMPORTANT: Replace every <placeholder> in the `Plan Format` with the requested value. Add as much detail as needed to accomplish the chore.
+- Use your reasoning model: THINK HARD about the plan and the steps to accomplish the chore.
+- Respect the agent framework being used (Strands Agents with Amazon AgentCore).
+- Start your research by reading the `README.md` file.
+
+## Relevant Files
+
+Focus on the following files:
+- `README.md` - Contains the agent overview and instructions.
+- `agent/**` - Contains the agent implementation code.
+- `handlers/**` - Contains the agent handlers and tools.
+- `tests/**` - Contains the agent tests.
+- `config/**` - Contains the agent configuration files.
+- `requirements.txt` or `pyproject.toml` - Contains the dependencies.
+
+Ignore all other files in the codebase.
+
+## Placeholder Reference
+
+The following placeholders will be replaced with actual Jira issue context:
+- `DAI-50` - The Jira issue key (e.g., "DAI-4")
+- `Add a unique timestamped comment to README.md to verify build pipeline functionality.` - The issue title/summary
+- `*Story Format*
+As a developer, I want to add a unique, timestamped comment to the project's README.md file, so that I can quickly verify that the ADW build pipeline (specifically prompt adherence and commit logic) is functioning correctly without performing complex logic changes.
+
+*Acceptance Criteria*
+
+# A new comment line is added to the end of {{README.md}}.
+# The comment follows the format: {{<!-- ADW Verification Test: [TIMESTAMP] -->}}
+# The change is detected by {{adw_build.py}} as an uncommitted file modification.
+# {{adw_build.py}} successfully commits the change itself.
+
+*Traceability To Epic*
+Epic: ADW-1 Core Framework Stability
+
+*Business Value*
+Provides a lightweight, reusable smoke test for verifying the ADW pipeline's critical path (Plan -> Build -> Commit) after configuration or prompt changes.
+
+*Dependencies*
+None.` - The full issue description with requirements
+- `` - Comma-separated labels associated with the issue
+- `In Progress` - Current state of the issue (e.g., "In Progress")
+
+## Plan Format
+
+```md
+# Chore: <chore name>
+
+## Chore Description
+<describe the chore in detail>
+
+## Relevance to Agent Framework
+<explain how this chore relates to maintaining the Strands Agents implementation or Amazon AgentCore compatibility>
+
+## Relevant Files
+Use these files to resolve the chore:
+
+<find and list the files that are relevant to the chore and describe why they are relevant in bullet points. If there are new files that need to be created to accomplish the chore, list them in an h3 'New Files' section.>
+
+## Step by Step Tasks
+IMPORTANT: Execute every step in order, top to bottom.
+
+<list step by step tasks as h3 headers plus bullet points. use as many h3 headers as needed to accomplish the chore. Order matters, start with the foundational shared changes required to accomplish the chore then move on to the specific changes required to accomplish the chore. Your last step should be running the `Validation Commands` to validate the chore is complete with zero regressions.>
+
+## Validation Commands
+Execute every command to validate the chore is complete with zero regressions.
+
+<list commands you'll use to validate with 100% confidence the chore is complete with zero regressions. every command must execute without errors so be specific about what you want to run to validate the chore is complete with zero regressions. Don't validate with curl commands.>
+
+- `pytest tests/ -v` - Run all agent tests to validate the chore is complete with zero regressions
+
+## Notes
+<optionally list any additional notes or context that are relevant to the chore that will be helpful to the developer>
+```
+
+## Chore
+
+**Issue:** DAI-50
+**Status:** In Progress
+**Labels:** 
+
+### Chore Title
+Add a unique timestamped comment to README.md to verify build pipeline functionality.
+
+### Chore Description
+*Story Format*
+As a developer, I want to add a unique, timestamped comment to the project's README.md file, so that I can quickly verify that the ADW build pipeline (specifically prompt adherence and commit logic) is functioning correctly without performing complex logic changes.
+
+*Acceptance Criteria*
+
+# A new comment line is added to the end of {{README.md}}.
+# The comment follows the format: {{<!-- ADW Verification Test: [TIMESTAMP] -->}}
+# The change is detected by {{adw_build.py}} as an uncommitted file modification.
+# {{adw_build.py}} successfully commits the change itself.
+
+*Traceability To Epic*
+Epic: ADW-1 Core Framework Stability
+
+*Business Value*
+Provides a lightweight, reusable smoke test for verifying the ADW pipeline's critical path (Plan -> Build -> Commit) after configuration or prompt changes.
+
+*Dependencies*
+None.
+
+---
+
+Describe the chore that needs to be resolved based on the issue context above. Include:
+- What is the chore?
+- Why is it needed?
+- What will be improved or maintained?
