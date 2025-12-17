@@ -73,3 +73,6 @@ Ensure the following environment variables are set (in `.env` or system):
 - `AWS_MODEL` (optional, default: sonnet/opus)
 
 Last updated: December 16, 2025
+
+<!-- ADW Verification Test: 2025-12-17T14:26:42Z -->
+
