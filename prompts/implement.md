@@ -4,6 +4,7 @@ Follow the `Instructions` to implement the `Plan` then `Report` the completed wo
 ## Instructions
 - Read the plan file provided in PLAN_PATH, think hard about the plan and implement the plan.
 - Execute every step in the "Step by Step Tasks" section of the plan in order, top to bottom.
+- Before executing each step, print a clear header: "Step X: [Step Title]".
 - Make sure to run all validation commands at the end to confirm the implementation is complete.
 - If you encounter any issues, think through them carefully and adjust the implementation as needed.
 - **DO NOT** commit your changes. The system will handle the final commit in a later phase. Leave all changes as modified files on the file system.
