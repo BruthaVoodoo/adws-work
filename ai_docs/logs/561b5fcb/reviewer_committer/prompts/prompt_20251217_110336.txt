@@ -1,0 +1,26 @@
+# Generate Git Commit
+Based on the `Instructions` below, take the `Variables` follow the `Run` section to create a git commit with a properly formatted message.
+
+## Variables
+agent_name: reviewer
+issue_class: feature
+issue: {"key":"DAI-49","number":49,"summary":"Align `adw_review.py` console output phases (Workspace, Commit, Finalize) with `adw_build.py`.","description":"*Story Format*\nAs a developer, I want the {{adw_review.py}} script to display the exact same visual \"Phase\" markers and structure as {{adw_build.py}}, so that the CLI experience is consistent across all ADW tools.\n\n*Acceptance Criteria*\n\n* *Preparing Workspace Phase*: Add {{rich_console.rule(\"Preparing Workspace\", style=\"cyan\")}} before the branch checkout step.\n* *Committing Changes Phase*: Add {{rich_console.rule(\"Committing Changes\", style=\"cyan\")}} before the final review commit (specifically for the final commit outside the resolution loop).\n* *Finalizing Git Operations Phase*: Add {{rich_console.rule(\"Finalizing Git Operations\", style=\"cyan\")}} before the final {{finalize_git_operations}} call.\n* *Completion Phase*: Update the final summary rule to {{rich_console.rule(\"✅ Review Complete\", style=\"green\")}} (or \"❌ Review Failed\" in red) to match the \"Build Complete\" style, replacing the existing \"Review Summary\" rule.\n* *Spinners*: Ensure {{rich_console.spinner}} is used for checkout, commit, and push operations, mirroring the implementation in {{adw_build.py}}.\n\n*Traceability To Epic*\n\n* Epic: ADW System Maturation\n\n*Optional (Recommended)*\n\n* *Business Value*: Enforces UI consistency across the ADW toolset, reducing user confusion and improving the professional feel of the CLI.","status_name":"In Progress","reporter_user":{"displayName":"Jason Van Vuren"},"labels_list":[]}
+
+## Instructions
+- Generate a concise commit message in the format: `<agent_name>: <issue_class>: <commit message>`
+- The `<commit message>` should be:
+  - Present tense (e.g., "add", "fix", "update", not "added", "fixed", "updated")
+  - 50 characters or less
+  - Descriptive of the actual changes made
+  - No period at the end
+- Examples:
+  - `sdlc_planner: feat: add user authentication module`
+  - `sdlc_implementor: bug: fix login validation error`
+  - `sdlc_planner: chore: update dependencies to latest versions`
+- Extract context from the issue JSON to make the commit message relevant
+- IMPORTANT: Return ONLY the generated commit message and absolutely nothing else. No conversational filler, no explanations, no markdown formatting around the commit message.
+
+## Run
+1. Run `git diff HEAD` to understand what changes have been made
+2. Run `git add -A` to stage all changes
+3. Run `git commit -m "<generated_commit_message>"` to create the commit
