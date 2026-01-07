@@ -17,3 +17,113 @@ docs_dir: "ai_docs"
 
 # Language of the project (default: "python")
 language: "python"
+
+# ============================================================================
+# OPENCODE HTTP API MIGRATION - FEATURE FLAGS & CONFIGURATION
+# ============================================================================
+# 
+# This section controls the gradual migration from AWS Bedrock + Copilot CLI
+# to OpenCode HTTP API with intelligent model routing.
+#
+# Status: In Development (Epic 1-5)
+# Created: January 7, 2026
+# ============================================================================
+
+# Feature flags for safe, gradual migration
+# Each flag allows independent enable/disable of specific operation types
+migration:
+  # Enable OpenCode HTTP for lightweight tasks (planning, classification)
+  # Operations affected: extract_adw_info, classify_issue, build_plan,
+  #                     generate_branch_name, create_commit, create_pull_request
+  # Model: GPT-4o mini (cheaper, faster for lightweight tasks)
+  # Status: false (disabled - using old custom proxy system)
+  # Controlled by: Epic 2 stories
+  use_opencode_for_lightweight: false
+
+  # Enable OpenCode HTTP for heavy lifting tasks (code execution, testing, review)
+  # Operations affected: implement_plan, resolve_failed_tests, run_review
+  # Model: Claude Sonnet 4.5 (powerful for code work)
+  # Status: false (disabled - using old Copilot CLI system)
+  # Controlled by: Epic 3 stories
+  use_opencode_for_heavy_lifting: false
+
+  # Emergency kill switch - disables ALL OpenCode features
+  # Use this if the system breaks and you need instant rollback
+  # When true: ALL operations revert to old backends (no code changes needed)
+  # Procedure:
+  #   1. Set this to: true
+  #   2. Restart the application
+  #   3. System immediately reverts to AWS Bedrock + Copilot
+  #   4. No code changes or git revert needed!
+  disable_opencode: false
+
+# ============================================================================
+# OPENCODE HTTP SERVER CONFIGURATION
+# ============================================================================
+# Configure the OpenCode HTTP server endpoint, models, and behavior
+# Only used when migration flags are enabled above
+
+opencode:
+  # HTTP server endpoint where OpenCode is running
+  # Default: localhost:4096 (assumes: opencode serve --port 4096)
+  # Update if using different host/port
+  server_url: "http://localhost:4096"
+
+  # Model selection per task type
+  models:
+    # Heavy lifting: code implementation, test fixing, code reviews
+    # Uses: Claude Sonnet 4.5 (most capable for code tasks)
+    # Model ID must match OpenCode registry
+    heavy_lifting: "anthropic/claude-3-5-sonnet-20241022"
+
+    # Lightweight: planning, classification, document generation
+    # Uses: GPT-4o mini (cheaper, faster for lightweight tasks)
+    # Model ID must match OpenCode registry
+    lightweight: "openai/gpt-4o-mini"
+
+  # Timeout settings (in seconds)
+  timeout: 600                 # 10 minutes for heavy code operations
+  lightweight_timeout: 60      # 1 minute for planning/classification
+  
+  # Retry configuration
+  max_retries: 3              # Number of retries on transient failures
+  retry_backoff: 1.5          # Exponential backoff multiplier
+
+  # Session management
+  reuse_sessions: false       # Create new session for each operation
+                              # Set to true for performance optimization (experimental)
+
+  # Connection settings
+  connection_timeout: 30      # Seconds to wait for initial connection
+  read_timeout: 600           # Seconds to wait for response completion
+
+# ============================================================================
+# NOTES FOR DEVELOPMENT
+# ============================================================================
+#
+# 1. SAFE MIGRATION APPROACH:
+#    - Start with all flags = false (uses old system)
+#    - After Epic 1: no code changes needed (old system still works)
+#    - Enable lightweight flag when Epic 2 is ready (use_opencode_for_lightweight: true)
+#    - Test thoroughly, then keep it enabled
+#    - Enable heavy lifting flag when Epic 3 is ready (use_opencode_for_heavy_lifting: true)
+#    - Test thoroughly, then keep it enabled
+#
+# 2. EMERGENCY PROCEDURE (30 seconds):
+#    - Edit this file
+#    - Set: disable_opencode: true
+#    - Restart your application
+#    - System reverts to old backends (no code changes!)
+#
+# 3. OPENCODE SERVER SETUP:
+#    - Install: brew install opencode OR npm install -g opencode-ai
+#    - Start server: opencode serve --port 4096
+#    - Authenticate: opencode auth login (select provider and paste API key)
+#    - Verify: curl http://localhost:4096/global/health
+#
+# 4. MONITORING:
+#    - Check logs: ai_docs/logs/*/*/response_*.json
+#    - Verify tests: uv run pytest
+#    - Check git changes: git status / git diff
+#
+# ============================================================================

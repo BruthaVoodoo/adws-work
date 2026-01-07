@@ -200,42 +200,111 @@ Content-Type: application/json
 
 ---
 
-## 3. Migration Strategy
+## 3. Migration Strategy with Feature Flags (Safety-First Approach)
 
-### 3.1 High-Level Approach
+### 3.1 Critical Safety Mechanism: Feature Flags
 
-1. **Phase 1: Setup & HTTP Client Infrastructure**
-   - Create HTTP client wrapper for OpenCode API
-   - Develop Part extraction and metric calculation
-   - Add data types for structured responses
-   - Setup authentication and configuration handling
+**Problem Statement**: During migration, we could reach a point where ADWS can't fix itself if OpenCode integration is incomplete or broken.
 
-2. **Phase 2: Core Implementation**
-   - Refactor primary `implement_plan()` function
-   - Update error handling and fallback mechanisms
-   - Implement timeout and retry logic
+**Solution**: Implement feature flags that allow instant rollback to old system.
 
-3. **Phase 3: Test Execution Path**
-   - Migrate test failure resolution
-   - Update E2E test execution
-   - Refactor test output parsing
+```yaml
+# .adw.yaml - Feature flags for safe migration
+migration:
+  # Enable OpenCode HTTP for different operation types
+  use_opencode_for_lightweight: false  # Planning/classification (Epic 2)
+  use_opencode_for_heavy_lifting: false  # Code execution (Epic 3)
+  
+  # Emergency override to disable OpenCode entirely
+  disable_opencode: false  # Set to true if system breaks
+```
 
-4. **Phase 4: Review Path**
-   - Migrate code review execution
-   - Update review output parsing
-   - Refactor review result handling
+**How it works**:
+1. Each LLM operation checks its feature flag before executing
+2. If flag is `false`, use old system (custom proxy or Copilot)
+3. If flag is `true`, use OpenCode HTTP client
+4. If OpenCode breaks, flip `disable_opencode: true` → system reverts to old backends
+5. No code changes needed, just config change
 
-5. **Phase 5: Testing & Validation**
-   - Unit tests for new HTTP client
-   - Integration tests for all paths
-   - Backward compatibility checks
+**Implementation pattern**:
+```python
+def implement_plan(...) -> AgentPromptResponse:
+    if config.migration.use_opencode_for_heavy_lifting:
+        # NEW PATH: OpenCode HTTP
+        return execute_opencode_prompt(...)
+    else:
+        # OLD PATH: Copilot CLI (still works)
+        return subprocess.run(["copilot", "-p", prompt])
+```
 
-6. **Phase 6: Documentation & Cleanup**
-   - Update AGENTS.md
-   - Remove Copilot-specific code
-   - Document OpenCode HTTP setup
+---
 
-### 3.2 Implementation Details
+### 3.2 High-Level Approach (5 Epics = 43 Stories)
+
+Based on JIRA_EPICS_AND_STORIES.md, organized as:
+
+**Epic 1: HTTP Client Infrastructure (Phase 1 - 6-8 hours, CRITICAL PATH)**
+- Create OpenCodeHTTPClient class with session management
+- Implement HTTP communication layer
+- Add data types (OpenCodeResponse, OpenCodePart)
+- Build model routing logic (task-aware selection)
+- Develop output parser for Part extraction
+- Add response logging and error handling
+- Implement retry logic with exponential backoff
+- Write comprehensive unit tests (50+ tests)
+- Add OpenCode configuration to .adw.yaml
+- **Output**: Isolated infrastructure, no breaking changes
+
+**Epic 2: Planning & Classification Operations (Phase 2 - 6-8 hours, depends on Epic 1)**
+- Refactor agent.py execute_template() for OpenCode HTTP
+- Migrate extract_adw_info() → GPT-4o mini
+- Migrate classify_issue() → GPT-4o mini
+- Migrate build_plan() → GPT-4o mini
+- Migrate generate_branch_name() → GPT-4o mini
+- Migrate create_commit() → GPT-4o mini
+- Migrate create_pull_request() → GPT-4o mini
+- Update error handling
+- Write integration tests
+- **Feature Flag**: `use_opencode_for_lightweight`
+- **Can overlap**: With Epic 3
+
+**Epic 3: Code Execution Operations (Phase 3 - 8-10 hours, depends on Epic 1)**
+- Refactor implement_plan() → Claude Sonnet 4.5
+- Refactor resolve_failed_tests() → Claude Sonnet 4.5
+- Refactor execute_single_e2e_test() → Claude Sonnet 4.5
+- Refactor run_review() → Claude Sonnet 4.5
+- Update error handling in adw_test.py
+- Update error handling in adw_review.py
+- Write integration tests
+- Test git fallback validation
+- **Feature Flag**: `use_opencode_for_heavy_lifting`
+- **Can overlap**: With Epic 2
+
+**Epic 4: Cleanup & Deprecated Code (Phase 4 - 2-3 hours, depends on Epics 2 & 3)**
+- Mark bedrock_agent.py as deprecated
+- Mark copilot_output_parser.py as deprecated
+- Remove AWS environment variable validation
+- Update health_check.py for OpenCode
+- Remove Copilot CLI checks
+- **Only after**: Both lightweight and heavy lifting are stable
+
+**Epic 5: Testing, Validation & Documentation (Phase 5 - 10-12 hours, final)**
+- Write unit tests for HTTP client (30+ tests)
+- Write unit tests for output parser (20+ tests)
+- Write integration tests for planning operations
+- Write integration tests for code execution operations
+- Write regression tests for all 9 LLM operations
+- Performance comparison vs old system
+- Update AGENTS.md with OpenCode section
+- Create comprehensive MIGRATION_GUIDE.md
+- Update .adw.yaml with examples
+- Update README.md setup instructions
+- Write troubleshooting guide
+- **Must complete last**: Validates everything
+
+---
+
+### 3.3 Implementation Details
 
 ---
 
@@ -1080,35 +1149,31 @@ curl http://localhost:4096/global/health
 
 ---
 
-## 8. Timeline Estimate
+## 8. Timeline Estimate (5 Epics = 43 Stories)
 
-**Note**: Scope expanded to include ALL AI operations (9 LLM calls + Copilot CLI replacement)
+**Reference**: See JIRA_EPICS_AND_STORIES.md for all detailed story definitions with acceptance criteria
 
-| Phase | Duration | Start | End | Critical Path |
-|-------|----------|-------|-----|----------------|
-| Phase 1: HTTP Client Infrastructure | **6-8 hours** | Day 1 | Day 1 | **YES** |
-| Phase 2: Planning/Classification Operations | **6-8 hours** | Day 2 | Day 2-3 | **YES** |
-| Phase 3: Code Execution Operations | **8-10 hours** | Day 3-4 | Day 4-5 | **YES** |
-| Phase 4: Cleanup & Validation | **2-3 hours** | Day 5 | Day 5 | NO |
-| Phase 5: Testing & Documentation | **10-12 hours** | Day 5-6 | Day 7-8 | **YES** |
-| **Total** | **40-50 hours** | **Day 1** | **Day 8** | All phases sequential |
+| Epic | Phase | Duration | Start | End | Critical Path | Stories |
+|------|-------|----------|-------|-----|----------------|---------|
+| Epic 1 | Phase 1: HTTP Client Infrastructure | **6-8 hours** | Day 1 | Day 1 | **YES** | 10 stories |
+| Epic 2 | Phase 2: Planning/Classification Operations | **6-8 hours** | Day 2 | Day 2-3 | **YES** | 9 stories |
+| Epic 3 | Phase 3: Code Execution Operations | **8-10 hours** | Day 2-3 | Day 4-5 | **YES** | 8 stories |
+| Epic 4 | Phase 4: Cleanup & Deprecated Code | **2-3 hours** | Day 5 | Day 5 | NO | 5 stories |
+| Epic 5 | Phase 5: Testing & Documentation | **10-12 hours** | Day 5-6 | Day 7-8 | **YES** | 11 stories |
+| **Total** | | **40-50 hours** | **Day 1** | **Day 8** | **All sequential** | **43 stories** |
 
 **Key Dependencies**:
-1. Phase 1 MUST complete before Phases 2-3 (provides HTTP client infrastructure)
-2. Phase 2 and 3 can overlap if needed (both depend on Phase 1)
-3. Phase 5 MUST complete last (validates everything)
+1. **Epic 1 MUST complete first** (provides HTTP client infrastructure for all other epics)
+2. **Epic 2 and Epic 3 can run in parallel** (both depend on Epic 1, saves 6-8 hours)
+3. **Epic 4 depends on Epics 2 & 3** (cleanup only after new systems are stable)
+4. **Epic 5 must run last** (validates all changes)
 
 **Recommended Approach**: 
 - 1-2 weeks of focused development
-- Phase 1 is critical path - get this right first (includes model routing)
-- Phase 2 and 3 can proceed in parallel to save time
-- Phase 5 is thorough - don't skip testing (validates all 9 operations)
-
-**Parallelization Opportunity**:
-- Phase 2 (6-8 hours) and Phase 3 (8-10 hours) can run concurrently
-- Different developers can work on planning operations vs. code execution operations
-- Saves ~6-8 hours if parallelized
-- **Minimum timeline with parallelization**: 28-32 hours
+- Epic 1 is critical path - get this right first
+- Epic 2 and 3 can proceed in parallel after Epic 1 completes
+- Epic 5 is thorough - don't skip testing
+- **With parallelization: 28-32 hours minimum**
 
 ---
 
