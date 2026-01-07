@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "adws"
+version = "0.1.0"
+description = "AI Developer Workflow System - Autonomous planning, building, testing, and reviewing"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    {name = "ADWS Contributors"}
+]
+license = {text = "MIT"}
+
+dependencies = [
+    "pydantic>=2.0",
+    "python-dotenv",
+    "requests",
+    "jira>=3.0,<4.0",
+    "rich>=13.0",
+    "boto3",
+    "pyyaml",
+    "click>=8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov",
+    "black",
+    "mypy",
+]
+
+[project.scripts]
+adw = "scripts.adw_cli:main"
+
+[tool.setuptools]
+packages = ["scripts", "scripts.adw_modules", "agent", "prompts"]
+
+[tool.setuptools.package-data]
+scripts = ["**/*.yaml", "**/*.md"]
+prompts = ["**/*.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "scripts/adw_tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false

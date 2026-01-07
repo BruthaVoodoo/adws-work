@@ -1,0 +1,142 @@
+Metadata-Version: 2.4
+Name: adws
+Version: 0.1.0
+Summary: AI Developer Workflow System - Autonomous planning, building, testing, and reviewing
+Author: ADWS Contributors
+License: MIT
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: pydantic>=2.0
+Requires-Dist: python-dotenv
+Requires-Dist: requests
+Requires-Dist: jira<4.0,>=3.0
+Requires-Dist: rich>=13.0
+Requires-Dist: boto3
+Requires-Dist: pyyaml
+Requires-Dist: click>=8.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0; extra == "dev"
+Requires-Dist: pytest-cov; extra == "dev"
+Requires-Dist: black; extra == "dev"
+Requires-Dist: mypy; extra == "dev"
+
+# ADWS (AI Developer Workflow System) - Portable
+
+This is a portable AI-powered development workflow system designed to be dropped into any project to provide autonomous planning, building, testing, and reviewing capabilities.
+
+## Quick Start
+
+### Installation
+
+```bash
+# Clone or copy ADWS into your project, then install it:
+pip install -e /path/to/ADWS
+# or if you're in the ADWS directory:
+pip install -e .
+```
+
+This installs the `adw` command globally, making it available anywhere:
+
+```bash
+adw plan PROJ-123
+adw build a1b2c3d4 PROJ-123
+adw test a1b2c3d4 PROJ-123
+adw review a1b2c3d4 PROJ-123
+```
+
+### Configuration
+
+ADWS looks for a configuration file `.adw.yaml` or `.adw_config.yaml` in your project root. If not found, it defaults to standard paths relative to the current working directory.
+
+### Example `.adw.yaml`
+
+```yaml
+# Root directory of the project (default: current directory)
+project_root: "."
+
+# Directory where source code lives (default: "src")
+source_dir: "src"
+
+# Directory where tests live (default: "tests")
+test_dir: "tests"
+
+# Command to run tests (default: "pytest")
+test_command: "uv run pytest"
+
+# Directory for ADW logs and plans (default: "ai_docs")
+docs_dir: "ai_docs"
+
+# Language of the project (default: "python")
+language: "python"
+```
+
+## Usage
+
+The ADWS system operates through 4 composable phases. Once installed, use the `adw` command:
+
+### Phase 1: Plan
+Fetch a Jira ticket and generate an implementation plan.
+```bash
+adw plan PROJ-123
+```
+
+Output: ADW ID (e.g., `a1b2c3d4`), implementation plan, feature branch, and PR
+
+### Phase 2: Build
+Implement the plan using the ADW ID from Phase 1.
+```bash
+adw build a1b2c3d4 PROJ-123
+```
+
+Output: Code implementation, commits, and updated PR
+
+### Phase 3: Test
+Run tests and attempt auto-resolution of failures.
+```bash
+adw test a1b2c3d4 PROJ-123
+```
+
+Output: Test results and auto-resolved failures (if any)
+
+### Phase 4: Review
+Review the implementation against the plan.
+```bash
+adw review a1b2c3d4 PROJ-123
+```
+
+Output: Review findings and acceptance criteria validation
+
+### Composable Workflow (All at once)
+Chain all phases together:
+```bash
+adw plan PROJ-123 && \
+adw build <adw-id> PROJ-123 && \
+adw test <adw-id> PROJ-123 && \
+adw review <adw-id> PROJ-123
+```
+
+Or using piped JSON state (if available):
+```bash
+adw plan PROJ-123 | adw build - PROJ-123 | adw test - PROJ-123 | adw review - PROJ-123
+```
+
+### Help
+
+```bash
+adw --help          # General help
+adw plan --help     # Help for specific command
+adw --version       # Show version
+```
+
+## Environment Variables
+
+Ensure the following environment variables are set (in `.env` or system):
+- `JIRA_SERVER`
+- `JIRA_USERNAME`
+- `JIRA_API_TOKEN`
+- `AWS_ENDPOINT_URL` (for AI proxy)
+- `AWS_MODEL_KEY` (for AI proxy)
+- `AWS_MODEL` (optional, default: sonnet/opus)
+
+Last updated: December 16, 2025
+<!-- ADW Verification Test: 2025-12-17T10:38:46.588763-05:00 -->
