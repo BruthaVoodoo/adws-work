@@ -1,0 +1,48 @@
+# BMM Workflow Status - ADWS Project
+# Generated: 2026-01-07
+# Track: BMad Method | Type: Brownfield | Level: Intermediate
+
+generated: "2026-01-07T12:00:00Z"
+project: "ADWS"
+project_type: "software"
+project_level: "intermediate"
+selected_track: "bmad-method"
+field_type: "brownfield"
+workflow_path: "method-brownfield"
+
+# Phase 0: Documentation (Prerequisite for brownfield)
+# This helps understand the existing codebase before planning
+workflow_status:
+  # Phase 0: Documentation
+  document-project: required
+  
+  # Phase 1: Analysis (Optional - User selected: Research)
+  brainstorm-project: skipped
+  research: required
+  product-brief: skipped
+  
+  # Phase 2: Planning (Required)
+  prd: required
+  create-ux-design: conditional
+  
+  # Phase 3: Solutioning (Required)
+  create-architecture: required
+  create-epics-and-stories: required
+  test-design: optional
+  implementation-readiness: required
+  
+  # Phase 4: Implementation
+  sprint-planning: required
+
+notes: |
+  BMad Method - Brownfield Track
+  
+  This project has existing code and is using the full BMad Method with:
+  - Documentation phase (analyze current codebase)
+  - Research workflow (understand system)
+  - Full planning cycle (PRD, Architecture, Epics/Stories)
+  - Implementation readiness gate
+  - Sprint planning for execution
+  
+  Next Workflow: document-project (Analyst phase)
+  This prerequisite analyzes your existing codebase and documents it.
