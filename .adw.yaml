@@ -100,18 +100,20 @@ opencode:
 #
 # PHASE 0 STATUS (January 9, 2026):
 # - Deluxe LLM fallback permanently removed (token expired Dec 30, 2025)
-# - All operations route DIRECTLY to OpenCode HTTP API (no fallback chain)
+# - Epic 1 (OpenCode HTTP Client): ✅ COMPLETE
+# - Epic 2 (Planning/Classification): ✅ COMPLETE - Uses OpenCode HTTP API
+# - Epic 3 (Code Execution): ⏳ IN PROGRESS - Still uses Copilot CLI (migration pending)
 # - GitHub Copilot models verified and accessible:
-#   * Claude Sonnet 4 (heavy lifting: code implementation, test fixing, reviews)
-#   * Claude Haiku 4.5 (lightweight: planning, classification, document generation)
-# - No feature flags needed - OpenCode is the ONLY execution path
-# - All 95 existing tests passing with new direct-path architecture
-# - Configuration clean and simplified - no hybrid state, no fallback logic
+#   * Claude Sonnet 4 (via github-copilot/ prefix: code, testing, reviews)
+#   * Claude Haiku 4.5 (via github-copilot/ prefix: planning, classification)
+# - Planning & Classification: Direct OpenCode HTTP API (no fallback chain)
+# - Code Execution: Still uses Copilot CLI (requires copilot command in PATH)
+# - All 95 existing tests passing with current architecture
 #
 # PREREQUISITES TO RUN ADWS:
 # 1. OpenCode Server running: opencode serve --port 4096
 # 2. OpenCode Authentication: opencode auth login
-# 3. Copilot CLI installed: copilot --version (for implement_plan, test_fix, review)
+# 3. Copilot CLI installed: copilot --version (required until Epic 3 migration complete)
 # 4. Jira credentials in .env or environment:
 #    - JIRA_SERVER
 #    - JIRA_USERNAME
@@ -120,10 +122,15 @@ opencode:
 # QUICK START:
 # 1. Start OpenCode: opencode serve --port 4096
 # 2. Authenticate: opencode auth login
-# 3. Run ADWS: uv run scripts/adw_cli.py [options]
-# 4. Check logs: ai_docs/logs/[adw_id]/[agent]/
+# 3. Install Copilot CLI: brew install copilot OR npm install -g @github/copilot-cli
+# 4. Run ADWS: uv run scripts/adw_cli.py [options]
+# 5. Check logs: ai_docs/logs/[adw_id]/[agent]/
 #
-# EMERGENCY ROLLBACK:
-# If needed, disable OpenCode and use fallback (if implemented):
-#   Set disable_opencode: true (currently has no fallback - define strategy)
+# EPIC 3 MIGRATION STATUS:
+# When Epic 3 (Code Execution Operations Migration) is complete, these operations
+# will migrate from Copilot CLI to OpenCode HTTP API:
+#   - implement_plan() → will use OpenCode HTTP API with Claude Sonnet 4
+#   - resolve_failed_tests() → will use OpenCode HTTP API with Claude Sonnet 4
+#   - run_review() → will use OpenCode HTTP API with Claude Sonnet 4
+# After Epic 3, Copilot CLI will no longer be required.
 # ============================================================================
