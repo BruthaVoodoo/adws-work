@@ -1,1 +1,0 @@
-Classify this GitHub issue: "Add dark mode toggle to settings". What type of work is it?
