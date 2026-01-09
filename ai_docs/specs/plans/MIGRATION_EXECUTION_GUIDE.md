@@ -12,85 +12,90 @@
 
 This document provides the working execution guide for migrating ADWS from AWS Bedrock + Custom Proxy + Copilot CLI to **OpenCode HTTP API with intelligent model routing**.
 
-**Key Feature**: Feature flags allow instant rollback if anything breaks - no code changes needed, just config toggle.
+**Key Feature**: Clean, direct OpenCode HTTP API path. Phase 0 (complete) removed the Deluxe fallback chain, which was permanently broken. All operations now route directly to OpenCode with GitHub Copilot models—no hybrid state, no feature flags, no fallback logic.
+
+**Architectural Decision** (Phase 0): 
+- ❌ **REMOVED**: Deluxe fallback (token expired Dec 30, 2025)
+- ✅ **COMMITTED**: Direct path to OpenCode HTTP API only
+- ✅ **VERIFIED**: GitHub Copilot models working (Sonnet 4 + Haiku 4.5)
+- ✅ **SIMPLIFIED**: All 95 tests passing, no fallback chain overhead
 
 **Structure**: 5 Epics → 43 Stories in strict dependency order:
 1. ✅ **Epic 1**: HTTP Client Infrastructure (foundation)
-2. ✅ **Epic 2**: Planning/Classification Operations (6 functions → GPT-4o mini)
-3. ✅ **Epic 3**: Code Execution Operations (3 functions → Claude Sonnet 4.5)
+2. ✅ **Epic 2**: Planning/Classification Operations (6 functions → Claude Haiku 4.5)
+3. ✅ **Epic 3**: Code Execution Operations (3 functions → Claude Sonnet 4)
 4. ✅ **Epic 4**: Cleanup & Deprecated Code
 5. ✅ **Epic 5**: Comprehensive Testing & Documentation
 
 ---
 
-## Part 1: Safety First - Feature Flags
+## Part 1: Architecture - Direct OpenCode HTTP Path
 
-### Why Feature Flags Matter
+### Phase 0 Decision: Why We Removed the Fallback Chain
 
-**Problem**: During migration, we could reach a state where the system breaks and we can't use ADWS to fix ADWS.
+**Historical Context**: Earlier planning included a fallback mechanism:
+```
+Try Deluxe → Fall back to OpenCode → Error
+```
 
-**Solution**: Two-level feature flag system allows instant rollback.
+**Why This Was Wrong**:
+1. **Deluxe is permanently dead**: Token expired Dec 30, 2025 (no recovery)
+2. **Wastes 30+ seconds per operation**: Trying a dead endpoint adds timeout delays
+3. **Misrepresents reality**: OpenCode is the only working path, not a fallback
+4. **Feature flags don't apply**: You can't feature-flag away a dead system
 
-### Feature Flag Configuration
+**The Fix** (Phase 0 - January 9, 2026):
+- Deleted `invoke_deluxe_model()` function from agent.py
+- Simplified `invoke_model()` to call OpenCode directly
+- Removed 30+ lines of fallback chain logic
+- Removed timeout delays from trying failed endpoint
+- All 95 tests still passing ✅
+
+### Current Architecture: Clean and Simple
+
+**All LLM operations now use this direct path**:
+```
+Operation → OpenCode HTTP API → GitHub Copilot Models → Response
+```
+
+**No feature flags. No fallback chains. No dead endpoints.**
+
+### Configuration: Single, Clean Section
 
 **File**: `.adw.yaml`
 
 ```yaml
-# Migration safety flags - allows instant rollback to old system
-migration:
-  # Enable OpenCode HTTP for lightweight tasks (planning, classification)
-  # All 6 operations: extract_adw_info, classify_issue, build_plan, 
-  # generate_branch_name, create_commit, create_pull_request
-  use_opencode_for_lightweight: false
-  
-  # Enable OpenCode HTTP for heavy lifting (code execution, testing, review)
-  # All 3 operations: implement_plan, resolve_failed_tests, run_review
-  use_opencode_for_heavy_lifting: false
-  
-  # Emergency kill switch - disables ALL OpenCode features
-  # Set to true if system breaks - immediately reverts to old backends
-  disable_opencode: false
-
-# OpenCode HTTP Server configuration (only used if enabled above)
+# OpenCode HTTP Server - Single path for all AI operations
 opencode:
   server_url: "http://localhost:4096"
   models:
-    heavy_lifting: "anthropic/claude-3-5-sonnet-20241022"
-    lightweight: "openai/gpt-4o-mini"
+    # Heavy lifting: Code implementation, test fixing, reviews
+    heavy_lifting: "github-copilot/claude-sonnet-4"
+    
+    # Lightweight: Planning, classification, document generation
+    lightweight: "github-copilot/claude-haiku-4.5"
+  
   timeout: 600
   lightweight_timeout: 60
   max_retries: 3
 ```
 
-### How to Use Feature Flags During Development
+**That's it.** No migration flags, no disable switches, no hybrid configuration.
 
-**Phase 1** (Epic 1 - Build Infrastructure):
-- Flags remain `false` - no changes to existing code
-- Build new HTTP client in isolation
-- Create all unit tests
-- NO BREAKING CHANGES
+### Why This Simplification Is Good
 
-**Phase 2** (Epic 2 - Planning Operations):
-- Set `use_opencode_for_lightweight: true`
-- Run test suite
-- If broken, flip back to `false` → system uses old code
-- Once stable, keep `true`
+**Benefits of Direct Path**:
+- ✅ **Faster**: No 30+ second timeout delays
+- ✅ **Simpler**: Fewer edge cases, cleaner code logic
+- ✅ **Honest**: Code reflects actual architecture
+- ✅ **Easier to debug**: Direct path vs. complex fallback chains
+- ✅ **Clearer for developers**: "Use OpenCode" not "try Deluxe then OpenCode"
 
-**Phase 3** (Epic 3 - Code Execution):
-- Set `use_opencode_for_heavy_lifting: true`
-- Run full test suite
-- If broken, flip back to `false` → system uses Copilot
-- Once stable, keep `true`
-
-**Emergency Procedure**:
-```bash
-# If system completely breaks:
-# 1. Edit .adw.yaml
-# 2. Change: disable_opencode: true
-# 3. Restart system
-# 4. System reverts to old backends (custom proxy + Copilot)
-# 5. Investigate and fix issue
-```
+**Safety Through Testing** (not feature flags):
+- Epic 1: 50+ unit tests for HTTP client
+- Epic 2 & 3: Integration tests for all operations
+- Epic 5: 60+ total tests validating everything
+- Comprehensive test suite prevents regressions
 
 ---
 
@@ -169,20 +174,26 @@ Refactor all lightweight planning/classification operations to use OpenCode HTTP
 - [ ] Response logging enabled
 - [ ] Integration tests pass
 
-**Feature Flag Usage**:
+**Feature Flag Usage**: None - all operations use OpenCode directly
+
 ```python
 def extract_adw_info(text: str) -> dict:
-    if config.migration.use_opencode_for_lightweight:
-        # NEW: OpenCode HTTP with GPT-4o mini
-        response = execute_opencode_prompt(
-            prompt=text,
-            task_type="extract_adw"
-        )
-        return parse_adw_response(response)
-    else:
-        # OLD: Custom proxy (still works)
-        return invoke_model(text, agent_prompt_template)
+    """Extract ADW workflow type and ID from natural language text.
+    
+    Direct OpenCode HTTP path (no fallback chain needed).
+    """
+    response = execute_opencode_prompt(
+        prompt=text,
+        task_type="extract_adw",
+        model="github-copilot/claude-haiku-4.5"  # Lightweight model
+    )
+    return parse_adw_response(response)
 ```
+
+**Why no feature flag?**
+- Phase 0 removed Deluxe, so there's nothing to fall back to
+- All operations MUST use OpenCode directly
+- Cleaner, simpler code with no if/else branching
 
 ---
 
@@ -219,20 +230,36 @@ Replace Copilot CLI with OpenCode HTTP API for all heavy code lifting operations
 - [ ] Response logging enabled
 - [ ] Integration tests pass with real code execution scenarios
 
-**Feature Flag Usage**:
+**Feature Flag Usage**: None - all operations use OpenCode directly
+
 ```python
-def implement_plan(plan_file: str, ...) -> AgentPromptResponse:
-    if config.migration.use_opencode_for_heavy_lifting:
-        # NEW: OpenCode HTTP with Claude Sonnet 4.5
-        response = execute_opencode_prompt(
-            prompt=load_plan(plan_file),
-            task_type="implement"
-        )
-        return convert_to_agent_response(response)
-    else:
-        # OLD: Copilot CLI (still works)
-        return subprocess.run(["copilot", "-p", prompt])
+def implement_plan(plan_file: str, target_dir: str = ".") -> AgentPromptResponse:
+    """Implement the plan from file using OpenCode HTTP API.
+    
+    Direct OpenCode HTTP path with Claude Sonnet 4 (no Copilot CLI fallback).
+    """
+    # Load plan from file
+    with open(plan_file, "r") as f:
+        plan_content = f.read()
+    
+    # Execute with OpenCode (direct path)
+    response = execute_opencode_prompt(
+        prompt=plan_content,
+        task_type="implement",
+        model="github-copilot/claude-sonnet-4"  # Heavy lifting model
+    )
+    
+    # Convert to AgentPromptResponse with metrics
+    return convert_to_agent_response(
+        response,
+        fallback_git_count=get_file_changes(cwd=target_dir).total_files_changed
+    )
 ```
+
+**Why no feature flag?**
+- Phase 0 removed Deluxe, Copilot CLI fallback no longer applies
+- All code execution operations MUST use OpenCode directly
+- Git verification still works as fallback for metrics (not execution path)
 
 ---
 
@@ -400,8 +427,9 @@ Comprehensive testing across all 9 migrated LLM operations and complete document
 - [ ] OpenCode installed and working: `opencode serve --port 4096`
 - [ ] API keys configured: `opencode auth login`
 - [ ] All existing tests passing: `uv run pytest`
-- [ ] `.adw.yaml` has migration section with feature flags
-- [ ] Old code still works (no breaking changes yet)
+- [ ] `.adw.yaml` has opencode section with server URL and model configuration
+- [ ] GitHub Copilot subscription verified and accessible
+- [ ] Phase 0 architectural decision understood (Deluxe removed, direct OpenCode path)
 
 ### After Each Epic
 
@@ -412,25 +440,31 @@ Comprehensive testing across all 9 migrated LLM operations and complete document
 - [ ] No changes to existing code
 
 **Epic 2 Completion**:
-- [ ] All 6 planning operations working with feature flag OFF
-- [ ] All 6 planning operations working with feature flag ON
-- [ ] All integration tests passing
+- [ ] All 6 planning operations working with OpenCode HTTP directly
+- [ ] Correct lightweight model (Claude Haiku 4.5) selected for all operations
+- [ ] No functional regressions in output
+- [ ] Integration tests passing
 - [ ] Original tests still passing
-- [ ] Feature flag `use_opencode_for_lightweight: true`
+- [ ] Response logging enabled for all operations
+- [ ] Error handling provides clear diagnostics
 
 **Epic 3 Completion**:
-- [ ] All 3 code execution operations working with feature flag OFF
-- [ ] All 3 code execution operations working with feature flag ON
-- [ ] All integration tests passing
+- [ ] All 3 code execution operations working with OpenCode HTTP directly
+- [ ] Correct heavy lifting model (Claude Sonnet 4) selected for all operations
+- [ ] Structured Part parsing replaces Copilot text parsing
+- [ ] Git fallback validation still works for metrics
+- [ ] Integration tests passing with real code execution scenarios
 - [ ] Original tests still passing
-- [ ] Feature flag `use_opencode_for_heavy_lifting: true`
+- [ ] Response logging enabled
+- [ ] Error messages are helpful and actionable
 
 **Epic 4 Completion**:
-- [ ] Both feature flags stable and on
-- [ ] Deprecated code marked
-- [ ] Old environment variables removed
-- [ ] Health checks updated
+- [ ] OpenCode HTTP client stable and working
+- [ ] All deprecated code marked (bedrock_agent.py, copilot_output_parser.py)
+- [ ] Old environment variables removed (AWS_ENDPOINT_URL, AWS_MODEL_KEY, etc.)
+- [ ] Health checks updated to verify OpenCode server availability
 - [ ] All tests still passing
+- [ ] No regressions in existing functionality
 
 **Epic 5 Completion**:
 - [ ] 60+ unit + integration tests passing
@@ -440,16 +474,23 @@ Comprehensive testing across all 9 migrated LLM operations and complete document
 
 ### Emergency Procedures
 
-**If anything breaks**:
-1. Set `disable_opencode: true` in `.adw.yaml`
-2. Restart the application
-3. System reverts to old backends (no code changes needed)
-4. Investigate and fix the issue
+**If OpenCode integration is broken**:
+1. Verify OpenCode server is running: `opencode serve --port 4096`
+2. Check health endpoint: `curl http://localhost:4096/global/health`
+3. Verify authentication: `opencode auth login` (if needed)
+4. Check .adw.yaml for correct server URL and model IDs
+5. Review error logs and diagnostics
+6. Note: There's no rollback mechanism (no feature flags) because all operations MUST use OpenCode
 
 **If OpenCode server crashes**:
 1. Restart: `opencode serve --port 4096`
 2. Verify: `curl http://localhost:4096/global/health`
 3. Re-authenticate if needed: `opencode auth login`
+
+**If model is not available**:
+1. Verify organization has GitHub Copilot subscription
+2. Confirm with: `opencode config list`
+3. Ensure authenticated with correct account: `opencode auth login`
 
 ---
 
@@ -474,17 +515,17 @@ Comprehensive testing across all 9 migrated LLM operations and complete document
 
 **Core Application Logic**:
 - `scripts/adw_modules/data_types.py` (add OpenCode types)
-- `scripts/adw_modules/config.py` (add OpenCode config + feature flags)
-- `scripts/adw_modules/agent.py` (add feature flag to execute_template)
-- `scripts/adw_modules/workflow_ops.py` (6 functions, add feature flags)
-- `scripts/adw_test.py` (3 functions, add feature flags)
-- `scripts/adw_review.py` (1 function, add feature flag)
+- `scripts/adw_modules/config.py` (add OpenCode configuration loading)
+- `scripts/adw_modules/agent.py` (refactor execute_template for OpenCode)
+- `scripts/adw_modules/workflow_ops.py` (refactor 6 planning/classification functions)
+- `scripts/adw_test.py` (refactor 3 code execution functions)
+- `scripts/adw_review.py` (refactor run_review function)
 
 **System Files**:
 - `scripts/adw_modules/bedrock_agent.py` (mark deprecated)
 - `scripts/adw_modules/copilot_output_parser.py` (mark deprecated)
-- `scripts/adw_modules/health_check.py` (update for OpenCode)
-- `.adw.yaml` (add migration section + opencode config)
+- `scripts/adw_modules/health_check.py` (update to verify OpenCode server)
+- `.adw.yaml` (add opencode configuration section)
 
 **Documentation**:
 - `AGENTS.md` (add OpenCode HTTP server section)
@@ -496,12 +537,15 @@ Comprehensive testing across all 9 migrated LLM operations and complete document
 
 **Supporting Documents**:
 - `ai_docs/specs/plans/MIGRATE_TO_OPENCODE_HTTP_API.md` - Detailed technical plan
+- `ai_docs/specs/PHASE_0_ARCHITECTURE_DECISION.md` - Phase 0 decision: Remove Deluxe fallback
 - `ai_docs/specs/JIRA_EPICS_AND_STORIES.md` - All 43 Jira stories with acceptance criteria
-- `.adw.yaml` - Configuration file with feature flags
+- `.adw.yaml` - Configuration file with OpenCode settings
 
 **Key Implementation Guides**:
 - OpenCode HTTP API documentation: https://opencode.ai/docs/
-- Model IDs: Claude Sonnet 4.5 (`anthropic/claude-3-5-sonnet-20241022`), GPT-4o mini (`openai/gpt-4o-mini`)
+- Model IDs: 
+  - Claude Sonnet 4 (heavy): `github-copilot/claude-sonnet-4`
+  - Claude Haiku 4.5 (lightweight): `github-copilot/claude-haiku-4.5`
 - Structured response format: Message + Parts (text, tool_use, tool_result, code_block)
 
 ---
@@ -510,14 +554,21 @@ Comprehensive testing across all 9 migrated LLM operations and complete document
 
 **Total Scope**: 43 Jira Stories across 5 Epics  
 **Estimated Duration**: 40-50 hours (28-32 with parallelization)  
-**Safety Mechanism**: Feature flags allow instant rollback  
+**Architecture**: Direct OpenCode HTTP API path (Phase 0 removed Deluxe fallback)  
 **Critical Path**: Epic 1 → (Epic 2 | Epic 3) → Epic 4 → Epic 5  
-**Risk Level**: LOW (with feature flags, old code always available)
+**Risk Level**: LOW (comprehensive testing validates all operations)
+**Safety**: Through testing and validation, not feature flags
 
-**Success = All 9 LLM operations using OpenCode HTTP, 60+ tests passing, zero regressions**
+**Architectural Foundation** (Phase 0 - Complete):
+- ✅ Deluxe fallback removed (token expired Dec 30, 2025)
+- ✅ Direct path to OpenCode HTTP API only (no hybrid state)
+- ✅ All 95 existing tests passing
+- ✅ Code refactored and simplified (no fallback chain logic)
+
+**Success = All 9 LLM operations using OpenCode HTTP directly, 60+ tests passing, zero regressions**
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** January 7, 2026  
-**Status:** Ready for Development
+**Document Version:** 2.0 (Updated for Phase 0 completion)  
+**Last Updated:** January 9, 2026  
+**Status:** Ready for Phase 1 Development
