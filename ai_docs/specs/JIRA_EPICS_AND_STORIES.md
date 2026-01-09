@@ -266,27 +266,55 @@ As a developer, I want an HTTP client class that manages OpenCode sessions, so t
 
 ---
 
-#### Story 1.2: Implement OpenCode HTTP API communication layer
+#### Story 1.2: Implement OpenCode HTTP API communication layer ✅ COMPLETE
 **Summary:** Implement OpenCode HTTP API communication layer  
 **Type:** Story  
 **Estimation:** 4 hours  
 **Dependencies:** Story 1.1
+**Status:** ✅ COMPLETE - Implementation finished, 26 unit tests passing, all AC met
 
 **Description**
 As a developer, I want to send prompts to OpenCode server and receive structured responses, so that I can execute AI operations.
 
 **Acceptance Criteria**
-- Given a valid prompt and model ID
+- ✅ Given a valid prompt and model ID
   When I call send_prompt()
   Then a structured OpenCodeResponse is returned with Message + Parts
   
-- Given network timeout occurs
+- ✅ Given network timeout occurs
   When I call send_prompt()
   Then exponential backoff retry logic activates and retries up to 3 times
   
-- Given server returns HTTP error
+- ✅ Given server returns HTTP error
   When I call send_prompt()
   Then error is caught, logged, and re-raised with context
+
+**Implementation Details**
+- Methods added to: `scripts/adw_modules/opencode_http_client.py`
+  - `send_prompt(prompt, model_id, timeout)` - Public API for sending prompts
+  - `_send_prompt_with_retry(prompt, model_id, timeout, attempt, initial_delay)` - Internal retry logic
+- Test file updated: `tests/test_opencode_http_client.py`
+- 26 comprehensive unit tests added covering:
+  - Valid prompt/model validation and response parsing
+  - Prompt and model_id parameter validation
+  - Timeout selection based on model type (Haiku vs Sonnet)
+  - Custom timeout override
+  - Session ID and API key header injection
+  - Authentication error handling (401, 403)
+  - HTTP client errors (4xx) without retry
+  - Exponential backoff retry on timeout (1s, 2s, 4s delays)
+  - Exponential backoff retry on connection errors
+  - Exponential backoff retry on server errors (5xx)
+  - Max retries exhaustion (raises TimeoutError or ConnectionError)
+  - Request body structure (prompt, model_id, session_id)
+  - Correct endpoint routing (/api/v1/prompt)
+  - Content-Type and Authorization headers
+  - No retry on authentication/client errors
+  - JSON decode error handling
+  - Session creation on demand
+- All tests passing (26/26 new tests for Story 1.2)
+- Full test suite: 135 tests passing with 0 regressions
+- Ready for Story 1.3 (depends on this story)
 
 ---
 
