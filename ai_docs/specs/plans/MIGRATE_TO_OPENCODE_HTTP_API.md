@@ -1,6 +1,6 @@
 # ADWS Migration Plan: Complete AI System Migration to OpenCode
 
-**Status**: In Progress - Phase 0: Configuration (OpenCode fallback + GitHub Copilot models)  
+**Status**: Phase 0 Complete ✅ - Phase 1 Ready to Start (OpenCode HTTP infrastructure)  
 **Created**: January 6, 2026  
 **Revised**: January 9, 2026  
 **Scope**: Replace ALL custom LLM integrations (Bedrock + custom proxy) with OpenCode HTTP API + smart model routing  
@@ -10,98 +10,118 @@
 
 ---
 
-## Phase 0: Configuration (COMPLETED ✅)
+## Phase 0: Configuration & Architectural Decision (COMPLETED ✅)
 
 **Duration**: January 6-9, 2026  
-**Status**: ✅ COMPLETE
+**Status**: ✅ COMPLETE - Deluxe Fallback Removed
 
-This phase established the fallback chain and GitHub Copilot model configuration needed for all subsequent phases.
+This phase identified that the Deluxe LLM fallback was permanently broken and committed ADWS fully to the OpenCode HTTP API with GitHub Copilot models as the primary (and only) path forward.
 
 ### Completed Tasks
 
-1. **Identified Blocker** (January 6)
+1. **Identified Critical Blocker** (January 6)
    - ✅ AWS Deluxe LLM token expired (2025-12-30)
    - ✅ Endpoint: `https://dlxai-dev.deluxe.com/proxy/v1/chat/completions`
    - ✅ Issue: 403 Forbidden errors preventing ADWS execution
+   - ✅ Root cause analysis: Token expired, no recovery path, Deluxe is end-of-life
 
-2. **Strategic Decision** (January 7)
-   - ✅ Decision: Use GitHub Copilot models via OpenCode HTTP API
-   - ✅ Organization has GitHub Copilot subscription
-   - ✅ Models available: Claude Sonnet 4.5 (heavy) + Claude Haiku 4.5 (lightweight)
-   - ✅ Remove Deluxe LLM dependency after migration
+2. **Strategic Architectural Decision** (January 7-9)
+   - ✅ **Decision**: Remove Deluxe fallback chain entirely
+   - ✅ **Rationale**: Deluxe is dead; fallback to a broken system wastes 30+ seconds per operation
+   - ✅ **New Architecture**: Direct commitment to OpenCode HTTP API as the ONLY path
+   - ✅ Organization has GitHub Copilot subscription providing access to Claude models
+   - ✅ Models available: Claude Sonnet 4 (heavy) + Claude Haiku 4.5 (lightweight)
 
-3. **Implemented OpenCode Fallback in agent.py** (January 7-8)
-   - ✅ Added `invoke_deluxe_model()` function for legacy endpoint (backward compatibility)
-   - ✅ Added `invoke_opencode_model()` function for OpenCode HTTP API
-   - ✅ Updated `invoke_model()` with intelligent fallback chain: Deluxe → OpenCode → error
-   - ✅ Fallback chain tested and working
+3. **Removed Dead Code from agent.py** (January 9)
+   - ✅ Deleted `invoke_deluxe_model()` function entirely (was dead code)
+   - ✅ Simplified `invoke_model()` to call `invoke_opencode_model()` directly
+   - ✅ Removed 30+ line fallback chain logic
+   - ✅ Removed timeout delays from trying failed endpoint
+   - ✅ Committed: `refactor: Remove dead Deluxe fallback, use OpenCode directly` (commit 23082df)
 
-4. **Verified Model Availability** (January 8)
+4. **Verified GitHub Copilot Models via OpenCode** (January 8-9)
    - ✅ `github-copilot/claude-haiku-4.5` - WORKING (lightweight tasks)
    - ✅ `github-copilot/claude-sonnet-4` - WORKING (heavy tasks)
    - ✅ Both models tested: classification and code generation tasks pass
+   - ✅ Organization's GitHub Copilot subscription provides full access
 
-5. **Moved Model Configuration to Environment Variables** (January 9)
-   - ✅ Created `OPENCODE_MODEL_HEAVY` and `OPENCODE_MODEL_LIGHT` constants that read from `os.getenv()`
-   - ✅ Added fallback defaults for backward compatibility
-   - ✅ Added OpenCode configuration to `.env`:
+5. **Configured OpenCode as Primary (Only) Backend** (January 9)
+   - ✅ Added `OPENCODE_MODEL_HEAVY` and `OPENCODE_MODEL_LIGHT` constants
+   - ✅ Configuration via environment variables:
      ```
      OPENCODE_URL=http://localhost:4096
      OPENCODE_MODEL_HEAVY=github-copilot/claude-sonnet-4
      OPENCODE_MODEL_LIGHT=github-copilot/claude-haiku-4.5
      ```
    - ✅ All 95 existing tests pass with new configuration
-   - ✅ Committed changes: `refactor: Move OpenCode model config to environment variables`
+   - ✅ Backward-compatible: .env still accepts old AWS variables (now ignored)
 
-### Current State
+### Current State: The Reality
 
-✅ **ADWS can now execute LLM operations without Deluxe endpoint**  
-✅ **Fallback mechanism working** (Deluxe → OpenCode → error)  
-✅ **GitHub Copilot models confirmed accessible**  
-✅ **Both lightweight and heavy tasks can run**  
-✅ **Configuration is flexible** (environment variables, not hardcoded)  
-✅ **All tests passing** (95/95)  
+✅ **ADWS uses OpenCode HTTP API as the ONLY path forward**  
+✅ **No fallback chain - direct execution with GitHub Copilot models**  
+✅ **Deluxe is completely removed** (no timeout delays, no broken endpoints)  
+✅ **GitHub Copilot models confirmed accessible and reliable**  
+✅ **Both lightweight (Haiku 4.5) and heavy (Sonnet 4) tasks fully supported**  
+✅ **Configuration is clean and environment-based**  
+✅ **All tests passing** (95/95) - no regressions  
 
-### What Happens When Story Executes Now
+### Architectural Clarity
 
-1. ADWS calls `execute_template()` with a prompt
-2. Agent checks if `OPENCODE_MODEL_HEAVY` or `OPENCODE_MODEL_LIGHT` should be used based on task type
-3. Calls `invoke_model()` which:
-   - **First tries**: Deluxe endpoint (if configured and has valid token)
-   - **Falls back to**: OpenCode HTTP API with GitHub Copilot models (primary path now)
-   - **Returns**: AgentPromptResponse with successful output
-4. ADWS continues execution normally ✅
+**Previous Architecture** (January 6-8):
+```
+Try Deluxe → Fall back to OpenCode → Error
+```
+❌ This was dishonest: Deluxe was already dead; fallback to working system made no sense
+
+**Current Architecture** (January 9+):
+```
+OpenCode HTTP API (GitHub Copilot models) → Error with diagnostics
+```
+✅ This is honest and efficient: OpenCode is the only working path
+
+### Impact on Migration Plan
+
+This architectural decision simplifies the remaining migration phases:
+1. **No feature flags needed** - Deluxe doesn't exist to flag away
+2. **No hybrid state** - Full commitment to OpenCode from day one
+3. **Cleaner error handling** - No trying-then-failing logic
+4. **Faster execution** - Removes 30+ second timeout delays
 
 ### Next Phase
 
 **Ready to proceed with Phase 1**: HTTP Client Infrastructure
 
-The configuration layer is complete. All infrastructure decisions are made:
-- ✅ Model selection: GitHub Copilot (Sonnet 4 + Haiku 4.5)
-- ✅ Fallback strategy: Deluxe (legacy) → OpenCode (new)
-- ✅ Configuration management: Environment variables in `.env`
-- ✅ API endpoint: `http://localhost:4096` (configurable via `OPENCODE_URL`)
+All prerequisites are met:
+- ✅ Deluxe fallback removed (clean slate)
+- ✅ OpenCode is the primary (only) execution path
+- ✅ GitHub Copilot models verified and accessible
+- ✅ Configuration clean and testable
+- ✅ All tests passing
 
-Phase 1 can now proceed to build the full HTTP client infrastructure and output parsing.
+Phase 1 can now proceed with confidence that the underlying architecture is honest and functional.
 
 ---
 
+## Overview: ADWS Consolidation to OpenCode HTTP API
+
 This plan outlines the **complete migration of ALL AI operations** in the ADWS (AI Developer Workflow System) from:
-- **FROM**: AWS Bedrock (custom endpoint) + Custom HTTP Proxy
-- **TO**: OpenCode HTTP Server API with GitHub Copilot models + intelligent model routing
+- **FROM**: AWS Bedrock (custom endpoint) + Custom HTTP Proxy + Copilot CLI (mixed backends)
+- **TO**: Single unified OpenCode HTTP Server API with GitHub Copilot models
 
-The system currently uses:
-1. **Custom proxy agent** (`agent.py`) - For planning, classification, branch generation, commit messages, PR creation
-2. **Copilot CLI** - For code execution (implementation, test fixing, reviews)
+**Current State** (as of Phase 0):
+1. **OpenCode HTTP API** (`invoke_opencode_model()`) - Direct path via GitHub Copilot subscription
+2. All LLM operations route through OpenCode (previously: mix of Bedrock, proxy, Copilot CLI)
 
-**New Approach**: Consolidate everything into OpenCode with model-aware routing:
+**Consolidated Approach** (Phases 1-5):
 - ✅ **Claude Sonnet 4.5** (via GitHub Copilot) - Heavy code lifting (implementation, test fixing, reviews)
 - ✅ **Claude Haiku 4.5** (via GitHub Copilot) - Lightweight tasks (planning, classification, document creation)
 - ✅ Single unified HTTP API interface via OpenCode
 - ✅ Structured Message/Part responses (no regex parsing)
 - ✅ Better error handling and type safety
+- ✅ Clean architecture: No fallback chains, no dead endpoints
 - ⚠️ Requires running `opencode serve` in background
-- ✅ **Phase 0 (Configuration)**: Fallback chain implemented (Deluxe → OpenCode), GitHub Copilot models configured in `.env`
+- ✅ **Phase 0 (COMPLETE)**: Removed Deluxe fallback, confirmed OpenCode as primary (only) path
 
 ### Key Changes
 
@@ -280,48 +300,11 @@ Content-Type: application/json
 
 ---
 
-## 3. Migration Strategy with Feature Flags (Safety-First Approach)
+## 3. Migration Strategy: Clean OpenCode Path (No Fallback Chain)
 
-### 3.1 Critical Safety Mechanism: Feature Flags
+Since the Deluxe fallback has been removed (Phase 0 architectural decision), the migration strategy is simplified: all LLM operations move directly to OpenCode HTTP API with appropriate model routing.
 
-**Problem Statement**: During migration, we could reach a point where ADWS can't fix itself if OpenCode integration is incomplete or broken.
-
-**Solution**: Implement feature flags that allow instant rollback to old system.
-
-```yaml
-# .adw.yaml - Feature flags for safe migration
-migration:
-  # Enable OpenCode HTTP for different operation types
-  use_opencode_for_lightweight: false  # Planning/classification (Epic 2)
-  use_opencode_for_heavy_lifting: false  # Code execution (Epic 3)
-  
-  # Emergency override to disable OpenCode entirely
-  disable_opencode: false  # Set to true if system breaks
-```
-
-**How it works**:
-1. Each LLM operation checks its feature flag before executing
-2. If flag is `false`, use old system (custom proxy or Copilot)
-3. If flag is `true`, use OpenCode HTTP client
-4. If OpenCode breaks, flip `disable_opencode: true` → system reverts to old backends
-5. No code changes needed, just config change
-
-**Implementation pattern**:
-```python
-def implement_plan(...) -> AgentPromptResponse:
-    if config.migration.use_opencode_for_heavy_lifting:
-        # NEW PATH: OpenCode HTTP
-        return execute_opencode_prompt(...)
-    else:
-        # OLD PATH: Copilot CLI (still works)
-        return subprocess.run(["copilot", "-p", prompt])
-```
-
----
-
-### 3.2 High-Level Approach (5 Epics = 43 Stories)
-
-Based on JIRA_EPICS_AND_STORIES.md, organized as:
+### 3.1 High-Level Approach (5 Epics = 43 Stories)
 
 **Epic 1: HTTP Client Infrastructure (Phase 1 - 6-8 hours, CRITICAL PATH)**
 - Create OpenCodeHTTPClient class with session management
@@ -384,13 +367,11 @@ Based on JIRA_EPICS_AND_STORIES.md, organized as:
 
 ---
 
-### 3.3 Implementation Details
+### 3.2 Implementation Details
 
 ---
 
 ## 4. Implementation Details
-
-### 4.1 New Module: `opencode_http_client.py`
 
 **Location**: `scripts/adw_modules/opencode_http_client.py`
 
@@ -1504,30 +1485,44 @@ With GitHub Copilot subscription:
 
 ---
 
-## Appendix D: Environment Variable Changes
+## Appendix D: Environment Variable Changes (Deprecated AWS Variables)
 
-### Removed Environment Variables
+### Deprecated Environment Variables (No Longer Used)
 
-These should be **removed from `.env` and documentation**:
+These variables are **legacy** and **no longer used by ADWS** (kept for backward compatibility):
 
-- `AWS_ENDPOINT_URL` - Custom proxy endpoint (not needed with OpenCode)
-- `AWS_MODEL_KEY` - Custom proxy auth key (not needed with OpenCode)
-- `AWS_MODEL` - Model override for custom system (not needed)
+- `AWS_ENDPOINT_URL` - Custom proxy endpoint (removed from Phase 0 - not needed with OpenCode HTTP API)
+- `AWS_MODEL_KEY` - Custom proxy auth key (removed from Phase 0 - not needed with OpenCode HTTP API)
+- `AWS_MODEL` - Model override for custom system (removed from Phase 0 - not needed)
 - `AWS_ACCESS_KEY_ID` - AWS credentials (not needed, was for Bedrock)
 - `AWS_SECRET_ACCESS_KEY` - AWS credentials (not needed, was for Bedrock)
 
-### New Environment Variables
+**Status**: These variables may still exist in `.env` from previous configuration, but ADWS does not read or use them. They can be safely removed.
 
-These are **automatically managed by OpenCode CLI**:
+### OpenCode Configuration Variables
 
-- `OPENCODE_API_KEY` - Optional (OpenCode reads from config file first)
-- API keys for specific providers:
-  - Anthropic: No env var needed (stored in `~/.local/share/opencode/`)
-  - OpenAI: No env var needed (stored in `~/.local/share/opencode/`)
+These are **managed by OpenCode CLI** (automatic):
 
-### Kept Environment Variables
+- **OPENCODE_URL** - OpenCode server location (default: `http://localhost:4096`)
+  ```
+  OPENCODE_URL=http://localhost:4096
+  ```
+  
+- **OPENCODE_MODEL_HEAVY** - Heavy lifting model (default: `github-copilot/claude-sonnet-4`)
+  ```
+  OPENCODE_MODEL_HEAVY=github-copilot/claude-sonnet-4
+  ```
+  
+- **OPENCODE_MODEL_LIGHT** - Lightweight model (default: `github-copilot/claude-haiku-4.5`)
+  ```
+  OPENCODE_MODEL_LIGHT=github-copilot/claude-haiku-4.5
+  ```
 
-These remain **unchanged**:
+**Note**: OpenCode CLI stores API keys in `~/.local/share/opencode/` after `opencode auth login`. No need for API key environment variables.
+
+### Kept Environment Variables (Unchanged)
+
+These remain **required and unchanged**:
 
 - `JIRA_SERVER` - Jira server URL
 - `JIRA_USERNAME` - Jira username
