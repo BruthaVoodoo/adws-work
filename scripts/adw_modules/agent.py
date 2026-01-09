@@ -1,5 +1,10 @@
 """
-Custom agent module for executing prompts against a proxy endpoint.
+Custom agent module for executing prompts against multiple LLM backends.
+
+Strategy:
+- Primary: Legacy Deluxe endpoint (if available and configured)
+- Secondary: OpenCode HTTP API with GitHub Copilot models
+- Fallback chain ensures ADWS continues working during migrations
 """
 
 import sys
@@ -20,9 +25,26 @@ from .config import config
 # Load environment variables
 load_dotenv()
 
-def save_prompt(prompt: str, adw_id: str, agent_name: str = "ops", domain: str = "ADW_Core", workflow_agent_name: Optional[str] = None) -> None:
+# Model ID mappings for GitHub Copilot via OpenCode
+# These models are provided by your organization's GitHub Copilot subscription
+# Configuration is loaded from environment variables (.env file)
+OPENCODE_MODEL_HEAVY = os.getenv(
+    "OPENCODE_MODEL_HEAVY", "github-copilot/claude-sonnet-4"
+)  # Complex code tasks
+OPENCODE_MODEL_LIGHT = os.getenv(
+    "OPENCODE_MODEL_LIGHT", "github-copilot/claude-haiku-4.5"
+)  # Classification, planning
+
+
+def save_prompt(
+    prompt: str,
+    adw_id: str,
+    agent_name: str = "ops",
+    domain: str = "ADW_Core",
+    workflow_agent_name: Optional[str] = None,
+) -> None:
     """Save a prompt to the appropriate logging directory.
-    
+
     Args:
         prompt: The prompt text to save
         adw_id: The ADW workflow ID
@@ -30,7 +52,7 @@ def save_prompt(prompt: str, adw_id: str, agent_name: str = "ops", domain: str =
         domain: Deprecated.
         workflow_agent_name: Deprecated.
     """
-    
+
     match = re.match(r"^(/\w+)", prompt)
     if not match:
         command_name = "prompt"
@@ -49,16 +71,17 @@ def save_prompt(prompt: str, adw_id: str, agent_name: str = "ops", domain: str =
     print(f"Saved prompt to: {prompt_file}")
 
 
-def invoke_model(prompt: str, model_id: str) -> AgentPromptResponse:
+def invoke_deluxe_model(prompt: str, model_id: str) -> Optional[AgentPromptResponse]:
     """
-    Invokes a model via a custom proxy endpoint using an API key.
+    Try to invoke model via legacy Deluxe endpoint.
+    Returns None if endpoint is unavailable (triggering fallback).
     """
-    load_dotenv(override=True) # Force reload of .env file
+    load_dotenv(override=True)
     endpoint_url = os.getenv("AWS_ENDPOINT_URL")
     api_key = os.getenv("AWS_MODEL_KEY")
 
     if not endpoint_url or not api_key:
-        return AgentPromptResponse(output="Missing AWS_ENDPOINT_URL or AWS_MODEL_KEY in environment.", success=False)
+        return None
 
     headers = {
         "Content-Type": "application/json",
@@ -71,8 +94,9 @@ def invoke_model(prompt: str, model_id: str) -> AgentPromptResponse:
     }
 
     try:
-        
-        response = requests.post(endpoint_url, headers=headers, data=json.dumps(body), timeout=300) # 5 minute timeout
+        response = requests.post(
+            endpoint_url, headers=headers, data=json.dumps(body), timeout=30
+        )
         response.raise_for_status()
 
         response_body = response.json()
@@ -83,41 +107,173 @@ def invoke_model(prompt: str, model_id: str) -> AgentPromptResponse:
                 result_text = message["content"]
                 return AgentPromptResponse(output=result_text, success=True)
             else:
-                stop_reason = response_body["choices"][0].get("finish_reason", "unknown")
-                error_output = f"Proxy API returned no content in message. Stop reason: {stop_reason}"
+                stop_reason = response_body["choices"][0].get(
+                    "finish_reason", "unknown"
+                )
+                error_output = (
+                    f"Deluxe endpoint returned no content. Stop reason: {stop_reason}"
+                )
                 return AgentPromptResponse(output=error_output, success=False)
         else:
-            # Handle cases where the model returns no choices (e.g., safety filters)
-            error_output = f"Proxy API returned no choices. Full response: {json.dumps(response_body)}"
+            error_output = f"Deluxe endpoint returned no choices."
             return AgentPromptResponse(output=error_output, success=False)
 
-    except requests.exceptions.RequestException as e:
-        error_msg = f"HTTP Request error: {e}"
-        print(error_msg, file=sys.stderr)
-        return AgentPromptResponse(output=error_msg, success=False)
+    except requests.exceptions.RequestException:
+        # Deluxe endpoint is unreachable - will fallback to OpenCode
+        return None
+    except Exception:
+        return None
+
+
+def invoke_opencode_model(prompt: str, model_id: str) -> AgentPromptResponse:
+    """
+    Invoke model via OpenCode HTTP API (GitHub Copilot models).
+    This is the primary fallback when Deluxe is unavailable.
+
+    Args:
+        prompt: The prompt text to send
+        model_id: Full model ID like "github-copilot/claude-haiku-4.5"
+    """
+    opencode_url = os.getenv("OPENCODE_URL", "http://localhost:4096")
+
+    headers = {
+        "Content-Type": "application/json",
+    }
+
+    try:
+        # Create a new session
+        session_resp = requests.post(
+            f"{opencode_url}/session", headers=headers, json={}, timeout=30
+        )
+        session_resp.raise_for_status()
+        session_data = session_resp.json()
+        session_id = session_data.get("id")
+
+        if not session_id:
+            return AgentPromptResponse(
+                output="Failed to create OpenCode session: no session ID returned",
+                success=False,
+            )
+
+        # Parse model_id: "github-copilot/claude-haiku-4.5" -> {"providerID": "github-copilot", "modelID": "claude-haiku-4.5"}
+        if "/" in model_id:
+            provider_id, model_name = model_id.split("/", 1)
+        else:
+            provider_id = "github-copilot"
+            model_name = model_id
+
+        # Send message to session with proper model format
+        message_body = {
+            "parts": [{"type": "text", "text": prompt}],
+            "model": {
+                "providerID": provider_id,
+                "modelID": model_name,
+            },
+        }
+
+        msg_resp = requests.post(
+            f"{opencode_url}/session/{session_id}/message",
+            headers=headers,
+            json=message_body,
+            timeout=600,  # 10 minutes for code generation
+        )
+        msg_resp.raise_for_status()
+
+        response_body = msg_resp.json()
+        parts = response_body.get("parts", [])
+
+        # Extract text from parts (skip step-start/step-finish)
+        text_output = ""
+        for part in parts:
+            if part.get("type") == "text":
+                text_output += part.get("text", "")
+
+        if text_output:
+            return AgentPromptResponse(output=text_output, success=True)
+        else:
+            return AgentPromptResponse(
+                output="OpenCode returned no text response", success=False
+            )
+
+    except requests.exceptions.ConnectionError:
+        return AgentPromptResponse(
+            output=(
+                "❌ Cannot connect to OpenCode server.\n"
+                "Please ensure OpenCode is running:\n"
+                "  1. Start server: opencode serve --port 4096\n"
+                "  2. Authenticate: opencode auth login\n"
+                "  3. Verify: curl http://localhost:4096/global/health"
+            ),
+            success=False,
+        )
+    except requests.exceptions.Timeout:
+        return AgentPromptResponse(
+            output="OpenCode request timed out. The server may be busy or the request is too large.",
+            success=False,
+        )
     except Exception as e:
-        error_msg = f"Error invoking custom model: {e}"
-        print(error_msg, file=sys.stderr)
-        return AgentPromptResponse(output=error_msg, success=False)
+        return AgentPromptResponse(output=f"OpenCode error: {str(e)}", success=False)
+
+
+def invoke_model(prompt: str, model_id: str) -> AgentPromptResponse:
+    """
+    Invoke a model with intelligent fallback chain.
+
+    1. Try Deluxe endpoint first (legacy, may be unavailable)
+    2. Fall back to OpenCode HTTP API with GitHub Copilot models
+    3. Return detailed error if both fail
+    """
+
+    # Try Deluxe first (if configured)
+    deluxe_response = invoke_deluxe_model(prompt, model_id)
+    if deluxe_response is not None:
+        if deluxe_response.success:
+            print(f"✅ Using Deluxe endpoint", file=sys.stderr)
+            return deluxe_response
+        elif (
+            "expired" in deluxe_response.output.lower()
+            or "unauthorized" in deluxe_response.output.lower()
+        ):
+            print(
+                f"⚠️  Deluxe token invalid/expired. Falling back to OpenCode...",
+                file=sys.stderr,
+            )
+        else:
+            print(f"⚠️  Deluxe error. Trying OpenCode fallback...", file=sys.stderr)
+    else:
+        print(
+            f"🔄 Deluxe endpoint unavailable. Using OpenCode HTTP API...",
+            file=sys.stderr,
+        )
+
+    # Fall back to OpenCode with GitHub Copilot models
+    opencode_response = invoke_opencode_model(prompt, model_id)
+    return opencode_response
 
 
 def execute_template(request: AgentTemplateRequest) -> AgentPromptResponse:
-    """Execute a prompt template against the custom proxy."""
-    
+    """
+    Execute a prompt template using GitHub Copilot models via OpenCode.
+
+    Model selection:
+    - "opus" or request.model=="opus" → Claude Sonnet 4.5 (heavy lifting)
+    - other → Claude Haiku 4.5 (lightweight tasks)
+    """
+
     prompt = request.prompt
     save_prompt(
-        prompt, 
-        request.adw_id, 
+        prompt,
+        request.adw_id,
         request.agent_name,
         domain=request.domain,
-        workflow_agent_name=request.workflow_agent_name
+        workflow_agent_name=request.workflow_agent_name,
     )
 
-    # Prioritize the custom model from .env, otherwise use the request's model
-    custom_model_id = os.getenv("AWS_MODEL")
-    if custom_model_id:
-        model_id = custom_model_id
+    # Map to GitHub Copilot models
+    # Note: Legacy AWS_MODEL env var is ignored; using OpenCode models instead
+    if request.model == "opus":
+        model_id = OPENCODE_MODEL_HEAVY  # Claude Sonnet 4.5 for complex tasks
     else:
-        model_id = "anthropic.claude-3-opus-20240229-v1:0" if request.model == "opus" else "anthropic.claude-3-sonnet-20240229-v1:0"
+        model_id = OPENCODE_MODEL_LIGHT  # Claude Haiku 4.5 for lightweight tasks
 
     return invoke_model(prompt, model_id)
