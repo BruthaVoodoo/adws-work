@@ -6,13 +6,34 @@
 
 ---
 
+**Phase 0 Status**: ✅ Complete - Direct OpenCode HTTP Path Confirmed
+
+This document reflects the Phase 0 architectural decision (January 9, 2026):
+
+- ✅ **Deluxe LLM fallback permanently removed** (token expired Dec 30, 2025)
+- ✅ **All operations route directly to OpenCode HTTP API** (no fallback chain)
+- ✅ **GitHub Copilot models verified and accessible**:
+  - Claude Sonnet 4 (heavy lifting: code implementation, test fixing, reviews)
+  - Claude Haiku 4.5 (lightweight: planning, classification, document generation)
+- ✅ **No feature flags needed** - OpenCode is the ONLY execution path forward
+- ✅ **All 95 existing tests passing** with new direct-path architecture
+- ✅ **Configuration clean and simplified** - no hybrid state, no fallback logic
+
+**Migration Strategy**: 5 Epics → 43 Stories with direct OpenCode HTTP commitment
+(no fallback chains, no feature flags, clean architecture)
+
+**Key Decision**: Phase 0 removed Deluxe fallback that was permanently broken.
+All LLM operations now use OpenCode HTTP API with GitHub Copilot models exclusively.
+
+---
+
 ## Overview
 
 This document contains all Epics and Stories for the complete migration of ADWS to OpenCode HTTP API as the unified LLM backend. The migration is organized into **5 Epics** with **43 detailed User Stories**.
 
 **Total Scope:** 40-50 hours of work  
 **Critical Path:** Epic 1 → Epic 2 & 3 (parallel) → Epic 4 → Epic 5  
-**Architecture:** Direct HTTP integration to OpenCode server with intelligent model routing (GPT-4o mini for lightweight tasks, Claude Sonnet 4.5 for code execution)
+**Architecture:** Direct HTTP integration to OpenCode server with intelligent model routing (Claude Haiku 4.5 for lightweight tasks, Claude Sonnet 4 for code execution via GitHub Copilot subscription)
 
 ---
 
@@ -25,14 +46,14 @@ This document contains all Epics and Stories for the complete migration of ADWS 
 - **Status:** Critical Path (required before all other epics)
 
 ### Epic 2: Planning & Classification Operations Migration  
-- **Summary:** Migrate all AI planning and classification tasks to OpenCode HTTP API with Claude Haiku 4.5
+- **Summary:** Migrate all AI planning and classification tasks to OpenCode HTTP API with Claude Haiku 4.5 (via GitHub Copilot)
 - **Story Count:** 9 stories
 - **Estimated Duration:** 6-8 hours
 - **Status:** Can overlap with Epic 3
 - **Dependencies:** Epic 1
 
 ### Epic 3: Code Execution Operations Migration
-- **Summary:** Migrate code implementation, testing, and review operations to OpenCode HTTP API with Claude Sonnet 4.5
+- **Summary:** Migrate code implementation, testing, and review operations to OpenCode HTTP API with Claude Sonnet 4 (via GitHub Copilot)
 - **Story Count:** 8 stories
 - **Estimated Duration:** 8-10 hours
 - **Status:** Can overlap with Epic 2
@@ -119,10 +140,10 @@ This document contains all Epics and Stories for the complete migration of ADWS 
 - **Type:** Epic
 - **Project:** DAI
 - **Summary:** Code Execution Operations Migration
-- **Description:** Replace Copilot CLI with OpenCode HTTP API for all heavy code lifting operations. These 3 critical operations (implement plan, resolve test failures, code review) will transition to Claude Sonnet 4.5 via OpenCode, enabling structured response parsing and better error handling.
+- **Description:** Replace Copilot CLI with OpenCode HTTP API for all heavy code lifting operations. These 3 critical operations (implement plan, resolve test failures, code review) will transition to Claude Sonnet 4 via OpenCode, enabling structured response parsing and better error handling.
 
 ### Acceptance Criteria
-- [ ] All 3 code execution functions use OpenCode HTTP API with Claude Sonnet 4.5
+- [ ] All 3 code execution functions use OpenCode HTTP API with Claude Sonnet 4 (GitHub Copilot)
 - [ ] Structured Part parsing replaces Copilot text parsing
 - [ ] Git fallback validation still works
 - [ ] Error messages are helpful and actionable
@@ -284,16 +305,16 @@ As a developer, I want intelligent model routing that selects appropriate models
 
 **Acceptance Criteria**
 - Given task_type = "classify"
-  When I call get_model_for_task(task_type)
-  Then it returns MODEL_LIGHTWEIGHT ("openai/gpt-4o-mini")
-  
+   When I call get_model_for_task(task_type)
+   Then it returns MODEL_LIGHTWEIGHT ("github-copilot/claude-haiku-4.5")
+   
 - Given task_type = "implement"
-  When I call get_model_for_task(task_type)
-  Then it returns MODEL_HEAVY_LIFTING ("anthropic/claude-3-5-sonnet-20241022")
-  
+   When I call get_model_for_task(task_type)
+   Then it returns MODEL_HEAVY_LIFTING ("github-copilot/claude-sonnet-4")
+   
 - Given all 9 task types
-  When I validate model routing for each
-  Then heavy tasks get Claude Sonnet 4.5, lightweight tasks get GPT-4o mini
+   When I validate model routing for each
+   Then heavy tasks get Claude Sonnet 4 (GitHub Copilot), lightweight tasks get Claude Haiku 4.5 (GitHub Copilot)
 
 ---
 
@@ -432,7 +453,7 @@ As a developer, I want execute_template() to use OpenCode HTTP client instead of
 ---
 
 #### Story 2.2: Migrate extract_adw_info() to OpenCode lightweight model
-**Summary:** Migrate extract_adw_info() to OpenCode with GPT-4o mini  
+**Summary:** Migrate extract_adw_info() to OpenCode with Claude Haiku 4.5 (GitHub Copilot)  
 **Type:** Story  
 **Estimation:** 2 hours  
 **Dependencies:** Story 2.1
@@ -442,17 +463,17 @@ As a developer, I want extract_adw_info() to use OpenCode HTTP API, so that ADW 
 
 **Acceptance Criteria**
 - Given extract_adw_info() is called with issue text
-  When it executes via OpenCode
-  Then task_type="extract_adw" is used → Model: GPT-4o mini
-  
+   When it executes via OpenCode
+   Then task_type="extract_adw" is used → Model: Claude Haiku 4.5 (GitHub Copilot)
+   
 - Given OpenCode response contains ADW slash command and ID
-  When response is parsed
-  Then values are correctly extracted for downstream use
+   When response is parsed
+   Then values are correctly extracted for downstream use
 
 ---
 
 #### Story 2.3: Migrate classify_issue() to OpenCode lightweight model
-**Summary:** Migrate classify_issue() to OpenCode with GPT-4o mini  
+**Summary:** Migrate classify_issue() to OpenCode with Claude Haiku 4.5 (GitHub Copilot)  
 **Type:** Story  
 **Estimation:** 2 hours  
 **Dependencies:** Story 2.1
@@ -462,17 +483,17 @@ As a developer, I want classify_issue() to use OpenCode HTTP API, so that issue 
 
 **Acceptance Criteria**
 - Given classify_issue() is called with GitHub issue data
-  When it executes via OpenCode
-  Then task_type="classify" is used → Model: GPT-4o mini
-  
+   When it executes via OpenCode
+   Then task_type="classify" is used → Model: Claude Haiku 4.5 (GitHub Copilot)
+   
 - Given OpenCode response contains slash command
-  When response is parsed
-  Then classification is correctly extracted
+   When response is parsed
+   Then classification is correctly extracted
 
 ---
 
 #### Story 2.4: Migrate build_plan() to OpenCode lightweight model
-**Summary:** Migrate build_plan() to OpenCode with GPT-4o mini  
+**Summary:** Migrate build_plan() to OpenCode with Claude Haiku 4.5 (GitHub Copilot)  
 **Type:** Story  
 **Estimation:** 2 hours  
 **Dependencies:** Story 2.1
@@ -482,17 +503,17 @@ As a developer, I want build_plan() to use OpenCode HTTP API, so that planning i
 
 **Acceptance Criteria**
 - Given build_plan() is called with issue context
-  When it executes via OpenCode
-  Then task_type="plan" is used → Model: GPT-4o mini
-  
+   When it executes via OpenCode
+   Then task_type="plan" is used → Model: Claude Haiku 4.5 (GitHub Copilot)
+   
 - Given OpenCode response contains implementation plan
-  When response is parsed
-  Then markdown plan structure is preserved
+   When response is parsed
+   Then markdown plan structure is preserved
 
 ---
 
 #### Story 2.5: Migrate generate_branch_name() to OpenCode lightweight model
-**Summary:** Migrate generate_branch_name() to OpenCode with GPT-4o mini  
+**Summary:** Migrate generate_branch_name() to OpenCode with Claude Haiku 4.5 (GitHub Copilot)  
 **Type:** Story  
 **Estimation:** 2 hours  
 **Dependencies:** Story 2.1
@@ -502,13 +523,13 @@ As a developer, I want generate_branch_name() to use OpenCode HTTP API, so that 
 
 **Acceptance Criteria**
 - Given generate_branch_name() is called with issue data
-  When it executes via OpenCode
-  Then task_type="branch_gen" is used → Model: GPT-4o mini
+   When it executes via OpenCode
+   Then task_type="branch_gen" is used → Model: Claude Haiku 4.5 (GitHub Copilot)
 
 ---
 
 #### Story 2.6: Migrate create_commit() to OpenCode lightweight model
-**Summary:** Migrate create_commit() to OpenCode with GPT-4o mini  
+**Summary:** Migrate create_commit() to OpenCode with Claude Haiku 4.5 (GitHub Copilot)  
 **Type:** Story  
 **Estimation:** 2 hours  
 **Dependencies:** Story 2.1
@@ -518,13 +539,13 @@ As a developer, I want create_commit() to use OpenCode HTTP API, so that commit 
 
 **Acceptance Criteria**
 - Given create_commit() is called with issue data
-  When it executes via OpenCode
-  Then task_type="commit_msg" is used → Model: GPT-4o mini
+   When it executes via OpenCode
+   Then task_type="commit_msg" is used → Model: Claude Haiku 4.5 (GitHub Copilot)
 
 ---
 
 #### Story 2.7: Migrate create_pull_request() to OpenCode lightweight model
-**Summary:** Migrate create_pull_request() to OpenCode with GPT-4o mini  
+**Summary:** Migrate create_pull_request() to OpenCode with Claude Haiku 4.5 (GitHub Copilot)  
 **Type:** Story  
 **Estimation:** 2 hours  
 **Dependencies:** Story 2.1
@@ -534,8 +555,8 @@ As a developer, I want create_pull_request() to use OpenCode HTTP API, so that P
 
 **Acceptance Criteria**
 - Given create_pull_request() is called with plan and context
-  When it executes via OpenCode
-  Then task_type="pr_creation" is used → Model: GPT-4o mini
+   When it executes via OpenCode
+   Then task_type="pr_creation" is used → Model: Claude Haiku 4.5 (GitHub Copilot)
 
 ---
 
@@ -580,12 +601,12 @@ As a QA engineer, I want integration tests for all planning operations, so that 
 **Dependencies:** Epic 1
 
 **Description**
-As a developer, I want implement_plan() to use OpenCode HTTP API with Claude Sonnet 4.5, so that code implementation is more reliable and maintainable.
+As a developer, I want implement_plan() to use OpenCode HTTP API with Claude Sonnet 4, so that code implementation is more reliable and maintainable.
 
 **Acceptance Criteria**
 - Given implement_plan() is called with plan file
-  When it executes via OpenCode
-  Then task_type="implement" is used → Model: Claude Sonnet 4.5
+   When it executes via OpenCode
+   Then task_type="implement" is used → Model: Claude Sonnet 4 (GitHub Copilot)
   
 - Given OpenCode response contains implementation
   When Parts are parsed
@@ -604,8 +625,8 @@ As a developer, I want resolve_failed_tests() to use OpenCode HTTP API, so that 
 
 **Acceptance Criteria**
 - Given resolve_failed_tests() is called with test failures
-  When it executes via OpenCode
-  Then task_type="test_fix" is used → Model: Claude Sonnet 4.5
+   When it executes via OpenCode
+   Then task_type="test_fix" is used → Model: Claude Sonnet 4 (GitHub Copilot)
   
 - Given OpenCode response contains fixes
   When Parts are parsed
@@ -624,8 +645,8 @@ As a developer, I want execute_single_e2e_test() to use OpenCode HTTP API, so th
 
 **Acceptance Criteria**
 - Given execute_single_e2e_test() is called with test name
-  When it executes via OpenCode
-  Then task_type="test_fix" is used → Model: Claude Sonnet 4.5
+   When it executes via OpenCode
+   Then task_type="test_fix" is used → Model: Claude Sonnet 4 (GitHub Copilot)
 
 ---
 
@@ -640,8 +661,8 @@ As a developer, I want run_review() to use OpenCode HTTP API, so that code revie
 
 **Acceptance Criteria**
 - Given run_review() is called with changed files and diff
-  When it executes via OpenCode
-  Then task_type="review" is used → Model: Claude Sonnet 4.5
+   When it executes via OpenCode
+   Then task_type="review" is used → Model: Claude Sonnet 4 (GitHub Copilot)
 
 ---
 
