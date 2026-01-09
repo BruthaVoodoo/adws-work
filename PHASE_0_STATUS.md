@@ -235,8 +235,7 @@ opencode auth login
 ### 4. Run ADWS Planning
 ```bash
 # Terminal 2
-cd /Users/t449579/Desktop/DEV/ADWS
-uv run scripts/adw_cli.py plan --issue <issue-key>
+adw plan <issue-key>
 ```
 
 ### 5. View Results
