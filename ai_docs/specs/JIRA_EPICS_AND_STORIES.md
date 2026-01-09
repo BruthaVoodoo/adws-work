@@ -8,10 +8,11 @@
 
 ## Overview
 
-This document contains all Epics and Stories for the complete migration of ADWS from AWS Bedrock + Custom Proxy to OpenCode HTTP API. The migration is organized into **5 Epics** with **43 detailed User Stories**.
+This document contains all Epics and Stories for the complete migration of ADWS to OpenCode HTTP API as the unified LLM backend. The migration is organized into **5 Epics** with **43 detailed User Stories**.
 
 **Total Scope:** 40-50 hours of work  
-**Critical Path:** Epic 1 → Epic 2 & 3 (parallel) → Epic 4 → Epic 5
+**Critical Path:** Epic 1 → Epic 2 & 3 (parallel) → Epic 4 → Epic 5  
+**Architecture:** Direct HTTP integration to OpenCode server with intelligent model routing (GPT-4o mini for lightweight tasks, Claude Sonnet 4.5 for code execution)
 
 ---
 
@@ -24,7 +25,7 @@ This document contains all Epics and Stories for the complete migration of ADWS 
 - **Status:** Critical Path (required before all other epics)
 
 ### Epic 2: Planning & Classification Operations Migration  
-- **Summary:** Migrate all AI planning and classification tasks to OpenCode HTTP API with GPT-4o mini
+- **Summary:** Migrate all AI planning and classification tasks to OpenCode HTTP API with Claude Haiku 4.5
 - **Story Count:** 9 stories
 - **Estimated Duration:** 6-8 hours
 - **Status:** Can overlap with Epic 3
@@ -38,7 +39,7 @@ This document contains all Epics and Stories for the complete migration of ADWS 
 - **Dependencies:** Epic 1
 
 ### Epic 4: Cleanup & Deprecated Code Removal
-- **Summary:** Remove deprecated code, environment variables, and update system checks
+- **Summary:** Remove deprecated AWS code, environment variables, and update system checks to OpenCode
 - **Story Count:** 5 stories
 - **Estimated Duration:** 2-3 hours
 - **Status:** Sequential (after Epic 2 & 3)
@@ -89,11 +90,11 @@ This document contains all Epics and Stories for the complete migration of ADWS 
 - **Type:** Epic
 - **Project:** DAI
 - **Summary:** Planning & Classification Operations Migration
-- **Description:** Refactor all lightweight planning and classification operations to use OpenCode HTTP API with intelligent model selection. These 6 operations currently use custom proxy and will transition to GPT-4o mini via OpenCode, resulting in better cost efficiency and more maintainable code.
+- **Description:** Refactor all lightweight planning and classification operations to use OpenCode HTTP API with intelligent model selection. These 6 operations currently use custom implementations and will transition to Claude Haiku 4.5 via OpenCode, resulting in better reliability and more maintainable code.
 
 ### Acceptance Criteria
 - [ ] All 6 planning/classification functions execute via OpenCode HTTP API
-- [ ] Correct lightweight model (GPT-4o mini) selected for all tasks
+- [ ] Correct lightweight model (Claude Haiku 4.5) selected for all tasks
 - [ ] No functional regressions in classification/planning output
 - [ ] Proper error handling with helpful messages
 - [ ] Response logging enabled for all operations
@@ -146,7 +147,7 @@ This document contains all Epics and Stories for the complete migration of ADWS 
 - **Type:** Epic
 - **Project:** DAI
 - **Summary:** Cleanup & Deprecated Code Removal
-- **Description:** Clean up legacy code paths, remove unused environment variables, and update system health checks. This epic ensures the codebase is maintainable and doesn't have conflicting implementations.
+- **Description:** Clean up legacy code paths, remove unused AWS environment variables, and update system health checks. This epic ensures the codebase is maintainable and focused entirely on OpenCode as the LLM backend.
 
 ### Acceptance Criteria
 - [ ] Deprecated files marked with clear deprecation notices
@@ -1041,6 +1042,6 @@ Export the data to CSV and use Jira's import tool.
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** January 7, 2026  
-**Status:** Ready for Import
+**Document Version:** 2.0  
+**Last Updated:** January 9, 2026  
+**Status:** Phase 0 Complete - Overview and Epic Summaries Updated
