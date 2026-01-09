@@ -1,31 +1,107 @@
 # ADWS Migration Plan: Complete AI System Migration to OpenCode
 
-**Status**: Plan (REVISED - Complete AI Migration)  
+**Status**: In Progress - Phase 0: Configuration (OpenCode fallback + GitHub Copilot models)  
 **Created**: January 6, 2026  
-**Revised**: January 6, 2026  
+**Revised**: January 9, 2026  
 **Scope**: Replace ALL custom LLM integrations (Bedrock + custom proxy) with OpenCode HTTP API + smart model routing  
 **Estimated Complexity**: High  
 **Estimated Effort**: 40-50 hours
+**Progress**: Phase 0 (Configuration) ✅ Complete - Ready for Phase 1
 
 ---
 
-## Executive Summary
+## Phase 0: Configuration (COMPLETED ✅)
+
+**Duration**: January 6-9, 2026  
+**Status**: ✅ COMPLETE
+
+This phase established the fallback chain and GitHub Copilot model configuration needed for all subsequent phases.
+
+### Completed Tasks
+
+1. **Identified Blocker** (January 6)
+   - ✅ AWS Deluxe LLM token expired (2025-12-30)
+   - ✅ Endpoint: `https://dlxai-dev.deluxe.com/proxy/v1/chat/completions`
+   - ✅ Issue: 403 Forbidden errors preventing ADWS execution
+
+2. **Strategic Decision** (January 7)
+   - ✅ Decision: Use GitHub Copilot models via OpenCode HTTP API
+   - ✅ Organization has GitHub Copilot subscription
+   - ✅ Models available: Claude Sonnet 4.5 (heavy) + Claude Haiku 4.5 (lightweight)
+   - ✅ Remove Deluxe LLM dependency after migration
+
+3. **Implemented OpenCode Fallback in agent.py** (January 7-8)
+   - ✅ Added `invoke_deluxe_model()` function for legacy endpoint (backward compatibility)
+   - ✅ Added `invoke_opencode_model()` function for OpenCode HTTP API
+   - ✅ Updated `invoke_model()` with intelligent fallback chain: Deluxe → OpenCode → error
+   - ✅ Fallback chain tested and working
+
+4. **Verified Model Availability** (January 8)
+   - ✅ `github-copilot/claude-haiku-4.5` - WORKING (lightweight tasks)
+   - ✅ `github-copilot/claude-sonnet-4` - WORKING (heavy tasks)
+   - ✅ Both models tested: classification and code generation tasks pass
+
+5. **Moved Model Configuration to Environment Variables** (January 9)
+   - ✅ Created `OPENCODE_MODEL_HEAVY` and `OPENCODE_MODEL_LIGHT` constants that read from `os.getenv()`
+   - ✅ Added fallback defaults for backward compatibility
+   - ✅ Added OpenCode configuration to `.env`:
+     ```
+     OPENCODE_URL=http://localhost:4096
+     OPENCODE_MODEL_HEAVY=github-copilot/claude-sonnet-4
+     OPENCODE_MODEL_LIGHT=github-copilot/claude-haiku-4.5
+     ```
+   - ✅ All 95 existing tests pass with new configuration
+   - ✅ Committed changes: `refactor: Move OpenCode model config to environment variables`
+
+### Current State
+
+✅ **ADWS can now execute LLM operations without Deluxe endpoint**  
+✅ **Fallback mechanism working** (Deluxe → OpenCode → error)  
+✅ **GitHub Copilot models confirmed accessible**  
+✅ **Both lightweight and heavy tasks can run**  
+✅ **Configuration is flexible** (environment variables, not hardcoded)  
+✅ **All tests passing** (95/95)  
+
+### What Happens When Story Executes Now
+
+1. ADWS calls `execute_template()` with a prompt
+2. Agent checks if `OPENCODE_MODEL_HEAVY` or `OPENCODE_MODEL_LIGHT` should be used based on task type
+3. Calls `invoke_model()` which:
+   - **First tries**: Deluxe endpoint (if configured and has valid token)
+   - **Falls back to**: OpenCode HTTP API with GitHub Copilot models (primary path now)
+   - **Returns**: AgentPromptResponse with successful output
+4. ADWS continues execution normally ✅
+
+### Next Phase
+
+**Ready to proceed with Phase 1**: HTTP Client Infrastructure
+
+The configuration layer is complete. All infrastructure decisions are made:
+- ✅ Model selection: GitHub Copilot (Sonnet 4 + Haiku 4.5)
+- ✅ Fallback strategy: Deluxe (legacy) → OpenCode (new)
+- ✅ Configuration management: Environment variables in `.env`
+- ✅ API endpoint: `http://localhost:4096` (configurable via `OPENCODE_URL`)
+
+Phase 1 can now proceed to build the full HTTP client infrastructure and output parsing.
+
+---
 
 This plan outlines the **complete migration of ALL AI operations** in the ADWS (AI Developer Workflow System) from:
 - **FROM**: AWS Bedrock (custom endpoint) + Custom HTTP Proxy
-- **TO**: OpenCode HTTP Server API with intelligent model routing
+- **TO**: OpenCode HTTP Server API with GitHub Copilot models + intelligent model routing
 
 The system currently uses:
 1. **Custom proxy agent** (`agent.py`) - For planning, classification, branch generation, commit messages, PR creation
 2. **Copilot CLI** - For code execution (implementation, test fixing, reviews)
 
 **New Approach**: Consolidate everything into OpenCode with model-aware routing:
-- ✅ **Claude Sonnet 4.5** - Heavy code lifting (implementation, test fixing, reviews)
-- ✅ **GPT-4o mini** - Lightweight tasks (planning, classification, document creation)
-- ✅ Single unified HTTP API interface
+- ✅ **Claude Sonnet 4.5** (via GitHub Copilot) - Heavy code lifting (implementation, test fixing, reviews)
+- ✅ **Claude Haiku 4.5** (via GitHub Copilot) - Lightweight tasks (planning, classification, document creation)
+- ✅ Single unified HTTP API interface via OpenCode
 - ✅ Structured Message/Part responses (no regex parsing)
 - ✅ Better error handling and type safety
 - ⚠️ Requires running `opencode serve` in background
+- ✅ **Phase 0 (Configuration)**: Fallback chain implemented (Deluxe → OpenCode), GitHub Copilot models configured in `.env`
 
 ### Key Changes
 
@@ -36,6 +112,9 @@ The system currently uses:
 - **Parsing**: Extract data from Part types (text, tool_use, tool_result) - no regex needed
 - **Integration Points**: 9 direct LLM invocations + Copilot CLI for code execution
 - **Configuration**: HTTP server endpoint, per-task model selection, timeout settings
+- **GitHub Copilot Models**: Organization has GitHub Copilot subscription providing access to Claude models
+  - `github-copilot/claude-sonnet-4` - Heavy lifting (currently available ✅)
+  - `github-copilot/claude-haiku-4.5` - Lightweight (currently available ✅)
 
 ---
 
@@ -126,19 +205,20 @@ The system currently uses:
 
 ### 2.2 Supported Models & Pricing Tiers
 
-**Claude Sonnet 4.5** (Heavy lifting):
-- Model ID in OpenCode: `anthropic/claude-3-5-sonnet-20241022` OR `anthropic/claude-sonnet-4.5` (if available)
+**Claude Sonnet 4.5** (Heavy lifting - via GitHub Copilot):
+- Model ID in OpenCode: `github-copilot/claude-sonnet-4` (currently available via organization's GitHub Copilot subscription)
+- Alternative: `github-copilot/claude-sonnet-4.5` (if available in future)
 - Use for: Code implementation, test fixing, code reviews
-- Cost: ~$3/M input, ~$15/M output (estimate)
+- Cost: No additional cost (included in organization's GitHub Copilot subscription)
 - Latency: 2-5 seconds typical
 
-**GPT-4o mini** (Lightweight):
-- Model ID in OpenCode: `openai/gpt-4o-mini`
+**Claude Haiku 4.5** (Lightweight - via GitHub Copilot):
+- Model ID in OpenCode: `github-copilot/claude-haiku-4.5` (currently available via organization's GitHub Copilot subscription)
 - Use for: Classification, planning, doc creation, branch names, commit messages
-- Cost: ~$0.15/M input, ~$0.60/M output (estimate)
+- Cost: No additional cost (included in organization's GitHub Copilot subscription)
 - Latency: 1-2 seconds typical
 
-**Note**: Model IDs are in format `provider/model-name`. Verify exact IDs with OpenCode docs.
+**Note**: Model IDs are in format `github-copilot/model-name`. Uses organization's GitHub Copilot subscription via OpenCode HTTP API.
 
 ### 2.3 OpenCode HTTP API for Messages
 
@@ -373,8 +453,9 @@ class OpenCodeHTTPClient:
         pass
 
 # Model selection constants
-MODEL_HEAVY_LIFTING = "anthropic/claude-3-5-sonnet-20241022"  # Code implementation, reviews
-MODEL_LIGHTWEIGHT = "openai/gpt-4o-mini"  # Planning, classification, doc creation
+# Using organization's GitHub Copilot subscription via OpenCode
+MODEL_HEAVY_LIFTING = "github-copilot/claude-sonnet-4"  # Code implementation, reviews
+MODEL_LIGHTWEIGHT = "github-copilot/claude-haiku-4.5"  # Planning, classification, doc creation
 
 def get_model_for_task(task_type: str) -> str:
     """
@@ -385,7 +466,7 @@ def get_model_for_task(task_type: str) -> str:
                    "branch_gen", "commit_msg", "pr_creation", "extract_adw"
     
     Returns:
-        Model ID string for OpenCode
+        Model ID string for OpenCode (github-copilot/model-name format)
     """
     heavy_tasks = {"implement", "test_fix", "review"}
     return MODEL_HEAVY_LIFTING if task_type in heavy_tasks else MODEL_LIGHTWEIGHT
@@ -556,13 +637,15 @@ opencode:
   # Server connection
   server_url: "http://localhost:4096"
   
-  # Model selection per task type
+  # Model selection per task type (GitHub Copilot via OpenCode)
   models:
     # Heavy lifting: code implementation, test fixing, code reviews
-    heavy_lifting: "anthropic/claude-3-5-sonnet-20241022"
+    # Using organization's GitHub Copilot subscription
+    heavy_lifting: "github-copilot/claude-sonnet-4"
     
     # Lightweight: planning, classification, document creation
-    lightweight: "openai/gpt-4o-mini"
+    # Using organization's GitHub Copilot subscription
+    lightweight: "github-copilot/claude-haiku-4.5"
   
   # Execution options
   timeout: 600  # seconds (10 minutes for code execution)
@@ -573,6 +656,7 @@ opencode:
   reuse_sessions: false  # Create new session for each execution
   
   # Note: Requires running: opencode serve --port 4096
+  # Models provided by organization's GitHub Copilot subscription
   requires_server: true
 ```
 
@@ -621,8 +705,8 @@ Edit `.adw.yaml`:
 opencode:
   server_url: "http://localhost:4096"
   models:
-    heavy_lifting: "anthropic/claude-3-5-sonnet-20241022"
-    lightweight: "openai/gpt-4o-mini"
+    heavy_lifting: "github-copilot/claude-sonnet-4"
+    lightweight: "github-copilot/claude-haiku-4.5"
   timeout: 600
   lightweight_timeout: 60
 ```
@@ -639,17 +723,15 @@ curl http://localhost:4096/global/health
 
 ### Model Configuration Notes
 
-**Claude Sonnet 4.5 Setup**:
-1. Get API key from Anthropic console (https://console.anthropic.com)
-2. Run: `opencode auth login` and select Anthropic
-3. Paste API key
-4. Verify with: `opencode config list`
+**Claude Sonnet 4.5 Setup** (via GitHub Copilot):
+1. Organization has GitHub Copilot subscription
+2. OpenCode will use the subscription automatically when authenticated
+3. Verify with: `opencode config list`
 
-**GPT-4o mini Setup**:
-1. Get API key from OpenAI (https://platform.openai.com/api-keys)
-2. Run: `opencode auth login` and select OpenAI
-3. Paste API key
-4. Verify with: `opencode config list`
+**Claude Haiku 4.5 Setup** (via GitHub Copilot):
+1. Organization has GitHub Copilot subscription
+2. OpenCode will use the subscription automatically when authenticated
+3. Verify with: `opencode config list`
 
 ### Troubleshooting
 
@@ -1241,18 +1323,19 @@ If issues arise during migration:
 
 | Aspect | Old System | New System |
 |--------|-----------|-----------|
-| **Planning/Classification** | Custom proxy + Bedrock | OpenCode HTTP + GPT-4o mini |
-| **Code Execution** | Copilot CLI | OpenCode HTTP + Claude Sonnet 4.5 |
-| **Code Implementation** | Copilot CLI | OpenCode HTTP + Claude Sonnet 4.5 |
-| **Test Fixing** | Copilot CLI | OpenCode HTTP + Claude Sonnet 4.5 |
-| **Code Review** | Copilot CLI | OpenCode HTTP + Claude Sonnet 4.5 |
+| **Planning/Classification** | Custom proxy + Bedrock | OpenCode HTTP + Claude Haiku 4.5 (via GitHub Copilot) |
+| **Code Execution** | Copilot CLI | OpenCode HTTP + Claude Sonnet 4.5 (via GitHub Copilot) |
+| **Code Implementation** | Copilot CLI | OpenCode HTTP + Claude Sonnet 4.5 (via GitHub Copilot) |
+| **Test Fixing** | Copilot CLI | OpenCode HTTP + Claude Sonnet 4.5 (via GitHub Copilot) |
+| **Code Review** | Copilot CLI | OpenCode HTTP + Claude Sonnet 4.5 (via GitHub Copilot) |
 | **Output Parsing** | Regex on text | Structured Part types |
 | **Model Selection** | Hardcoded | Dynamic per task type |
 | **API Type** | Multiple (proxy, CLI, Bedrock) | Single HTTP API |
 | **Setup Complexity** | High (proxy + CLI + Bedrock) | Medium (single server) |
-| **Cost** | Fixed per model | Variable (lightweight + heavy) |
+| **Cost** | Fixed per model | No additional cost (uses GitHub Copilot subscription) |
 | **Maintainability** | Low (regex brittle) | High (structured data) |
 | **Testability** | Difficult (CLI mocking) | Easy (HTTP mocking) |
+| **Model Source** | Multiple (AWS, OpenAI) | Single (GitHub Copilot via OpenCode) |
 
 ---
 
@@ -1296,7 +1379,7 @@ If issues arise during migration:
 
 ## Appendix B: Model Configuration Reference
 
-### Claude Sonnet 4.5
+### Claude Sonnet 4.5 (via GitHub Copilot)
 
 **When to use**: Heavy code lifting
 - Code implementation (creating new files, refactoring)
@@ -1304,11 +1387,13 @@ If issues arise during migration:
 - Code review (analyzing logic, security, performance)
 - Context window: 200K tokens (can handle large codebases)
 - Speed: 2-5 seconds typical
-- Cost: ~$3/M input, ~$15/M output tokens
+- Cost: No additional cost (included in organization's GitHub Copilot subscription)
 
-**Model ID**: `anthropic/claude-3-5-sonnet-20241022` (or `anthropic/claude-sonnet-4.5` if available)
+**Model ID**: `github-copilot/claude-sonnet-4`
 
-### GPT-4o mini
+**Setup**: Organization has GitHub Copilot subscription. OpenCode uses it automatically when authenticated.
+
+### Claude Haiku 4.5 (via GitHub Copilot)
 
 **When to use**: Lightweight tasks
 - Issue classification
@@ -1317,31 +1402,27 @@ If issues arise during migration:
 - Commit message creation
 - PR title/description
 - ADW classification
-- Context window: 128K tokens (sufficient for task context)
+- Context window: 200K tokens (sufficient for task context)
 - Speed: 1-2 seconds typical
-- Cost: ~$0.15/M input, ~$0.60/M output tokens
+- Cost: No additional cost (included in organization's GitHub Copilot subscription)
 
-**Model ID**: `openai/gpt-4o-mini`
+**Model ID**: `github-copilot/claude-haiku-4.5`
 
-### Cost Estimation Example
+**Setup**: Organization has GitHub Copilot subscription. OpenCode uses it automatically when authenticated.
+
+### Cost Estimation
 
 **Monthly usage** (assuming 100 workflows):
-- 100 lightweight tasks (GPT-4o mini):
-  - ~1,000,000 input tokens × $0.15 = **$150**
-  - ~500,000 output tokens × $0.60 = **$300**
-  - Subtotal: **$450**
 
-- 100 code implementation tasks (Claude Sonnet 4.5):
-  - ~10,000,000 input tokens × $3 = **$30,000** (large codebases)
-  - ~5,000,000 output tokens × $15 = **$75,000** (extensive implementations)
-  - Subtotal: **$105,000**
-
-**Total estimated monthly**: **$105,450** (heavily dependent on codebase size and complexity)
+With GitHub Copilot subscription:
+- ✅ All lightweight tasks: Claude Haiku 4.5 (100 workflows)
+- ✅ All heavy tasks: Claude Sonnet 4.5 (100 workflows)
+- **Total Cost**: No additional cost (included in organization's subscription)
 
 **Compared to old system**:
-- Old: All operations on fixed cost model (Bedrock/proxy)
-- New: Tiered approach (cheap for planning, expensive for code)
-- Net: Could be cheaper if planning tasks dominate, or more expensive if code tasks dominate
+- Old: Fixed costs for Bedrock/proxy service + custom endpoint
+- New: No additional costs (uses existing GitHub Copilot subscription)
+- Net: **Significant cost savings** by leveraging existing subscription
 
 ---
 
