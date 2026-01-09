@@ -1,0 +1,17 @@
+# Github Issue Command Selection
+Based on the `Jira Issue` below, follow the `Instructions` to select the appropriate command to execute based on the `Command Mapping`.
+
+## Instructions
+- Based on the details in the `Jira Issue`, select the appropriate command to execute.
+- IMPORTANT: Respond exclusively with '/' followed by the command to execute based on the `Command Mapping` below.
+- Use the command mapping to help you decide which command to respond with.
+- Don't examine the codebase just focus on the `Jira Issue` and the `Command Mapping` below to determine the appropriate command to execute.
+
+## Command Mapping
+- Respond with `/chore` if the issue is a chore.
+- Respond with `/bug` if the issue is a bug.
+- Respond with `/feature` if the issue is a feature.
+- Respond with `0` if the issue isn't any of the above.
+
+## Jira Issue
+{"number":108,"summary":"Create OpenCodeHTTPClient class with session management  ","description":"As a developer, I want an HTTP client class that manages OpenCode sessions, so that I can interact with the OpenCode HTTP server reliably.\n\n**Acceptance Criteria**\n- Given an OpenCode server is running\n  When I instantiate OpenCodeHTTPClient with server URL\n  Then it successfully creates a new session with a unique session ID\n  \n- Given an active session exists\n  When I call close_session()\n  Then the session is properly closed and cleaned up\n  \n- Given invalid credentials\n  When I attempt to create a session\n  Then an authentication error is raised with helpful message"}

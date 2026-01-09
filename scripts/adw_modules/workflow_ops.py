@@ -422,13 +422,15 @@ def generate_branch_name(
     output = response.output.strip()
     branch_name = None
 
-    # Regex to find the branch name pattern
-    pattern = r"^(feature|bug|chore)-issue-\d+-adw-[\w-]+-[\w-]+$"
+    # Regex to find the branch name pattern (with optional markdown bold markers)
+    pattern = r"\**(feature|bug|chore)-issue-\d+-adw-[\w-]+\**"
 
     for line in output.splitlines():
         line = line.strip()
-        if re.match(pattern, line):
-            branch_name = line
+        match = re.search(pattern, line)
+        if match:
+            # Extract just the branch name without the markdown markers
+            branch_name = match.group(0).strip("*")
             break
 
     if not branch_name:

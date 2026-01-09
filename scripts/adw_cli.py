@@ -12,8 +12,12 @@ Usage:
 """
 
 import sys
+import os
 import click
 from typing import Optional
+
+# Add scripts directory to path so relative imports work
+sys.path.insert(0, os.path.dirname(__file__))
 
 __version__ = "0.1.0"
 

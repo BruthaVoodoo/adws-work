@@ -26,6 +26,7 @@ scripts/adw_cli.py
 scripts/adw_plan.py
 scripts/adw_review.py
 scripts/adw_test.py
+scripts/jira_importer.py
 scripts/adw_modules/__init__.py
 scripts/adw_modules/agent.py
 scripts/adw_modules/bedrock_agent.py

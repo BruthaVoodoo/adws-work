@@ -13,6 +13,7 @@ Create a new plan to implement a new feature in an AI agent using the exact spec
 - Design for extensibility and maintainability within the Strands Agents framework.
 - If you need a new library, use `uv add` and be sure to report it in the `Notes` section of the `Plan Format`.
 - Don't use decorators. Keep it simple.
+- Respect the agent framework being used (Strands Agents with Amazon AgentCore).
 - Start your research by reading the `README.md` file.
 
 ## Relevant Files
@@ -98,23 +99,49 @@ Execute every command to validate the feature works correctly with zero regressi
 ## Placeholder Reference
 
 The following placeholders will be replaced with actual Jira issue context:
-- `{issue_key}` - The Jira issue key (e.g., "DAI-4")
-- `{issue_title}` - The issue title/summary
-- `{issue_description}` - The full issue description with requirements
-- `{issue_labels}` - Comma-separated labels associated with the issue
-- `{issue_state}` - Current state of the issue (e.g., "In Progress")
+- `DAI-108` - The Jira issue key (e.g., "DAI-4")
+- `Create OpenCodeHTTPClient class with session management  ` - The issue title/summary
+- `As a developer, I want an HTTP client class that manages OpenCode sessions, so that I can interact with the OpenCode HTTP server reliably.
+
+**Acceptance Criteria**
+- Given an OpenCode server is running
+  When I instantiate OpenCodeHTTPClient with server URL
+  Then it successfully creates a new session with a unique session ID
+  
+- Given an active session exists
+  When I call close_session()
+  Then the session is properly closed and cleaned up
+  
+- Given invalid credentials
+  When I attempt to create a session
+  Then an authentication error is raised with helpful message` - The full issue description with requirements
+- `epic-1, opencode-migration` - Comma-separated labels associated with the issue
+- `To Do` - Current state of the issue (e.g., "In Progress")
 
 ## Feature
 
-**Issue:** {issue_key}
-**Status:** {issue_state}
-**Labels:** {issue_labels}
+**Issue:** DAI-108
+**Status:** To Do
+**Labels:** epic-1, opencode-migration
 
 ### Feature Title
-{issue_title}
+Create OpenCodeHTTPClient class with session management  
 
 ### Feature Description
-{issue_description}
+As a developer, I want an HTTP client class that manages OpenCode sessions, so that I can interact with the OpenCode HTTP server reliably.
+
+**Acceptance Criteria**
+- Given an OpenCode server is running
+  When I instantiate OpenCodeHTTPClient with server URL
+  Then it successfully creates a new session with a unique session ID
+  
+- Given an active session exists
+  When I call close_session()
+  Then the session is properly closed and cleaned up
+  
+- Given invalid credentials
+  When I attempt to create a session
+  Then an authentication error is raised with helpful message
 
 ---
 
@@ -124,6 +151,4 @@ Describe the feature that needs to be implemented based on the issue context abo
 - What new capability does it add to the agent?
 - Who will benefit from this feature?
 
-Then, generate the COMPLETE implementation plan following the exact `Plan Format` specified above. 
-
-**CRITICAL: Output ONLY the complete markdown plan starting with `# Feature:` as the first line. Include every section from Feature Description through Notes. Do not include any summary, introduction, or explanation text - only the markdown plan itself.**
+Then, generate the COMPLETE implementation plan following the exact `Plan Format` specified above. Output the full plan markdown starting with `# Feature:` and include all sections from Feature Description through Notes.

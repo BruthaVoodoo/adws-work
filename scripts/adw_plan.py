@@ -28,7 +28,11 @@ from dotenv import load_dotenv
 
 from adw_modules.state import ADWState
 from adw_modules.git_ops import create_branch, commit_changes, finalize_git_operations
-from adw_modules.jira import jira_fetch_issue, jira_make_issue_comment, jira_add_attachment
+from adw_modules.jira import (
+    jira_fetch_issue,
+    jira_make_issue_comment,
+    jira_add_attachment,
+)
 from adw_modules.workflow_ops import (
     classify_issue,
     build_plan,
@@ -71,15 +75,14 @@ def check_env_vars(logger: Optional[logging.Logger] = None) -> None:
         sys.exit(1)
 
 
-
 def main():
     """Main entry point."""
     # Load environment variables
     load_dotenv()
-    
+
     # Get rich console instance
     rich_console = get_rich_console_instance()
-    
+
     # Parse command line args
     if len(sys.argv) < 2:
         if rich_console:
@@ -94,17 +97,18 @@ def main():
     # Generate ADW ID if not provided
     if not adw_id:
         from adw_modules.utils import make_adw_id
+
         adw_id = make_adw_id()
         if rich_console:
             rich_console.success(f"Created new ADW ID: {adw_id}")
         else:
             print(f"Created new ADW ID: {adw_id}")
-    
+
     # Rich console header
     if rich_console:
         rich_console.rule(f"ADW Plan - Issue {issue_number}", style="blue")
         rich_console.info(f"ADW ID: {adw_id}")
-    
+
     # Set up logger with ADW ID
     logger = setup_logger(adw_id, "adw_plan")
     logger.info(f"ADW Plan starting - ID: {adw_id}, Issue: {issue_number}")
@@ -115,7 +119,7 @@ def main():
     # === FETCHING ISSUE PHASE ===
     if rich_console:
         rich_console.rule("Fetching Issue Details", style="cyan")
-    
+
     logger.info(f"Fetching issue {issue_number} from Jira")
     try:
         if rich_console:
@@ -136,14 +140,16 @@ def main():
         sys.exit(1)
 
     logger.debug(f"Fetched issue: {issue.model_dump_json(indent=2, by_alias=True)}")
-    
+
     # NOW create state
     state = ADWState(adw_id)
     state.update(adw_id=adw_id, issue_number=issue_number)
     state.save("adw_plan_init")
     logger.info(f"Initialized state")
-    
-    jira_make_issue_comment(issue_number, format_issue_message(adw_id, 'ops', '✅ Starting planning phase'))
+
+    jira_make_issue_comment(
+        issue_number, format_issue_message(adw_id, "ops", "✅ Starting planning phase")
+    )
 
     # === ISSUE CLASSIFICATION PHASE ===
     if rich_console:
@@ -162,7 +168,10 @@ def main():
             rich_console.error(error_msg)
         else:
             print(f"Error: {error_msg}")
-        jira_make_issue_comment(issue_number, format_issue_message(adw_id, 'ops', f'❌ Error classifying issue: {error}'))
+        jira_make_issue_comment(
+            issue_number,
+            format_issue_message(adw_id, "ops", f"❌ Error classifying issue: {error}"),
+        )
         sys.exit(1)
 
     state.update(issue_class=issue_command)
@@ -170,7 +179,10 @@ def main():
     logger.info(f"Issue classified as: {issue_command}")
     if rich_console:
         rich_console.success(f"Issue classified as: {issue_command}")
-    jira_make_issue_comment(issue_number, format_issue_message(adw_id, 'ops', f'✅ Issue classified as: {issue_command}'))
+    jira_make_issue_comment(
+        issue_number,
+        format_issue_message(adw_id, "ops", f"✅ Issue classified as: {issue_command}"),
+    )
 
     # === BRANCH CREATION PHASE ===
     if rich_console:
@@ -186,7 +198,12 @@ def main():
             rich_console.error(error_msg)
         else:
             print(f"Error: {error_msg}")
-        jira_make_issue_comment(issue_number, format_issue_message(adw_id, 'ops', f"❌ Error generating branch name: {error}"))
+        jira_make_issue_comment(
+            issue_number,
+            format_issue_message(
+                adw_id, "ops", f"❌ Error generating branch name: {error}"
+            ),
+        )
         sys.exit(1)
 
     # Create git branch
@@ -203,7 +220,10 @@ def main():
             rich_console.error(error_msg)
         else:
             print(f"Error: {error_msg}")
-        jira_make_issue_comment(issue_number, format_issue_message(adw_id, 'ops', f"❌ Error creating branch: {error}"))
+        jira_make_issue_comment(
+            issue_number,
+            format_issue_message(adw_id, "ops", f"❌ Error creating branch: {error}"),
+        )
         sys.exit(1)
 
     state.update(branch_name=branch_name)
@@ -211,14 +231,20 @@ def main():
     logger.info(f"Working on branch: {branch_name}")
     if rich_console:
         rich_console.success(f"Working on branch: {branch_name}")
-    jira_make_issue_comment(issue_number, format_issue_message(adw_id, 'ops', f'✅ Working on branch: {branch_name}'))
+    jira_make_issue_comment(
+        issue_number,
+        format_issue_message(adw_id, "ops", f"✅ Working on branch: {branch_name}"),
+    )
 
     # === PLAN BUILDING PHASE ===
     if rich_console:
         rich_console.rule("Building Implementation Plan", style="cyan")
-    
+
     logger.info("Building implementation plan")
-    jira_make_issue_comment(issue_number, format_issue_message(adw_id, AGENT_PLANNER, '✅ Building implementation plan'))
+    jira_make_issue_comment(
+        issue_number,
+        format_issue_message(adw_id, AGENT_PLANNER, "✅ Building implementation plan"),
+    )
 
     if rich_console:
         with rich_console.spinner("Generating implementation plan using AI agent..."):
@@ -233,62 +259,82 @@ def main():
             rich_console.error(error_msg)
         else:
             print(f"Error: {error_msg}")
-        jira_make_issue_comment(issue_number, format_issue_message(adw_id, AGENT_PLANNER, f"❌ Error building plan: {plan_response.output}"))
+        jira_make_issue_comment(
+            issue_number,
+            format_issue_message(
+                adw_id, AGENT_PLANNER, f"❌ Error building plan: {plan_response.output}"
+            ),
+        )
         sys.exit(1)
 
     logger.debug(f"Plan response: {plan_response.output}")
     if rich_console:
         rich_console.success("Implementation plan created successfully")
-    jira_make_issue_comment(issue_number, format_issue_message(adw_id, AGENT_PLANNER, '✅ Implementation plan created'))
+    jira_make_issue_comment(
+        issue_number,
+        format_issue_message(adw_id, AGENT_PLANNER, "✅ Implementation plan created"),
+    )
 
     # The plan file path is now deterministic based on the issue type and IDs
-    issue_type = issue_command.strip('/')
-    
-    plan_file_path = config.ai_docs_dir / "specs" / issue_type / f"{issue_number}-{adw_id}-plan.md"
+    issue_type = issue_command.strip("/")
+
+    plan_file_path = (
+        config.ai_docs_dir / "specs" / issue_type / f"{issue_number}-{adw_id}-plan.md"
+    )
 
     # Ensure the directory exists
     os.makedirs(os.path.dirname(plan_file_path), exist_ok=True)
-    
+
     # Extract the actual plan content from the LLM response
     plan_content = ""
-    
+
     # Attempt to extract from antsible:function_calls for 'create' command with '-plan.md'
     antsible_match = re.search(
-        r'''<antsible:invoke name="str_replace_editor">
+        r"""<antsible:invoke name="str_replace_editor">
 <antsible:parameter name="command">create</antsible:parameter>
 <antsible:parameter name="path">[^\"]+-plan.md</antsible:parameter>
-<antsible:parameter name="file_text">(.*?)</antsible:parameter>''',
+<antsible:parameter name="file_text">(.*?)</antsible:parameter>""",
         plan_response.output,
-        re.DOTALL
+        re.DOTALL,
     )
     if antsible_match:
         plan_content = antsible_match.group(1)
         # The content might have escaped newlines and quotes from being embedded in XML
         # We need to unescape them.
-        plan_content = plan_content.replace('\\n', '\n').replace('\\"', '"')
+        plan_content = plan_content.replace("\\n", "\n").replace('\\"', '"')
     else:
         # Fallback to existing logic if antsible pattern is not found
-        content_match = re.search(r"<content>(.*?)</content>", plan_response.output, re.DOTALL)
+        content_match = re.search(
+            r"<content>(.*?)</content>", plan_response.output, re.DOTALL
+        )
         if content_match:
             plan_content = content_match.group(1).strip()
         else:
             # Fallback to finding the start of the markdown plan
-            fallback_match = re.search(r'''^# (Feature|Bug|Chore):.*
-''', plan_response.output, re.MULTILINE)
+            fallback_match = re.search(
+                r"""^# (Feature|Bug|Chore):.*
+""",
+                plan_response.output,
+                re.MULTILINE,
+            )
             if fallback_match:
-                plan_content = plan_response.output[fallback_match.start():]
-    
+                plan_content = plan_response.output[fallback_match.start() :]
+            else:
+                # Final fallback: if the output looks like a markdown plan, use it as-is
+                if plan_response.output.strip().startswith("#"):
+                    plan_content = plan_response.output.strip()
+
     if not plan_content:
         error_msg = "Could not extract plan content from the LLM output."
-        logger.error(error_msg)
+        logger.error(f"{error_msg} Full response:\n{plan_response.output}")
         if rich_console:
             rich_console.error(error_msg)
         sys.exit(1)
-    
+
     # === PLAN FILE CREATION PHASE ===
     if rich_console:
         rich_console.rule("Creating Plan File", style="cyan")
-    
+
     # We need to write this content to the plan file
     try:
         with open(plan_file_path, "w") as f:
@@ -296,7 +342,7 @@ def main():
         logger.info(f"Plan content written to {plan_file_path}")
         if rich_console:
             rich_console.success(f"Plan file created: {plan_file_path}")
-            
+
         # Attach plan to Jira
         try:
             jira_add_attachment(issue_number, str(plan_file_path))
@@ -316,7 +362,10 @@ def main():
     state.update(plan_file=str(plan_file_path))
     state.save("adw_plan")
     logger.info(f"Plan file created: {plan_file_path}")
-    jira_make_issue_comment(issue_number, format_issue_message(adw_id, 'ops', f'✅ Plan file created: {plan_file_path}'))
+    jira_make_issue_comment(
+        issue_number,
+        format_issue_message(adw_id, "ops", f"✅ Plan file created: {plan_file_path}"),
+    )
 
     # === COMMIT PHASE ===
     if rich_console:
@@ -332,7 +381,12 @@ def main():
         logger.error(error_msg)
         if rich_console:
             rich_console.error(error_msg)
-        jira_make_issue_comment(issue_number, format_issue_message(adw_id, AGENT_PLANNER, f"❌ Error creating commit message: {error}"))
+        jira_make_issue_comment(
+            issue_number,
+            format_issue_message(
+                adw_id, AGENT_PLANNER, f"❌ Error creating commit message: {error}"
+            ),
+        )
         sys.exit(1)
 
     # Commit the plan
@@ -347,13 +401,20 @@ def main():
         logger.error(error_msg)
         if rich_console:
             rich_console.error(error_msg)
-        jira_make_issue_comment(issue_number, format_issue_message(adw_id, AGENT_PLANNER, f"❌ Error committing plan: {error}"))
+        jira_make_issue_comment(
+            issue_number,
+            format_issue_message(
+                adw_id, AGENT_PLANNER, f"❌ Error committing plan: {error}"
+            ),
+        )
         sys.exit(1)
 
     logger.info(f"Committed plan: {commit_msg}")
     if rich_console:
         rich_console.success("Plan committed successfully")
-    jira_make_issue_comment(issue_number, format_issue_message(adw_id, AGENT_PLANNER, '✅ Plan committed'))
+    jira_make_issue_comment(
+        issue_number, format_issue_message(adw_id, AGENT_PLANNER, "✅ Plan committed")
+    )
 
     # === FINALIZATION PHASE ===
     if rich_console:
@@ -376,15 +437,20 @@ def main():
             f"Branch: {branch_name}\n"
             f"Issue Type: {issue_command}",
             title="Planning Summary",
-            style="green"
+            style="green",
         )
-    jira_make_issue_comment(issue_number, format_issue_message(adw_id, 'ops', '✅ Planning phase completed'))
+    jira_make_issue_comment(
+        issue_number, format_issue_message(adw_id, "ops", "✅ Planning phase completed")
+    )
 
     # Save final state
     state.save("adw_plan")
-    
+
     # Post final state summary to issue
-    jira_make_issue_comment(issue_number, f"{adw_id}_ops: 📋 Final planning state:\n```json\n{json.dumps(state.data, indent=2)}\n```")
+    jira_make_issue_comment(
+        issue_number,
+        f"{adw_id}_ops: 📋 Final planning state:\n```json\n{json.dumps(state.data, indent=2)}\n```",
+    )
 
 
 if __name__ == "__main__":
