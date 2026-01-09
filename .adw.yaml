@@ -29,39 +29,36 @@ language: "python"
 # Created: January 7, 2026
 # ============================================================================
 
-# Feature flags for safe, gradual migration
-# Each flag allows independent enable/disable of specific operation types
+# ============================================================================
+# MIGRATION FEATURE FLAGS (DEPRECATED - Not Used in Current Implementation)
+# ============================================================================
+# 
+# NOTE: These flags are defined for documentation purposes but are NOT
+# currently checked by the code. The system now uses OpenCode HTTP API
+# directly for all operations without conditional logic.
+#
+# The code was migrated to use OpenCode directly rather than gradual
+# feature-flag-based rollout. These flags are kept as reference documentation.
+#
+# If implementing conditional behavior in the future, these are the toggles.
+#
+# Status: Phase 0 - Direct OpenCode HTTP path confirmed
+# Created: January 7, 2026
+# Updated: January 9, 2026 (marked deprecated)
+# ============================================================================
+
 migration:
-  # Enable OpenCode HTTP for lightweight tasks (planning, classification)
-  # Operations affected: extract_adw_info, classify_issue, build_plan,
-  #                     generate_branch_name, create_commit, create_pull_request
-  # Model: GPT-4o mini (cheaper, faster for lightweight tasks)
-  # Status: false (disabled - using old custom proxy system)
-  # Controlled by: Epic 2 stories
-  use_opencode_for_lightweight: false
-
-  # Enable OpenCode HTTP for heavy lifting tasks (code execution, testing, review)
-  # Operations affected: implement_plan, resolve_failed_tests, run_review
-  # Model: Claude Sonnet 4.5 (powerful for code work)
-  # Status: false (disabled - using old Copilot CLI system)
-  # Controlled by: Epic 3 stories
-  use_opencode_for_heavy_lifting: false
-
-  # Emergency kill switch - disables ALL OpenCode features
-  # Use this if the system breaks and you need instant rollback
-  # When true: ALL operations revert to old backends (no code changes needed)
-  # Procedure:
-  #   1. Set this to: true
-  #   2. Restart the application
-  #   3. System immediately reverts to AWS Bedrock + Copilot
-  #   4. No code changes or git revert needed!
-  disable_opencode: false
+  # DEPRECATED: These flags are not used by the code
+  # The system now uses OpenCode HTTP API for all operations
+  use_opencode_for_lightweight: true      # Always enabled (via OpenCode HTTP)
+  use_opencode_for_heavy_lifting: true    # Always enabled (via OpenCode HTTP)
+  disable_opencode: false                 # Never disable (no fallback exists)
 
 # ============================================================================
-# OPENCODE HTTP SERVER CONFIGURATION
+# OPENCODE HTTP API CONFIGURATION (Phase 0 - Active)
 # ============================================================================
 # Configure the OpenCode HTTP server endpoint, models, and behavior
-# Only used when migration flags are enabled above
+# This is the PRIMARY and ONLY execution path for all LLM operations
 
 opencode:
   # HTTP server endpoint where OpenCode is running
@@ -72,14 +69,14 @@ opencode:
   # Model selection per task type
   models:
     # Heavy lifting: code implementation, test fixing, code reviews
-    # Uses: Claude Sonnet 4.5 (most capable for code tasks)
-    # Model ID must match OpenCode registry
-    heavy_lifting: "anthropic/claude-3-5-sonnet-20241022"
+    # Uses: Claude Sonnet 4 (most capable for code tasks via GitHub Copilot)
+    # Model ID format: github-copilot/model-name
+    heavy_lifting: "github-copilot/claude-sonnet-4"
 
     # Lightweight: planning, classification, document generation
-    # Uses: GPT-4o mini (cheaper, faster for lightweight tasks)
-    # Model ID must match OpenCode registry
-    lightweight: "openai/gpt-4o-mini"
+    # Uses: Claude Haiku 4.5 (faster for lightweight tasks via GitHub Copilot)
+    # Model ID format: github-copilot/model-name
+    lightweight: "github-copilot/claude-haiku-4.5"
 
   # Timeout settings (in seconds)
   timeout: 600                 # 10 minutes for heavy code operations
@@ -101,29 +98,32 @@ opencode:
 # NOTES FOR DEVELOPMENT
 # ============================================================================
 #
-# 1. SAFE MIGRATION APPROACH:
-#    - Start with all flags = false (uses old system)
-#    - After Epic 1: no code changes needed (old system still works)
-#    - Enable lightweight flag when Epic 2 is ready (use_opencode_for_lightweight: true)
-#    - Test thoroughly, then keep it enabled
-#    - Enable heavy lifting flag when Epic 3 is ready (use_opencode_for_heavy_lifting: true)
-#    - Test thoroughly, then keep it enabled
+# PHASE 0 STATUS (January 9, 2026):
+# - Deluxe LLM fallback permanently removed (token expired Dec 30, 2025)
+# - All operations route DIRECTLY to OpenCode HTTP API (no fallback chain)
+# - GitHub Copilot models verified and accessible:
+#   * Claude Sonnet 4 (heavy lifting: code implementation, test fixing, reviews)
+#   * Claude Haiku 4.5 (lightweight: planning, classification, document generation)
+# - No feature flags needed - OpenCode is the ONLY execution path
+# - All 95 existing tests passing with new direct-path architecture
+# - Configuration clean and simplified - no hybrid state, no fallback logic
 #
-# 2. EMERGENCY PROCEDURE (30 seconds):
-#    - Edit this file
-#    - Set: disable_opencode: true
-#    - Restart your application
-#    - System reverts to old backends (no code changes!)
+# PREREQUISITES TO RUN ADWS:
+# 1. OpenCode Server running: opencode serve --port 4096
+# 2. OpenCode Authentication: opencode auth login
+# 3. Copilot CLI installed: copilot --version (for implement_plan, test_fix, review)
+# 4. Jira credentials in .env or environment:
+#    - JIRA_SERVER
+#    - JIRA_USERNAME
+#    - JIRA_API_TOKEN
 #
-# 3. OPENCODE SERVER SETUP:
-#    - Install: brew install opencode OR npm install -g opencode-ai
-#    - Start server: opencode serve --port 4096
-#    - Authenticate: opencode auth login (select provider and paste API key)
-#    - Verify: curl http://localhost:4096/global/health
+# QUICK START:
+# 1. Start OpenCode: opencode serve --port 4096
+# 2. Authenticate: opencode auth login
+# 3. Run ADWS: uv run scripts/adw_cli.py [options]
+# 4. Check logs: ai_docs/logs/[adw_id]/[agent]/
 #
-# 4. MONITORING:
-#    - Check logs: ai_docs/logs/*/*/response_*.json
-#    - Verify tests: uv run pytest
-#    - Check git changes: git status / git diff
-#
+# EMERGENCY ROLLBACK:
+# If needed, disable OpenCode and use fallback (if implemented):
+#   Set disable_opencode: true (currently has no fallback - define strategy)
 # ============================================================================

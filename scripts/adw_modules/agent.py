@@ -172,7 +172,7 @@ def execute_template(request: AgentTemplateRequest) -> AgentPromptResponse:
     Execute a prompt template using GitHub Copilot models via OpenCode.
 
     Model selection:
-    - "opus" or request.model=="opus" → Claude Sonnet 4.5 (heavy lifting)
+    - "opus" or request.model=="opus" → Claude Sonnet 4 (heavy lifting)
     - other → Claude Haiku 4.5 (lightweight tasks)
     """
 

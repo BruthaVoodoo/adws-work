@@ -19,7 +19,7 @@ dependencies = [
     "requests",
     "jira>=3.0,<4.0",
     "rich>=13.0",
-    "boto3",
+    "boto3",  # Optional: Only used by isolated bedrock_agent.py; can be removed if not needed
     "pyyaml",
     "click>=8.0",
 ]
