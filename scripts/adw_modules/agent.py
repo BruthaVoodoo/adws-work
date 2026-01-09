@@ -1,10 +1,11 @@
 """
-Custom agent module for executing prompts against multiple LLM backends.
+Custom agent module for executing prompts via OpenCode HTTP API.
 
 Strategy:
-- Primary: Legacy Deluxe endpoint (if available and configured)
-- Secondary: OpenCode HTTP API with GitHub Copilot models
-- Fallback chain ensures ADWS continues working during migrations
+- OpenCode HTTP API with GitHub Copilot models (primary and only path)
+- GitHub Copilot subscription provides two models:
+  - github-copilot/claude-sonnet-4 (heavy lifting)
+  - github-copilot/claude-haiku-4.5 (lightweight tasks)
 """
 
 import sys
@@ -71,64 +72,10 @@ def save_prompt(
     print(f"Saved prompt to: {prompt_file}")
 
 
-def invoke_deluxe_model(prompt: str, model_id: str) -> Optional[AgentPromptResponse]:
-    """
-    Try to invoke model via legacy Deluxe endpoint.
-    Returns None if endpoint is unavailable (triggering fallback).
-    """
-    load_dotenv(override=True)
-    endpoint_url = os.getenv("AWS_ENDPOINT_URL")
-    api_key = os.getenv("AWS_MODEL_KEY")
-
-    if not endpoint_url or not api_key:
-        return None
-
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {api_key}",
-    }
-
-    body = {
-        "model": model_id,
-        "messages": [{"role": "user", "content": prompt}],
-    }
-
-    try:
-        response = requests.post(
-            endpoint_url, headers=headers, data=json.dumps(body), timeout=30
-        )
-        response.raise_for_status()
-
-        response_body = response.json()
-
-        if response_body.get("choices") and len(response_body["choices"]) > 0:
-            message = response_body["choices"][0].get("message")
-            if message and message.get("content"):
-                result_text = message["content"]
-                return AgentPromptResponse(output=result_text, success=True)
-            else:
-                stop_reason = response_body["choices"][0].get(
-                    "finish_reason", "unknown"
-                )
-                error_output = (
-                    f"Deluxe endpoint returned no content. Stop reason: {stop_reason}"
-                )
-                return AgentPromptResponse(output=error_output, success=False)
-        else:
-            error_output = f"Deluxe endpoint returned no choices."
-            return AgentPromptResponse(output=error_output, success=False)
-
-    except requests.exceptions.RequestException:
-        # Deluxe endpoint is unreachable - will fallback to OpenCode
-        return None
-    except Exception:
-        return None
-
-
 def invoke_opencode_model(prompt: str, model_id: str) -> AgentPromptResponse:
     """
     Invoke model via OpenCode HTTP API (GitHub Copilot models).
-    This is the primary fallback when Deluxe is unavailable.
+    This is the primary execution path for all model invocations.
 
     Args:
         prompt: The prompt text to send
@@ -216,39 +163,8 @@ def invoke_opencode_model(prompt: str, model_id: str) -> AgentPromptResponse:
 
 
 def invoke_model(prompt: str, model_id: str) -> AgentPromptResponse:
-    """
-    Invoke a model with intelligent fallback chain.
-
-    1. Try Deluxe endpoint first (legacy, may be unavailable)
-    2. Fall back to OpenCode HTTP API with GitHub Copilot models
-    3. Return detailed error if both fail
-    """
-
-    # Try Deluxe first (if configured)
-    deluxe_response = invoke_deluxe_model(prompt, model_id)
-    if deluxe_response is not None:
-        if deluxe_response.success:
-            print(f"✅ Using Deluxe endpoint", file=sys.stderr)
-            return deluxe_response
-        elif (
-            "expired" in deluxe_response.output.lower()
-            or "unauthorized" in deluxe_response.output.lower()
-        ):
-            print(
-                f"⚠️  Deluxe token invalid/expired. Falling back to OpenCode...",
-                file=sys.stderr,
-            )
-        else:
-            print(f"⚠️  Deluxe error. Trying OpenCode fallback...", file=sys.stderr)
-    else:
-        print(
-            f"🔄 Deluxe endpoint unavailable. Using OpenCode HTTP API...",
-            file=sys.stderr,
-        )
-
-    # Fall back to OpenCode with GitHub Copilot models
-    opencode_response = invoke_opencode_model(prompt, model_id)
-    return opencode_response
+    """Invoke a model via OpenCode HTTP API (GitHub Copilot)."""
+    return invoke_opencode_model(prompt, model_id)
 
 
 def execute_template(request: AgentTemplateRequest) -> AgentPromptResponse:
