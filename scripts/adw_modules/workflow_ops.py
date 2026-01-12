@@ -55,18 +55,28 @@ def format_issue_message(
 def extract_adw_info(
     text: str, temp_adw_id: str
 ) -> Tuple[Optional[str], Optional[str]]:
-    """Extract ADW workflow and ID from text using classify_adw agent.
+    """Extract ADW workflow and ID from text using OpenCode HTTP API with Claude Haiku 4.5.
+
+    Story 2.2 Implementation:
+    - Migrated to use execute_opencode_prompt() with task_type="extract_adw"
+    - Routes to Claude Haiku 4.5 via GitHub Copilot (lightweight model)
+    - Maintains backward compatibility with existing return format
+
     Returns (workflow_command, adw_id) tuple."""
 
     try:
         prompt = load_prompt("classify_adw").format(text=text)
-        request = AgentTemplateRequest(
-            agent_name="adw_classifier",
+
+        # Import here to avoid circular imports
+        from .agent import execute_opencode_prompt
+
+        # Use OpenCode HTTP API with task_type="extract_adw" → Claude Haiku 4.5
+        response = execute_opencode_prompt(
             prompt=prompt,
+            task_type="extract_adw",  # Routes to Claude Haiku 4.5 (GitHub Copilot)
             adw_id=temp_adw_id,
-            model="sonnet",
+            agent_name="adw_classifier",
         )
-        response = execute_template(request)
 
         if not response.success:
             print(f"Failed to classify ADW: {response.output}")

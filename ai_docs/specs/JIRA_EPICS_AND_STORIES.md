@@ -689,23 +689,49 @@ As a developer, I want execute_template() to use OpenCode HTTP client instead of
 
 ---
 
-#### Story 2.2: Migrate extract_adw_info() to OpenCode lightweight model
+#### Story 2.2: Migrate extract_adw_info() to OpenCode lightweight model ✅ COMPLETE
 **Summary:** Migrate extract_adw_info() to OpenCode with Claude Haiku 4.5 (GitHub Copilot)  
 **Type:** Story  
 **Estimation:** 2 hours  
 **Dependencies:** Story 2.1
+**Status:** ✅ COMPLETE - Implementation finished, 8 unit tests passing, all AC met
 
 **Description**
 As a developer, I want extract_adw_info() to use OpenCode HTTP API, so that ADW classification is more reliable and cheaper.
 
 **Acceptance Criteria**
-- Given extract_adw_info() is called with issue text
+- ✅ Given extract_adw_info() is called with issue text
    When it executes via OpenCode
    Then task_type="extract_adw" is used → Model: Claude Haiku 4.5 (GitHub Copilot)
    
-- Given OpenCode response contains ADW slash command and ID
+- ✅ Given OpenCode response contains ADW slash command and ID
    When response is parsed
    Then values are correctly extracted for downstream use
+
+**Implementation Details**
+- File modified: `scripts/adw_modules/workflow_ops.py`
+- Test file created: `tests/test_extract_adw_info_migration.py`
+- Migration approach: Direct OpenCode HTTP integration via execute_opencode_prompt()
+- Refactored extract_adw_info() function to use task_type="extract_adw" (routes to Claude Haiku 4.5)
+- Eliminated AgentTemplateRequest wrapper for more efficient direct API calls
+- 8 comprehensive unit tests covering:
+  - Successful extraction with OpenCode HTTP API
+  - Task-type routing verification (extract_adw → Claude Haiku 4.5)
+  - Error handling (API failures, JSON parse errors, exceptions)
+  - Command validation and workflow command filtering
+  - Slash removal from ADW commands
+  - Backward compatibility verification
+- All tests passing (8/8 new tests for Story 2.2)
+- Full test suite: 280 tests passing with 0 regressions
+- Manual verification confirmed integration works correctly
+- Features implemented:
+  - Direct OpenCode HTTP client integration via execute_opencode_prompt()
+  - Task-type aware model routing (extract_adw for lightweight operations)
+  - Response parsing preserving all existing functionality
+  - Error handling with graceful fallbacks for connection and parsing errors
+  - Maintains complete backward compatibility with existing return format
+  - Cost optimization: Uses cheaper Claude Haiku 4.5 instead of Sonnet for ADW classification
+- Ready for Story 2.3 which depends on this foundation for OpenCode integration
 
 ---
 
