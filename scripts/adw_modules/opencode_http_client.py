@@ -1,18 +1,34 @@
-"""OpenCode HTTP Client - Story 1.1 & 1.2: HTTP client with session management and API communication
+"""OpenCode HTTP Client - Story 1.1 & 1.2 & 1.4: HTTP client with session management, API communication, and model routing
 
 This module provides the HTTP client layer for communicating with OpenCode HTTP server.
-It handles session management, connection validation, authentication, and prompt execution.
+It handles session management, connection validation, authentication, prompt execution, and intelligent model routing.
 - Story 1.1: Session management and connection handling
 - Story 1.2: Prompt sending with exponential backoff retry logic
+- Story 1.4: Model routing logic with task-aware selection
 """
 
 import uuid
 import requests
 import time
 import json
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Literal
 from urllib.parse import urlparse
 import sys
+
+# Task type definitions for intelligent model routing
+TaskType = Literal[
+    # Lightweight tasks - Use Claude Haiku 4.5 (GitHub Copilot)
+    "classify",  # Issue classification
+    "extract_adw",  # ADW info extraction
+    "plan",  # Implementation planning
+    "branch_gen",  # Branch name generation
+    "commit_msg",  # Commit message generation
+    "pr_creation",  # Pull request creation
+    # Heavy lifting tasks - Use Claude Sonnet 4 (GitHub Copilot)
+    "implement",  # Code implementation
+    "test_fix",  # Test failure resolution
+    "review",  # Code review
+]
 
 
 class OpenCodeHTTPClientError(Exception):
@@ -31,6 +47,41 @@ class OpenCodeConnectionError(OpenCodeHTTPClientError):
     """Raised when connection to OpenCode server fails."""
 
     pass
+
+
+# Task type definitions for intelligent model routing
+TaskType = Literal[
+    # Lightweight tasks - Use Claude Haiku 4.5 (GitHub Copilot)
+    "classify",  # Issue classification
+    "extract_adw",  # ADW info extraction
+    "plan",  # Implementation planning
+    "branch_gen",  # Branch name generation
+    "commit_msg",  # Commit message generation
+    "pr_creation",  # Pull request creation
+    # Heavy lifting tasks - Use Claude Sonnet 4 (GitHub Copilot)
+    "implement",  # Code implementation
+    "test_fix",  # Test failure resolution
+    "review",  # Code review
+]
+
+# Model routing configuration
+MODEL_LIGHTWEIGHT = "github-copilot/claude-haiku-4.5"
+MODEL_HEAVY_LIFTING = "github-copilot/claude-sonnet-4"
+
+# Task type to model mapping
+TASK_TYPE_TO_MODEL = {
+    # Lightweight tasks
+    "classify": MODEL_LIGHTWEIGHT,
+    "extract_adw": MODEL_LIGHTWEIGHT,
+    "plan": MODEL_LIGHTWEIGHT,
+    "branch_gen": MODEL_LIGHTWEIGHT,
+    "commit_msg": MODEL_LIGHTWEIGHT,
+    "pr_creation": MODEL_LIGHTWEIGHT,
+    # Heavy lifting tasks
+    "implement": MODEL_HEAVY_LIFTING,
+    "test_fix": MODEL_HEAVY_LIFTING,
+    "review": MODEL_HEAVY_LIFTING,
+}
 
 
 class OpenCodeHTTPClient:
@@ -213,10 +264,83 @@ class OpenCodeHTTPClient:
         """Check if session is authenticated and verified."""
         return self._is_authenticated
 
+    @staticmethod
+    def get_model_for_task(task_type: str) -> str:
+        """
+        Get appropriate model ID for a given task type.
+
+        Story 1.4 Acceptance Criteria:
+        - Given task_type = "classify"
+           When I call get_model_for_task(task_type)
+           Then it returns MODEL_LIGHTWEIGHT ("github-copilot/claude-haiku-4.5")
+
+        - Given task_type = "implement"
+           When I call get_model_for_task(task_type)
+           Then it returns MODEL_HEAVY_LIFTING ("github-copilot/claude-sonnet-4")
+
+        - Given all 9 task types
+           When I validate model routing for each
+           Then heavy tasks get Claude Sonnet 4 (GitHub Copilot), lightweight tasks get Claude Haiku 4.5 (GitHub Copilot)
+
+        Args:
+            task_type: The task type string (one of the supported TaskType values)
+
+        Returns:
+            str: Model ID for the specified task type
+
+        Raises:
+            ValueError: If task_type is not supported
+        """
+        if task_type not in TASK_TYPE_TO_MODEL:
+            supported_tasks = ", ".join(TASK_TYPE_TO_MODEL.keys())
+            raise ValueError(
+                f"Unsupported task_type: {task_type}. "
+                f"Supported task types: {supported_tasks}"
+            )
+
+        return TASK_TYPE_TO_MODEL[task_type]
+
+    @staticmethod
+    def get_all_task_types() -> Dict[str, str]:
+        """
+        Get mapping of all supported task types to their models.
+
+        Returns:
+            Dict mapping task_type -> model_id for all supported tasks
+        """
+        return TASK_TYPE_TO_MODEL.copy()
+
+    @staticmethod
+    def is_lightweight_task(task_type: str) -> bool:
+        """
+        Check if a task type is considered lightweight.
+
+        Args:
+            task_type: The task type string to check
+
+        Returns:
+            bool: True if task uses lightweight model (Claude Haiku 4.5)
+        """
+        return TASK_TYPE_TO_MODEL.get(task_type) == MODEL_LIGHTWEIGHT
+
+    @staticmethod
+    def is_heavy_lifting_task(task_type: str) -> bool:
+        """
+        Check if a task type is considered heavy lifting.
+
+        Args:
+            task_type: The task type string to check
+
+        Returns:
+            bool: True if task uses heavy lifting model (Claude Sonnet 4)
+        """
+        return TASK_TYPE_TO_MODEL.get(task_type) == MODEL_HEAVY_LIFTING
+
     def send_prompt(
         self,
         prompt: str,
-        model_id: str,
+        model_id: Optional[str] = None,
+        task_type: Optional[str] = None,
         timeout: Optional[float] = None,
     ) -> Dict[str, Any]:
         """
@@ -235,15 +359,22 @@ class OpenCodeHTTPClient:
           When I call send_prompt()
           Then error is caught, logged, and re-raised with context
 
+        Story 1.4 Enhancement:
+        - Supports task-aware model selection via task_type parameter
+        - If task_type is provided, automatically selects appropriate model
+        - If both model_id and task_type are provided, model_id takes precedence
+
         Args:
             prompt: The prompt text to send to OpenCode
-            model_id: Model ID for routing (e.g., "github-copilot/claude-sonnet-4")
+            model_id: Explicit model ID for routing (e.g., "github-copilot/claude-sonnet-4")
+            task_type: Task type for automatic model selection (alternative to model_id)
             timeout: Optional timeout override (uses default if not provided)
 
         Returns:
             Dict with OpenCode response structure including 'message' and 'parts'
 
         Raises:
+            ValueError: If neither model_id nor task_type is provided
             OpenCodeHTTPClientError: If request fails after retries
             OpenCodeConnectionError: If connection cannot be established
             OpenCodeAuthenticationError: If authentication fails
@@ -251,21 +382,30 @@ class OpenCodeHTTPClient:
         if not prompt or not isinstance(prompt, str):
             raise ValueError("prompt must be a non-empty string")
 
-        if not model_id or not isinstance(model_id, str):
-            raise ValueError("model_id must be a non-empty string")
+        # Determine model ID - explicit model_id takes precedence over task_type
+        final_model_id = model_id
+        if final_model_id is None:
+            if task_type is None:
+                raise ValueError(
+                    "Either model_id or task_type must be provided for model routing"
+                )
+            final_model_id = self.get_model_for_task(task_type)
+
+        if not final_model_id or not isinstance(final_model_id, str):
+            raise ValueError("Resolved model_id must be a non-empty string")
 
         # Use provided timeout or select based on model type (lightweight vs heavy)
         request_timeout = timeout
         if request_timeout is None:
             request_timeout = (
                 self.lightweight_timeout
-                if "haiku" in model_id.lower()
+                if "haiku" in final_model_id.lower()
                 else self.timeout
             )
 
         return self._send_prompt_with_retry(
             prompt=prompt,
-            model_id=model_id,
+            model_id=final_model_id,
             timeout=request_timeout,
         )
 

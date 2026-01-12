@@ -87,9 +87,9 @@ This document contains all Epics and Stories for the complete migration of ADWS 
 - **Description:** Create the foundational HTTP client layer for communicating with OpenCode HTTP server. This epic establishes the core infrastructure for all subsequent migrations, including connection management, session handling, response parsing, and intelligent model routing based on task type. This is the critical path item that enables all other work.
 
 ### Acceptance Criteria
-- [ ] HTTP client successfully connects to OpenCode server and manages sessions
-- [ ] All Part types (text, tool_use, tool_result, code_block) correctly parsed from responses
-- [ ] Model routing selects correct model for each task type (heavy vs lightweight)
+- [x] HTTP client successfully connects to OpenCode server and manages sessions
+- [x] All Part types (text, tool_use, tool_result, code_block) correctly parsed from responses
+- [x] Model routing selects correct model for each task type (heavy vs lightweight)
 - [ ] Configuration loaded from .adw.yaml with sensible defaults
 - [ ] Connection health checks pass at startup
 - [ ] Comprehensive unit test coverage (50+ tests)
@@ -363,27 +363,48 @@ As a developer, I want strongly-typed data models for OpenCode responses, so tha
 
 ---
 
-#### Story 1.4: Build model routing logic with task-aware selection
+#### Story 1.4: Build model routing logic with task-aware selection ✅ COMPLETE
 **Summary:** Build model routing logic for task-aware model selection  
 **Type:** Story  
 **Estimation:** 2 hours  
 **Dependencies:** Stories 1.1, 1.3
+**Status:** ✅ COMPLETE - Implementation finished, 19 unit tests passing, all AC met
 
 **Description**
 As a developer, I want intelligent model routing that selects appropriate models per task type, so that lightweight tasks use cheap models and heavy tasks use powerful models.
 
 **Acceptance Criteria**
-- Given task_type = "classify"
+- ✅ Given task_type = "classify"
    When I call get_model_for_task(task_type)
    Then it returns MODEL_LIGHTWEIGHT ("github-copilot/claude-haiku-4.5")
    
-- Given task_type = "implement"
+- ✅ Given task_type = "implement"
    When I call get_model_for_task(task_type)
    Then it returns MODEL_HEAVY_LIFTING ("github-copilot/claude-sonnet-4")
    
-- Given all 9 task types
+- ✅ Given all 9 task types
    When I validate model routing for each
    Then heavy tasks get Claude Sonnet 4 (GitHub Copilot), lightweight tasks get Claude Haiku 4.5 (GitHub Copilot)
+
+**Implementation Details**
+- File modified: `scripts/adw_modules/opencode_http_client.py`
+- File modified: `scripts/adw_modules/data_types.py` 
+- Test file created: `tests/test_model_routing.py`
+- 19 comprehensive unit tests covering:
+  - Core model routing logic for all 9 task types
+  - Static method functionality (get_model_for_task, get_all_task_types)
+  - Task classification methods (is_lightweight_task, is_heavy_lifting_task)
+  - Enhanced send_prompt with task_type parameter support
+  - Model precedence (explicit model_id overrides task_type)
+  - Error handling for unsupported task types
+  - Edge cases and validation
+  - Integration with existing timeout selection logic
+- All tests passing (19/19)
+- Full test suite: 170 tests passing with 0 regressions
+- Task type mapping implemented:
+  - Lightweight (Claude Haiku 4.5): classify, extract_adw, plan, branch_gen, commit_msg, pr_creation
+  - Heavy lifting (Claude Sonnet 4): implement, test_fix, review
+- Ready for Story 1.5 (depends on this story)
 
 ---
 

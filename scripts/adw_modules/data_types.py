@@ -17,6 +17,21 @@ ADWWorkflow = Literal[
     "adw_plan_build_test",  # Plan + Build + Test
 ]
 
+# Task type definitions for intelligent model routing (Story 1.4)
+TaskType = Literal[
+    # Lightweight tasks - Use Claude Haiku 4.5 (GitHub Copilot)
+    "classify",  # Issue classification
+    "extract_adw",  # ADW info extraction
+    "plan",  # Implementation planning
+    "branch_gen",  # Branch name generation
+    "commit_msg",  # Commit message generation
+    "pr_creation",  # Pull request creation
+    # Heavy lifting tasks - Use Claude Sonnet 4 (GitHub Copilot)
+    "implement",  # Code implementation
+    "test_fix",  # Test failure resolution
+    "review",  # Code review
+]
+
 
 class GitHubUser(BaseModel):
     """GitHub user model."""
