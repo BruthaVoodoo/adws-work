@@ -456,23 +456,48 @@ As a developer, I want to extract data from OpenCode response Parts, so that I c
 
 ---
 
-#### Story 1.6: Add response logging and error handling
+#### Story 1.6: Add response logging and error handling ✅ COMPLETE
 **Summary:** Add response logging and comprehensive error handling  
 **Type:** Story  
 **Estimation:** 2 hours  
 **Dependencies:** Story 1.2
+**Status:** ✅ COMPLETE - Implementation finished, 14 unit tests passing, all AC met
 
 **Description**
 As a developer, I want detailed logging of all OpenCode interactions, so that I can debug issues and audit operations.
 
 **Acceptance Criteria**
-- Given an OpenCodeResponse
+- ✅ Given an OpenCodeResponse
   When I call save_response_log(adw_id, agent_name, response)
   Then a JSON file is created at ai_docs/logs/{adw_id}/{agent_name}/response_*.json
   
-- Given various error scenarios (timeout, 401, 500, connection error)
+- ✅ Given various error scenarios (timeout, 401, 500, connection error)
   When they occur in send_prompt()
   Then each is caught, logged, and re-raised with context
+
+**Implementation Details**
+- Functions added to: `scripts/adw_modules/opencode_http_client.py`
+  - `save_response_log()` - Main logging function with comprehensive metadata
+  - `log_error_with_context()` - Error logging with operational context
+- Enhanced `send_prompt()` and `_send_prompt_with_retry()` with optional logging parameters
+- Test file created: `tests/test_opencode_logging_error_handling.py`
+- 14 comprehensive unit tests covering:
+  - Response logging functionality and optional context parameters
+  - Error response logging with error_context and directory creation
+  - Input validation and config fallback behavior
+  - Integration with send_prompt() workflow for all error scenarios
+  - Authentication, timeout, connection, server, and JSON decode error logging
+  - Proper behavior when logging context is missing vs. provided
+- All tests passing (14/14 new tests for Story 1.6)
+- Full test suite: 69 tests passing with 0 regressions
+- Features implemented:
+  - JSON file creation at structured path: `ai_docs/logs/{adw_id}/{agent_name}/response_*.json`
+  - Comprehensive error logging for all scenarios: timeout, 401, 403, 4xx, 5xx, connection, JSON decode
+  - Optional logging (only when adw_id and agent_name provided)
+  - Config integration with graceful fallback
+  - Non-blocking logging (errors logged to stderr, never break execution)
+  - Rich metadata: timestamp, server_url, model_id, prompt_preview, error_context
+- Ready for Epic 2 & 3 migrations where logging will provide debugging capabilities
 
 ---
 

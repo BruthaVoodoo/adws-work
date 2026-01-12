@@ -12,6 +12,9 @@ import requests
 import time
 import json
 import re
+import os
+from datetime import datetime
+from pathlib import Path
 from typing import Optional, Dict, Any, Literal, List
 from urllib.parse import urlparse
 import sys
@@ -343,6 +346,8 @@ class OpenCodeHTTPClient:
         model_id: Optional[str] = None,
         task_type: Optional[str] = None,
         timeout: Optional[float] = None,
+        adw_id: Optional[str] = None,
+        agent_name: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Send a prompt to OpenCode server and receive structured response.
@@ -365,11 +370,17 @@ class OpenCodeHTTPClient:
         - If task_type is provided, automatically selects appropriate model
         - If both model_id and task_type are provided, model_id takes precedence
 
+        Story 1.6 Enhancement:
+        - Supports optional logging context via adw_id and agent_name
+        - When provided, all interactions are logged for debugging and audit
+
         Args:
             prompt: The prompt text to send to OpenCode
             model_id: Explicit model ID for routing (e.g., "github-copilot/claude-sonnet-4")
             task_type: Task type for automatic model selection (alternative to model_id)
             timeout: Optional timeout override (uses default if not provided)
+            adw_id: Optional ADW ID for logging context (e.g., "a1b2c3d4")
+            agent_name: Optional agent name for logging context (e.g., "plan_agent")
 
         Returns:
             Dict with OpenCode response structure including 'message' and 'parts'
@@ -408,6 +419,8 @@ class OpenCodeHTTPClient:
             prompt=prompt,
             model_id=final_model_id,
             timeout=request_timeout,
+            adw_id=adw_id,
+            agent_name=agent_name,
         )
 
     def _send_prompt_with_retry(
@@ -417,6 +430,8 @@ class OpenCodeHTTPClient:
         timeout: float,
         attempt: int = 1,
         initial_delay: float = 1.0,
+        adw_id: Optional[str] = None,
+        agent_name: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Send prompt with exponential backoff retry logic.
@@ -431,6 +446,8 @@ class OpenCodeHTTPClient:
             timeout: Request timeout in seconds
             attempt: Current attempt number (1-3)
             initial_delay: Base delay for exponential backoff
+            adw_id: Optional ADW ID for logging context
+            agent_name: Optional agent name for logging context
 
         Returns:
             Dict with structured OpenCode response
@@ -476,13 +493,59 @@ class OpenCodeHTTPClient:
 
             # Handle response status codes
             if response.status_code == 401:
-                raise OpenCodeAuthenticationError(
+                error_msg = (
                     "Authentication failed (401). Invalid API key or session expired."
                 )
+                auth_error = OpenCodeAuthenticationError(error_msg)
+                # Log authentication error with context
+                if adw_id and agent_name:
+                    try:
+                        log_error_with_context(
+                            adw_id=adw_id,
+                            agent_name=agent_name,
+                            error=auth_error,
+                            operation="send_prompt",
+                            server_url=self.server_url,
+                            model_id=model_id,
+                            prompt_preview=prompt[:200] if prompt else None,
+                            additional_context={
+                                "status_code": 401,
+                                "attempt": attempt,
+                                "session_id": self.session_id,
+                            },
+                        )
+                    except Exception as log_error:
+                        print(
+                            f"Warning: Failed to log authentication error: {log_error}",
+                            file=sys.stderr,
+                        )
+                raise auth_error
             elif response.status_code == 403:
-                raise OpenCodeAuthenticationError(
-                    "Access forbidden (403). Insufficient permissions."
-                )
+                error_msg = "Access forbidden (403). Insufficient permissions."
+                auth_error = OpenCodeAuthenticationError(error_msg)
+                # Log authorization error with context
+                if adw_id and agent_name:
+                    try:
+                        log_error_with_context(
+                            adw_id=adw_id,
+                            agent_name=agent_name,
+                            error=auth_error,
+                            operation="send_prompt",
+                            server_url=self.server_url,
+                            model_id=model_id,
+                            prompt_preview=prompt[:200] if prompt else None,
+                            additional_context={
+                                "status_code": 403,
+                                "attempt": attempt,
+                                "session_id": self.session_id,
+                            },
+                        )
+                    except Exception as log_error:
+                        print(
+                            f"Warning: Failed to log authorization error: {log_error}",
+                            file=sys.stderr,
+                        )
+                raise auth_error
             elif response.status_code >= 500:
                 # Server error - retry with exponential backoff
                 if attempt < self.MAX_RETRIES:
@@ -492,6 +555,33 @@ class OpenCodeHTTPClient:
                         f"Retrying in {delay}s...",
                         file=sys.stderr,
                     )
+                    # Log retry attempt
+                    if adw_id and agent_name:
+                        try:
+                            log_error_with_context(
+                                adw_id=adw_id,
+                                agent_name=agent_name,
+                                error=OpenCodeHTTPClientError(
+                                    f"Server error {response.status_code}: {response.text}"
+                                ),
+                                operation="send_prompt_retry",
+                                server_url=self.server_url,
+                                model_id=model_id,
+                                prompt_preview=prompt[:200] if prompt else None,
+                                additional_context={
+                                    "status_code": response.status_code,
+                                    "attempt": attempt,
+                                    "max_retries": self.MAX_RETRIES,
+                                    "retry_delay": delay,
+                                    "response_text": response.text[:500],
+                                },
+                            )
+                        except Exception as log_error:
+                            print(
+                                f"Warning: Failed to log retry attempt: {log_error}",
+                                file=sys.stderr,
+                            )
+
                     time.sleep(delay)
                     return self._send_prompt_with_retry(
                         prompt=prompt,
@@ -499,20 +589,87 @@ class OpenCodeHTTPClient:
                         timeout=timeout,
                         attempt=attempt + 1,
                         initial_delay=initial_delay,
+                        adw_id=adw_id,
+                        agent_name=agent_name,
                     )
                 else:
-                    raise OpenCodeHTTPClientError(
+                    final_error = OpenCodeHTTPClientError(
                         f"Server error {response.status_code}: {response.text}. "
                         f"Max retries ({self.MAX_RETRIES}) exhausted."
                     )
+                    # Log final failure
+                    if adw_id and agent_name:
+                        try:
+                            log_error_with_context(
+                                adw_id=adw_id,
+                                agent_name=agent_name,
+                                error=final_error,
+                                operation="send_prompt_final_failure",
+                                server_url=self.server_url,
+                                model_id=model_id,
+                                prompt_preview=prompt[:200] if prompt else None,
+                                additional_context={
+                                    "status_code": response.status_code,
+                                    "final_attempt": attempt,
+                                    "total_retries": self.MAX_RETRIES,
+                                    "response_text": response.text[:500],
+                                },
+                            )
+                        except Exception as log_error:
+                            print(
+                                f"Warning: Failed to log final failure: {log_error}",
+                                file=sys.stderr,
+                            )
+                    raise final_error
             elif response.status_code >= 400:
                 # Client error - don't retry
-                raise OpenCodeHTTPClientError(
+                client_error = OpenCodeHTTPClientError(
                     f"Client error {response.status_code}: {response.text}"
                 )
+                # Log client error
+                if adw_id and agent_name:
+                    try:
+                        log_error_with_context(
+                            adw_id=adw_id,
+                            agent_name=agent_name,
+                            error=client_error,
+                            operation="send_prompt",
+                            server_url=self.server_url,
+                            model_id=model_id,
+                            prompt_preview=prompt[:200] if prompt else None,
+                            additional_context={
+                                "status_code": response.status_code,
+                                "attempt": attempt,
+                                "response_text": response.text[:500],
+                            },
+                        )
+                    except Exception as log_error:
+                        print(
+                            f"Warning: Failed to log client error: {log_error}",
+                            file=sys.stderr,
+                        )
+                raise client_error
 
-            # Success - parse and return response
+            # Success - parse response and optionally log successful response
             response_data = response.json()
+
+            # Log successful response if context provided
+            if adw_id and agent_name:
+                try:
+                    save_response_log(
+                        adw_id=adw_id,
+                        agent_name=agent_name,
+                        response=response_data,
+                        server_url=self.server_url,
+                        model_id=model_id,
+                        prompt_preview=prompt[:200] if prompt else None,
+                    )
+                except Exception as log_error:
+                    print(
+                        f"Warning: Failed to log successful response: {log_error}",
+                        file=sys.stderr,
+                    )
+
             return response_data
 
         except requests.exceptions.Timeout as e:
@@ -524,6 +681,30 @@ class OpenCodeHTTPClient:
                     f"Retrying in {delay}s...",
                     file=sys.stderr,
                 )
+                # Log timeout retry
+                if adw_id and agent_name:
+                    try:
+                        log_error_with_context(
+                            adw_id=adw_id,
+                            agent_name=agent_name,
+                            error=e,
+                            operation="send_prompt_timeout_retry",
+                            server_url=self.server_url,
+                            model_id=model_id,
+                            prompt_preview=prompt[:200] if prompt else None,
+                            additional_context={
+                                "timeout": timeout,
+                                "attempt": attempt,
+                                "max_retries": self.MAX_RETRIES,
+                                "retry_delay": delay,
+                            },
+                        )
+                    except Exception as log_error:
+                        print(
+                            f"Warning: Failed to log timeout retry: {log_error}",
+                            file=sys.stderr,
+                        )
+
                 time.sleep(delay)
                 return self._send_prompt_with_retry(
                     prompt=prompt,
@@ -531,12 +712,37 @@ class OpenCodeHTTPClient:
                     timeout=timeout,
                     attempt=attempt + 1,
                     initial_delay=initial_delay,
+                    adw_id=adw_id,
+                    agent_name=agent_name,
                 )
             else:
-                raise TimeoutError(
+                final_timeout_error = TimeoutError(
                     f"Request timeout after {self.MAX_RETRIES} retries "
                     f"to {self.server_url}"
                 )
+                # Log final timeout failure
+                if adw_id and agent_name:
+                    try:
+                        log_error_with_context(
+                            adw_id=adw_id,
+                            agent_name=agent_name,
+                            error=final_timeout_error,
+                            operation="send_prompt_timeout_final",
+                            server_url=self.server_url,
+                            model_id=model_id,
+                            prompt_preview=prompt[:200] if prompt else None,
+                            additional_context={
+                                "timeout": timeout,
+                                "final_attempt": attempt,
+                                "total_retries": self.MAX_RETRIES,
+                            },
+                        )
+                    except Exception as log_error:
+                        print(
+                            f"Warning: Failed to log final timeout: {log_error}",
+                            file=sys.stderr,
+                        )
+                raise final_timeout_error
 
         except requests.exceptions.ConnectionError as e:
             # Connection error - retry with exponential backoff
@@ -547,6 +753,29 @@ class OpenCodeHTTPClient:
                     f"Retrying in {delay}s...",
                     file=sys.stderr,
                 )
+                # Log connection retry
+                if adw_id and agent_name:
+                    try:
+                        log_error_with_context(
+                            adw_id=adw_id,
+                            agent_name=agent_name,
+                            error=e,
+                            operation="send_prompt_connection_retry",
+                            server_url=self.server_url,
+                            model_id=model_id,
+                            prompt_preview=prompt[:200] if prompt else None,
+                            additional_context={
+                                "attempt": attempt,
+                                "max_retries": self.MAX_RETRIES,
+                                "retry_delay": delay,
+                            },
+                        )
+                    except Exception as log_error:
+                        print(
+                            f"Warning: Failed to log connection retry: {log_error}",
+                            file=sys.stderr,
+                        )
+
                 time.sleep(delay)
                 return self._send_prompt_with_retry(
                     prompt=prompt,
@@ -554,23 +783,96 @@ class OpenCodeHTTPClient:
                     timeout=timeout,
                     attempt=attempt + 1,
                     initial_delay=initial_delay,
+                    adw_id=adw_id,
+                    agent_name=agent_name,
                 )
             else:
-                raise OpenCodeConnectionError(
+                final_connection_error = OpenCodeConnectionError(
                     f"Failed to connect to {self.server_url} after {self.MAX_RETRIES} retries: {e}"
                 )
+                # Log final connection failure
+                if adw_id and agent_name:
+                    try:
+                        log_error_with_context(
+                            adw_id=adw_id,
+                            agent_name=agent_name,
+                            error=final_connection_error,
+                            operation="send_prompt_connection_final",
+                            server_url=self.server_url,
+                            model_id=model_id,
+                            prompt_preview=prompt[:200] if prompt else None,
+                            additional_context={
+                                "final_attempt": attempt,
+                                "total_retries": self.MAX_RETRIES,
+                                "original_error": str(e),
+                            },
+                        )
+                    except Exception as log_error:
+                        print(
+                            f"Warning: Failed to log final connection error: {log_error}",
+                            file=sys.stderr,
+                        )
+                raise final_connection_error
 
         except (OpenCodeAuthenticationError, OpenCodeHTTPClientError):
             # Re-raise our custom exceptions without retry
             raise
         except json.JSONDecodeError as e:
             response_text = response.text if response is not None else "No response"
-            raise OpenCodeHTTPClientError(
+            json_error = OpenCodeHTTPClientError(
                 f"Invalid JSON in OpenCode response: {e}. Response: {response_text}"
             )
+            # Log JSON decode error
+            if adw_id and agent_name:
+                try:
+                    log_error_with_context(
+                        adw_id=adw_id,
+                        agent_name=agent_name,
+                        error=json_error,
+                        operation="send_prompt_json_decode",
+                        server_url=self.server_url,
+                        model_id=model_id,
+                        prompt_preview=prompt[:200] if prompt else None,
+                        additional_context={
+                            "attempt": attempt,
+                            "response_text": response_text[:1000],
+                            "json_error": str(e),
+                        },
+                    )
+                except Exception as log_error:
+                    print(
+                        f"Warning: Failed to log JSON decode error: {log_error}",
+                        file=sys.stderr,
+                    )
+            raise json_error
         except Exception as e:
             # Unexpected error
-            raise OpenCodeHTTPClientError(f"Unexpected error calling OpenCode API: {e}")
+            unexpected_error = OpenCodeHTTPClientError(
+                f"Unexpected error calling OpenCode API: {e}"
+            )
+            # Log unexpected error
+            if adw_id and agent_name:
+                try:
+                    log_error_with_context(
+                        adw_id=adw_id,
+                        agent_name=agent_name,
+                        error=unexpected_error,
+                        operation="send_prompt_unexpected",
+                        server_url=self.server_url,
+                        model_id=model_id,
+                        prompt_preview=prompt[:200] if prompt else None,
+                        additional_context={
+                            "attempt": attempt,
+                            "error_type": type(e).__name__,
+                            "original_error": str(e),
+                        },
+                    )
+                except Exception as log_error:
+                    print(
+                        f"Warning: Failed to log unexpected error: {log_error}",
+                        file=sys.stderr,
+                    )
+            raise unexpected_error
 
     def __repr__(self) -> str:
         """String representation of OpenCodeHTTPClient."""
@@ -810,3 +1112,162 @@ def estimate_metrics_from_parts(parts: List[Dict[str, Any]]) -> Dict[str, int]:
         "total_content_length": total_content_length,
         "code_blocks": code_blocks,
     }
+
+
+# Story 1.6: Response Logging and Error Handling Functions
+
+# Import config at module level for easier mocking in tests
+try:
+    from .config import config
+except ImportError:
+    config = None
+
+
+def save_response_log(
+    adw_id: str,
+    agent_name: str,
+    response: Dict[str, Any],
+    server_url: Optional[str] = None,
+    model_id: Optional[str] = None,
+    prompt_preview: Optional[str] = None,
+    error_context: Optional[str] = None,
+) -> Path:
+    """
+    Save OpenCode response to structured log file for debugging and audit.
+
+    Story 1.6 Acceptance Criteria:
+    - Given an OpenCodeResponse
+      When I call save_response_log(adw_id, agent_name, response)
+      Then a JSON file is created at ai_docs/logs/{adw_id}/{agent_name}/response_*.json
+
+    Args:
+        adw_id: ADW ID for workflow tracking (e.g., "a1b2c3d4")
+        agent_name: Name of the agent making the call (e.g., "plan_agent", "build_agent")
+        response: OpenCode response dictionary with message + parts
+        server_url: Optional OpenCode server URL for context
+        model_id: Optional model ID that was used
+        prompt_preview: Optional first 200 chars of prompt for context
+        error_context: Optional error description if this is an error log
+
+    Returns:
+        Path: Path to the created log file
+
+    Raises:
+        ValueError: If adw_id or agent_name is empty
+        OSError: If log directory cannot be created
+    """
+    # Validate inputs
+    if not adw_id or not isinstance(adw_id, str):
+        raise ValueError("adw_id must be a non-empty string")
+    if not agent_name or not isinstance(agent_name, str):
+        raise ValueError("agent_name must be a non-empty string")
+
+    # Use config if available, otherwise fallback
+    if config is not None:
+        logs_dir = config.logs_dir
+    else:
+        # Fallback if config module not available
+        project_root = Path.cwd()
+        logs_dir = project_root / "ai_docs" / "logs"
+
+    # Create log directory structure: ai_docs/logs/{adw_id}/{agent_name}/
+    agent_log_dir = logs_dir / adw_id / agent_name
+
+    try:
+        agent_log_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as e:
+        raise OSError(f"Failed to create log directory {agent_log_dir}: {e}")
+
+    # Generate timestamp for log file
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    # Determine log file name based on whether this is an error
+    if error_context:
+        log_filename = f"error_response_{timestamp}.json"
+    else:
+        log_filename = f"response_{timestamp}.json"
+
+    log_file_path = agent_log_dir / log_filename
+
+    # Build comprehensive log entry
+    log_entry = {
+        "timestamp": datetime.now().isoformat(),
+        "adw_id": adw_id,
+        "agent_name": agent_name,
+        "server_url": server_url,
+        "model_id": model_id,
+        "prompt_preview": prompt_preview,
+        "error_context": error_context,
+        "response": response,
+        "log_metadata": {
+            "log_file": str(log_file_path),
+            "created_at": datetime.now().isoformat(),
+            "log_type": "error" if error_context else "response",
+        },
+    }
+
+    # Write log file
+    try:
+        with open(log_file_path, "w", encoding="utf-8") as f:
+            json.dump(log_entry, f, indent=2, ensure_ascii=False)
+    except OSError as e:
+        print(
+            f"Warning: Failed to write response log to {log_file_path}: {e}",
+            file=sys.stderr,
+        )
+        raise
+
+    return log_file_path
+
+
+def log_error_with_context(
+    adw_id: str,
+    agent_name: str,
+    error: Exception,
+    operation: str,
+    server_url: Optional[str] = None,
+    model_id: Optional[str] = None,
+    prompt_preview: Optional[str] = None,
+    additional_context: Optional[Dict[str, Any]] = None,
+) -> Path:
+    """
+    Log error with full context for debugging.
+
+    Story 1.6 Acceptance Criteria:
+    - Given various error scenarios (timeout, 401, 500, connection error)
+      When they occur in send_prompt()
+      Then each is caught, logged, and re-raised with context
+
+    Args:
+        adw_id: ADW ID for workflow tracking
+        agent_name: Name of the agent where error occurred
+        error: The exception that occurred
+        operation: Description of operation that failed (e.g., "send_prompt", "session_create")
+        server_url: OpenCode server URL
+        model_id: Model ID that was being used
+        prompt_preview: First 200 chars of prompt for context
+        additional_context: Additional context data for debugging
+
+    Returns:
+        Path: Path to the error log file
+    """
+    # Build error response structure
+    error_response = {
+        "error_type": type(error).__name__,
+        "error_message": str(error),
+        "operation": operation,
+        "additional_context": additional_context or {},
+    }
+
+    # Create error context description
+    error_context = f"{operation} failed with {type(error).__name__}: {error}"
+
+    return save_response_log(
+        adw_id=adw_id,
+        agent_name=agent_name,
+        response=error_response,
+        server_url=server_url,
+        model_id=model_id,
+        prompt_preview=prompt_preview,
+        error_context=error_context,
+    )
