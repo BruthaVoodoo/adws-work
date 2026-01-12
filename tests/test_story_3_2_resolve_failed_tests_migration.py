@@ -500,7 +500,7 @@ File: src/utils.py, Line 15
                 return_value=mock_response,
             ),
             patch("scripts.adw_test.jira_make_issue_comment"),
-            patch("adw_test.subprocess.run") as mock_subprocess,
+            patch("scripts.adw_test.subprocess.run") as mock_subprocess,
         ):
             # Call resolve_failed_tests
             resolve_failed_tests(
