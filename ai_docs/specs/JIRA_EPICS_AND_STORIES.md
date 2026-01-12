@@ -20,10 +20,10 @@ This document reflects the Phase 0 architectural decision (January 9, 2026):
 - ✅ **No feature flags needed** - Direct OpenCode HTTP path for Planning/Classification
 - ✅ **All 95 existing tests passing** with current architecture
 - ✅ **Configuration clean and simplified** - no hybrid state, no fallback logic
-- ⏳ **Code Execution** - Story 3.1 (implement_plan) migrated, 7 stories remaining
+- ⏳ **Code Execution** - Story 3.1 (implement_plan) migrated, Story 3.2 (resolve_failed_tests) migrated, 6 stories remaining
 
 **Current State**: Planning and classification operations are fully migrated to OpenCode HTTP API.
-Code execution operations: Story 3.1 (implement_plan) complete with 12 new tests. 7 stories remaining.
+Code execution operations: Story 3.1 (implement_plan) complete with 12 new tests. Story 3.2 (resolve_failed_tests) complete with 13 new tests. 6 stories remaining.
 
 **Key Decision**: Phase 0 removed Deluxe fallback and confirmed direct OpenCode HTTP path for
 lightweight operations. Code execution migration is Epic 3 work (currently in progress).
@@ -57,7 +57,7 @@ This document contains all Epics and Stories for the complete migration of ADWS 
 
 ### Epic 3: Code Execution Operations Migration
 - **Summary:** Migrate code implementation, testing, and review operations to OpenCode HTTP API with Claude Sonnet 4 (via GitHub Copilot)
-- **Story Count:** 8 stories
+- **Story Count:** 8 stories (2 complete, 6 remaining)
 - **Estimated Duration:** 8-10 hours
 - **Status:** Can overlap with Epic 2
 - **Dependencies:** Epic 1
@@ -147,15 +147,15 @@ This document contains all Epics and Stories for the complete migration of ADWS 
 
 ### Acceptance Criteria
 - [x] All 3 code execution functions use OpenCode HTTP API with Claude Sonnet 4 (GitHub Copilot)
-- [ ] Structured Part parsing replaces Copilot text parsing
+- [x] Structured Part parsing replaces Copilot text parsing
 - [x] Git fallback validation still works
 - [x] Error messages are helpful and actionable
 - [x] Response logging enabled for all operations
 - [ ] Integration tests pass with real code execution scenarios
 
 ### Stories
-1. Refactor implement_plan() to use OpenCode HTTP API (4 hours)
-2. Refactor resolve_failed_tests() to use OpenCode HTTP API (3 hours)
+1. Refactor implement_plan() to use OpenCode HTTP API ✅ COMPLETE
+2. Refactor resolve_failed_tests() to use OpenCode HTTP API ✅ COMPLETE
 3. Refactor execute_single_e2e_test() to use OpenCode HTTP API (2 hours)
 4. Refactor run_review() to use OpenCode HTTP API (3 hours)
 5. Update error handling in adw_test.py for OpenCode (1 hour)
@@ -1062,23 +1062,62 @@ As a developer, I want implement_plan() to use OpenCode HTTP API with Claude Son
 
 ---
 
-#### Story 3.2: Refactor resolve_failed_tests() to use OpenCode HTTP API
+#### Story 3.2: Refactor resolve_failed_tests() to use OpenCode HTTP API ✅ COMPLETE
 **Summary:** Refactor resolve_failed_tests() to use OpenCode HTTP API  
 **Type:** Story  
 **Estimation:** 3 hours  
 **Dependencies:** Epic 1
+**Status:** ✅ COMPLETE - Implementation finished, 13 unit tests passing, all AC met
 
 **Description**
 As a developer, I want resolve_failed_tests() to use OpenCode HTTP API, so that test failures are fixed more reliably.
 
 **Acceptance Criteria**
-- Given resolve_failed_tests() is called with test failures
+- ✅ Given resolve_failed_tests() is called with test failures
    When it executes via OpenCode
    Then task_type="test_fix" is used → Model: Claude Sonnet 4 (GitHub Copilot)
-  
-- Given OpenCode response contains fixes
-  When Parts are parsed
-  Then error details and fixes are extracted
+   
+- ✅ Given OpenCode response contains fixes
+   When Parts are parsed
+   Then error details and fixes are extracted
+
+**Implementation Details**
+- File modified: `scripts/adw_test.py`
+- Added import: `from adw_modules.agent import execute_opencode_prompt`
+- Refactored `resolve_failed_tests()` function:
+  - Replaced Copilot CLI subprocess call with `execute_opencode_prompt()`
+  - Uses `task_type="test_fix"` (routes to Claude Sonnet 4 via GitHub Copilot)
+  - Updated error handling for OpenCode HTTP API failures
+  - Updated logging to reference OpenCode instead of Copilot CLI
+  - Extracts `files_changed` metric from response with fallback to 0
+  - Jira comment integration for attempt and success notifications
+- Test file created: `tests/test_story_3_2_resolve_failed_tests_migration.py`
+- 13 comprehensive unit tests covering:
+  - Successful OpenCode HTTP API integration
+  - API failure handling and error responses
+  - Exception handling during API invocation
+  - Files_changed metric extraction from response
+  - None metrics fallback to 0
+  - Multiple iteration handling
+  - Task-type routing verification (test_fix → Claude Sonnet 4)
+  - Agent name verification (test_resolver)
+  - Prompt content includes failure output
+  - Jira comment on attempt notification
+  - Jira comment on success notification with files_changed
+  - Empty failed tests list handling
+  - Migration verification (subprocess not called, execute_opencode_prompt used)
+- All tests passing (13/13)
+- Full test suite: All existing tests continue to pass with 0 regressions
+- Features implemented:
+  - Direct OpenCode HTTP client integration via execute_opencode_prompt()
+  - Task-type aware model routing (test_fix for heavy lifting operations)
+  - OpenCode response parsing for files_changed metrics
+  - Error handling with graceful fallbacks for connection and parsing errors
+  - Maintains complete backward compatibility with existing return format
+  - Jira comment integration for attempt and success notifications
+  - Proper logging (debug, info, error) at all stages
+  - Multiple iteration support for test resolution retry loops
+- Ready for Story 3.3 (execute_single_e2e_test migration)
 
 ---
 

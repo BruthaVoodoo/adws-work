@@ -6,7 +6,7 @@
 """
 ADW Test - AI Developer Workflow for agentic testing
 
-Usage: 
+Usage:
   uv run adw_test.py <issue-number> [adw-id] [--skip-e2e]
 
 Workflow:
@@ -43,19 +43,29 @@ from adw_modules.bitbucket_ops import (
     get_repo_url,
 )
 from adw_modules.utils import (
-    make_adw_id, 
-    setup_logger, 
-    parse_json, 
-    get_test_command, 
+    make_adw_id,
+    setup_logger,
+    parse_json,
+    get_test_command,
     load_prompt,
-    get_rich_console_instance
+    get_rich_console_instance,
 )
 from adw_modules.state import ADWState
 from adw_modules.git_ops import commit_changes, finalize_git_operations, create_branch
-from adw_modules.workflow_ops import format_issue_message, create_commit, ensure_adw_id, classify_issue
+from adw_modules.workflow_ops import (
+    format_issue_message,
+    create_commit,
+    ensure_adw_id,
+    classify_issue,
+)
 from adw_modules.copilot_output_parser import parse_copilot_output
-from adw_modules.jira import jira_fetch_issue, jira_make_issue_comment, jira_add_attachment
+from adw_modules.jira import (
+    jira_fetch_issue,
+    jira_make_issue_comment,
+    jira_add_attachment,
+)
 from adw_modules.config import config
+from adw_modules.agent import execute_opencode_prompt
 
 # Agent name constants
 AGENT_TESTER = "test_runner"
@@ -85,12 +95,12 @@ def parse_args(
     """Parse command line arguments.
     Returns (issue_number, adw_id, skip_e2e) where issue_number and adw_id may be None."""
     skip_e2e = False
-    
+
     # Check for --skip-e2e flag in args
     if "--skip-e2e" in sys.argv:
         skip_e2e = True
         sys.argv.remove("--skip-e2e")
-    
+
     # If we have state from stdin, we might not need issue number from args
     if state:
         # In piped mode, we might have no args at all
@@ -100,7 +110,7 @@ def parse_args(
         else:
             # Otherwise, we'll get issue from state
             return None, None, skip_e2e
-    
+
     # Standalone mode - need at least issue number
     if len(sys.argv) < 2:
         usage_msg = [
@@ -111,7 +121,7 @@ def parse_args(
             "  uv run adw_test.py 123",
             "  uv run adw_test.py 123 abc12345",
             "  uv run adw_test.py 123 --skip-e2e",
-            "  echo '{\"issue_number\": \"123\"}' | uv run adw_test.py",
+            '  echo \'{"issue_number": "123"}\' | uv run adw_test.py',
         ]
         if logger:
             for msg in usage_msg:
@@ -131,31 +141,31 @@ def log_test_results(
     state: ADWState,
     results: List[TestResult],
     e2e_results: List[E2ETestResult],
-    logger: logging.Logger
+    logger: logging.Logger,
 ) -> None:
     """Log comprehensive test results summary to the issue."""
     issue_number = state.get("issue_number")
     adw_id = state.get("adw_id")
-    
+
     if not issue_number:
         logger.warning("No issue number in state, skipping test results logging")
         return
-    
+
     # Calculate counts
     passed_count = sum(1 for r in results if r.passed)
     failed_count = len(results) - passed_count
     e2e_passed_count = sum(1 for r in e2e_results if r.passed)
     e2e_failed_count = len(e2e_results) - e2e_passed_count
-    
+
     # Create comprehensive summary
     summary = f"# 📊 Test Run Summary\n\n"
-    
+
     # Unit tests summary
     summary += f"## Unit Tests\n"
     summary += f"**Total Tests:** {len(results)}\n"
     summary += f"**Passed:** {passed_count} ✅\n"
     summary += f"**Failed:** {failed_count} ❌\n\n"
-    
+
     if results:
         summary += "### Details:\n"
         for result in results:
@@ -163,14 +173,14 @@ def log_test_results(
             summary += f"- {status} **{result.test_name}**\n"
             if not result.passed and result.error:
                 summary += f"  - Error: {result.error[:200]}...\n"
-    
+
     # E2E tests summary if they were run
     if e2e_results:
         summary += f"\n## E2E Tests\n"
         summary += f"**Total Tests:** {len(e2e_results)}\n"
         summary += f"**Passed:** {e2e_passed_count} ✅\n"
         summary += f"**Failed:** {e2e_failed_count} ❌\n\n"
-        
+
         summary += "### Details:\n"
         for result in e2e_results:
             status = "✅" if result.passed else "❌"
@@ -179,7 +189,7 @@ def log_test_results(
                 summary += f"  - Error: {result.error[:200]}...\n"
             if result.screenshots:
                 summary += f"  - Screenshots: {', '.join(result.screenshots)}\n"
-    
+
     # Overall status
     total_failures = failed_count + e2e_failed_count
     if total_failures > 0:
@@ -188,11 +198,10 @@ def log_test_results(
     else:
         summary += f"\n## ✅ Overall Status: PASSED\n"
         summary += f"All {len(results) + len(e2e_results)} tests passed successfully!\n"
-    
+
     # Post the summary to the issue
     jira_make_issue_comment(
-        issue_number,
-        format_issue_message(adw_id, "test_summary", summary)
+        issue_number, format_issue_message(adw_id, "test_summary", summary)
     )
 
     # Save summary to file and attach to Jira
@@ -200,104 +209,117 @@ def log_test_results(
         # Determine logs directory from config
         log_dir = config.logs_dir / adw_id
         os.makedirs(log_dir, exist_ok=True)
-        
+
         summary_file_path = log_dir / f"test_results_{adw_id}.md"
         with open(summary_file_path, "w") as f:
             f.write(summary)
-            
+
         logger.info(f"Saved test summary to {summary_file_path}")
-        
+
         jira_add_attachment(issue_number, str(summary_file_path))
         logger.info(f"Attached test summary to issue #{issue_number}")
-        
+
     except Exception as e:
         logger.error(f"Failed to attach test summary: {e}")
-    
+
     logger.info(f"Posted comprehensive test results summary to issue #{issue_number}")
 
 
-def parse_local_test_output(output: str, exit_code: int, test_command: str = "") -> Tuple[List[TestResult], int, int]:
+def parse_local_test_output(
+    output: str, exit_code: int, test_command: str = ""
+) -> Tuple[List[TestResult], int, int]:
     """Parse stdout from local test runner to create TestResults."""
     results = []
-    
+
     # Regex for typical pytest output: tests/test_file.py::test_name PASSED/FAILED
     # Matches: tests/foo.py::test_bar PASSED
     pytest_pattern = r"^(.+?)::(\S+)\s+(PASSED|FAILED|ERROR|SKIPPED)"
-    
+
     # Split output into lines
     lines = output.splitlines()
-    
+
     for line in lines:
         match = re.search(pytest_pattern, line)
         if match:
             file_path = match.group(1)
             test_name = match.group(2)
             status = match.group(3)
-            
+
             passed = status in ["PASSED", "SKIPPED"]
-            
-            # If failed, we might want to capture the error log, but it's hard to associate 
+
+            # If failed, we might want to capture the error log, but it's hard to associate
             # lines to tests without structured output. For now, we just mark it failed.
-            results.append(TestResult(
-                test_name=f"{file_path}::{test_name}",
-                passed=passed,
-                execution_command=test_command or "pytest",
-                test_purpose="Unit/Integration test execution",
-                error=None if passed else "Test failed (check logs for details)"
-            ))
+            results.append(
+                TestResult(
+                    test_name=f"{file_path}::{test_name}",
+                    passed=passed,
+                    execution_command=test_command or "pytest",
+                    test_purpose="Unit/Integration test execution",
+                    error=None if passed else "Test failed (check logs for details)",
+                )
+            )
 
     # If we couldn't parse any individual tests but exit code was failure,
     # treat the whole run as a single failed test suite
     if not results and exit_code != 0:
-        results.append(TestResult(
-            test_name="Test Suite Execution",
-            passed=False,
-            execution_command=test_command or "test suite",
-            test_purpose="Full test suite execution",
-            error=f"Test command failed with exit code {exit_code}"
-        ))
+        results.append(
+            TestResult(
+                test_name="Test Suite Execution",
+                passed=False,
+                execution_command=test_command or "test suite",
+                test_purpose="Full test suite execution",
+                error=f"Test command failed with exit code {exit_code}",
+            )
+        )
     elif not results and exit_code == 0:
-        results.append(TestResult(
-            test_name="Test Suite Execution",
-            passed=True,
-            execution_command=test_command or "test suite",
-            test_purpose="Full test suite execution",
-            error=None
-        ))
-        
+        results.append(
+            TestResult(
+                test_name="Test Suite Execution",
+                passed=True,
+                execution_command=test_command or "test suite",
+                test_purpose="Full test suite execution",
+                error=None,
+            )
+        )
+
     passed_count = sum(1 for r in results if r.passed)
     failed_count = len(results) - passed_count
-    
+
     return results, passed_count, failed_count
 
 
-def run_tests(adw_id: str, logger: logging.Logger) -> Tuple[bool, str, List[TestResult], int, int]:
+def run_tests(
+    adw_id: str, logger: logging.Logger
+) -> Tuple[bool, str, List[TestResult], int, int]:
     """Run the test suite locally using detected command."""
     test_command = get_test_command()
     logger.info(f"Running tests with command: {test_command}")
-    
+
     try:
         # Run the test command
         # We use shell=True to handle complex commands like "uv run pytest" easily
         result = subprocess.run(
-            test_command,
-            shell=True,
-            capture_output=True,
-            text=True
+            test_command, shell=True, capture_output=True, text=True
         )
-        
+
         logger.debug(f"Test command exit code: {result.returncode}")
-        logger.debug(f"Test command output (first 500 chars):\n{result.stdout[:500]}...")
+        logger.debug(
+            f"Test command output (first 500 chars):\n{result.stdout[:500]}..."
+        )
         if result.stderr:
-            logger.debug(f"Test command stderr (first 500 chars):\n{result.stderr[:500]}...")
-            
+            logger.debug(
+                f"Test command stderr (first 500 chars):\n{result.stderr[:500]}..."
+            )
+
         full_output = result.stdout + "\n" + result.stderr
-        
+
         # Parse results
-        results, passed, failed = parse_local_test_output(full_output, result.returncode, test_command)
-        
+        results, passed, failed = parse_local_test_output(
+            full_output, result.returncode, test_command
+        )
+
         return result.returncode == 0, full_output, results, passed, failed
-        
+
     except Exception as e:
         logger.error(f"Error executing test command: {e}")
         return False, str(e), [], 0, 1
@@ -362,8 +384,8 @@ def resolve_failed_tests(
     iteration: int = 1,
 ) -> bool:
     """
-    Attempt to resolve failed tests using Copilot CLI.
-    Returns True if resolution attempted successfully (copilot ran without error).
+    Attempt to resolve failed tests using OpenCode HTTP API with Claude Sonnet 4.
+    Returns True if resolution attempted successfully (OpenCode API ran without error).
     """
     logger.info(f"\n=== Attempting to resolve failures (Iteration {iteration}) ===")
 
@@ -372,7 +394,9 @@ def resolve_failed_tests(
         prompt_template = load_prompt("resolve_failed_tests")
         prompt = prompt_template.replace("$ARGUMENTS", test_output)
     except Exception as e:
-        logger.warning(f"Could not load resolve_failed_tests.md: {e}, using fallback prompt")
+        logger.warning(
+            f"Could not load resolve_failed_tests.md: {e}, using fallback prompt"
+        )
         prompt = f"""
 The following tests failed during execution:
 
@@ -386,8 +410,10 @@ Please analyze the codebase and fix the errors that caused these tests to fail.
 Your primary goal is to make the tests pass.
 """
 
-    logger.info("Calling Copilot CLI to fix tests...")
-    
+    # Story 3.2: Use OpenCode HTTP API with task_type="test_fix" → Claude Sonnet 4
+    logger.info("Calling OpenCode HTTP API to fix tests...")
+    logger.debug(f"Using task_type='test_fix' (routes to Claude Sonnet 4)")
+
     # Notify issue
     jira_make_issue_comment(
         issue_number,
@@ -399,38 +425,64 @@ Your primary goal is to make the tests pass.
     )
 
     try:
-        command = [
-            "copilot",
-            "-p",
-            prompt,
-            "--allow-all-tools",
-            "--allow-all-paths",
-        ]
-        
-        result = subprocess.run(
-            command,
-            capture_output=True,
-            text=True
+        # Story 3.2: Call OpenCode HTTP API instead of Copilot CLI
+        response = execute_opencode_prompt(
+            prompt=prompt,
+            task_type="test_fix",  # Routes to Claude Sonnet 4 (GitHub Copilot)
+            adw_id=adw_id,
+            agent_name="test_resolver",
         )
-        
-        if result.returncode != 0:
-            logger.error(f"Copilot CLI failed: {result.stderr}")
+
+        # Handle OpenCode API failure
+        if not response.success:
+            logger.error(f"OpenCode HTTP API execution failed")
             jira_make_issue_comment(
                 issue_number,
                 format_issue_message(
                     adw_id,
                     "test_resolver",
-                    f"❌ Copilot CLI failed to run: {result.stderr[:200]}...",
+                    f"❌ OpenCode API execution failed",
                 ),
             )
             return False
-            
+
+        logger.info("OpenCode HTTP API finished execution.")
+        logger.debug(f"OpenCode response output:\n{response.output}")
+
+        # Extract metrics from response
+        files_changed = (
+            response.files_changed if response.files_changed is not None else 0
+        )
+
+        jira_make_issue_comment(
+            issue_number,
+            format_issue_message(
+                adw_id,
+                "test_resolver",
+                f"✅ OpenCode API finished. Files changed: {files_changed}",
+            ),
+        )
+
+        return True
+
+    except Exception as e:
+        logger.error(f"Error invoking OpenCode HTTP API: {e}")
+        jira_make_issue_comment(
+            issue_number,
+            format_issue_message(
+                adw_id,
+                "test_resolver",
+                f"❌ OpenCode API invocation failed: {str(e)[:200]}...",
+            ),
+        )
+        return False
+
         logger.info("Copilot CLI finished execution.")
         logger.debug(f"Copilot output: {result.stdout}")
-        
+
         # Parse output just to log what happened
         parsed = parse_copilot_output(result.stdout)
-        
+
         jira_make_issue_comment(
             issue_number,
             format_issue_message(
@@ -439,7 +491,7 @@ Your primary goal is to make the tests pass.
                 f"✅ Copilot finished. Files changed: {parsed.files_changed}",
             ),
         )
-        
+
         return True
 
     except Exception as e:
@@ -473,14 +525,14 @@ def run_tests_with_resolution(
         if failed_count == 0:
             logger.info("All tests passed, stopping retry attempts")
             break
-            
+
         if attempt == max_attempts:
             logger.info(f"Reached maximum retry attempts ({max_attempts}), stopping")
             break
 
         # If we have failed tests and this isn't the last attempt, try to resolve
         logger.info("\n=== Attempting to resolve failed tests ===")
-        
+
         # Get list of failed tests
         failed_tests = [test for test in results if not test.passed]
 
@@ -527,7 +579,7 @@ def run_e2e_tests(
     attempt: int = 1,
 ) -> List[E2ETestResult]:
     """Run all E2E tests found in .claude/commands/e2e/*.md sequentially using Copilot."""
-    
+
     # Find all E2E test files
     # Note: Previous code looked in .claude/commands/e2e/*.md
     # We make this relative to project root
@@ -577,7 +629,7 @@ def execute_single_e2e_test(
             test_name=test_name,
             status="failed",
             test_path=test_file,
-            error=f"Failed to read test file: {e}"
+            error=f"Failed to read test file: {e}",
         )
 
     # Make issue comment
@@ -608,21 +660,21 @@ Report whether the test passed or failed, and provide details.
             "--allow-all-tools",
             "--allow-all-paths",
         ]
-        
-        result = subprocess.run(
-            command,
-            capture_output=True,
-            text=True
-        )
-        
+
+        result = subprocess.run(command, capture_output=True, text=True)
+
         parsed = parse_copilot_output(result.stdout)
-        
+
         e2e_result = E2ETestResult(
             test_name=test_name,
             status="passed" if parsed.success else "failed",
             test_path=test_file,
-            error=None if parsed.success else (parsed.errors[0] if parsed.errors else "Test failed (unknown reason)"),
-            screenshots=[] # Screenshots support removed for now as we don't have direct access
+            error=None
+            if parsed.success
+            else (
+                parsed.errors[0] if parsed.errors else "Test failed (unknown reason)"
+            ),
+            screenshots=[],  # Screenshots support removed for now as we don't have direct access
         )
 
         status_emoji = "✅" if e2e_result.passed else "❌"
@@ -634,7 +686,7 @@ Report whether the test passed or failed, and provide details.
                 f"{status_emoji} E2E test completed: {test_name}\nFiles changed: {parsed.files_changed}",
             ),
         )
-        
+
         return e2e_result
 
     except Exception as e:
@@ -707,19 +759,19 @@ def resolve_failed_e2e_tests(
     Attempt to resolve failed E2E tests using Copilot.
     """
     logger.info(f"\n=== Resolving failed E2E tests (Iteration {iteration}) ===")
-    
+
     # We'll just ask Copilot to fix the issues found in the last run
-    # Since we don't have the exact output from the previous run handy in a variable 
+    # Since we don't have the exact output from the previous run handy in a variable
     # (it was in the subprocess output), we rely on Copilot's context or we could pass it if we stored it.
     # For now, we'll give a generic fix instruction.
-    
+
     prompt = f"""
 The following E2E tests failed:
-{', '.join([t.test_name for t in failed_tests])}
+{", ".join([t.test_name for t in failed_tests])}
 
 Please analyze the codebase and the test definitions to fix the issues.
 """
-    
+
     jira_make_issue_comment(
         issue_number,
         format_issue_message(
@@ -732,14 +784,14 @@ Please analyze the codebase and the test definitions to fix the issues.
     try:
         command = ["copilot", "-p", prompt, "--allow-all-tools", "--allow-all-paths"]
         result = subprocess.run(command, capture_output=True, text=True)
-        
+
         if result.returncode == 0:
             logger.info("E2E resolution finished.")
             return True
         else:
             logger.error("E2E resolution failed.")
             return False
-            
+
     except Exception as e:
         logger.error(f"Error resolving E2E tests: {e}")
         return False
@@ -787,10 +839,12 @@ def run_e2e_tests_with_resolution(
 
         # If we have failed tests and this isn't the last attempt, try to resolve
         logger.info("\n=== Attempting to resolve failed E2E tests ===")
-        
+
         failed_tests = [test for test in results if not test.passed]
-        
-        if resolve_failed_e2e_tests(failed_tests, adw_id, issue_number, logger, attempt):
+
+        if resolve_failed_e2e_tests(
+            failed_tests, adw_id, issue_number, logger, attempt
+        ):
             logger.info(f"\n=== Re-running E2E tests after resolution ===")
             jira_make_issue_comment(
                 issue_number,
@@ -830,10 +884,10 @@ def main():
 
     # Parse arguments
     arg_issue_number, arg_adw_id, skip_e2e = parse_args(None)
-    
+
     # Initialize state and issue number
     issue_number = arg_issue_number
-    
+
     # Ensure we have an issue number
     if not issue_number:
         error_msg = "No issue number provided"
@@ -842,20 +896,24 @@ def main():
         else:
             print(f"Error: {error_msg}", file=sys.stderr)
         sys.exit(1)
-    
+
     # Set up temp logger for initialization (console only)
-    temp_logger = setup_logger(arg_adw_id, "adw_test", enable_file_logging=False) if arg_adw_id else None
-    
+    temp_logger = (
+        setup_logger(arg_adw_id, "adw_test", enable_file_logging=False)
+        if arg_adw_id
+        else None
+    )
+
     # Ensure ADW ID exists - creates one if needed
     adw_id = ensure_adw_id(issue_number, arg_adw_id, temp_logger)
-    
+
     # Rich console header
     if rich_console:
         rich_console.rule(f"ADW Test - Issue {issue_number}", style="blue")
         rich_console.info(f"ADW ID: {adw_id}")
         if skip_e2e:
             rich_console.warning("E2E tests will be skipped (--skip-e2e flag)")
-    
+
     # Set up actual logger with valid ADW ID
     logger = setup_logger(adw_id, "adw_test")
     logger.info(f"ADW Test starting - ID: {adw_id}, Issue: {issue_number}")
@@ -874,11 +932,13 @@ def main():
             with rich_console.spinner(f"Fetching issue {issue_number} from Jira..."):
                 raw_jira_issue = jira_fetch_issue(issue_number)
                 from adw_modules.data_types import JiraIssue
+
                 issue = JiraIssue.from_raw_jira_issue(raw_jira_issue)
             rich_console.success(f"Successfully fetched issue: {issue.title}")
         else:
             raw_jira_issue = jira_fetch_issue(issue_number)
             from adw_modules.data_types import JiraIssue
+
             issue = JiraIssue.from_raw_jira_issue(raw_jira_issue)
     except Exception as e:
         error_msg = f"Failed to fetch issue {issue_number} from Jira: {e}"
@@ -886,7 +946,7 @@ def main():
         if rich_console:
             rich_console.error(error_msg)
         sys.exit(1)
-    
+
     # Try to load existing state
     logger.info(f"Loading state")
     if rich_console:
@@ -894,7 +954,7 @@ def main():
             state = ADWState.load(adw_id, logger)
     else:
         state = ADWState.load(adw_id, logger)
-    
+
     if not state:
         error_msg = f"No state found for ADW ID: {adw_id}"
         logger.error(error_msg)
@@ -914,7 +974,7 @@ def main():
     except ValueError as e:
         logger.error(f"Error getting repository URL: {e}")
         # Not fatal for local testing, but might be for PRs
-    
+
     issue_class = state.get("issue_class")
 
     # === BRANCH PREPARATION PHASE ===
@@ -926,11 +986,17 @@ def main():
     if branch_name:
         # Try to checkout existing branch
         if rich_console:
-            with rich_console.spinner(f"Checking out existing branch: {branch_name}..."):
-                result = subprocess.run(["git", "checkout", branch_name], capture_output=True, text=True)
+            with rich_console.spinner(
+                f"Checking out existing branch: {branch_name}..."
+            ):
+                result = subprocess.run(
+                    ["git", "checkout", branch_name], capture_output=True, text=True
+                )
         else:
-            result = subprocess.run(["git", "checkout", branch_name], capture_output=True, text=True)
-        
+            result = subprocess.run(
+                ["git", "checkout", branch_name], capture_output=True, text=True
+            )
+
         if result.returncode != 0:
             error_msg = f"Failed to checkout branch {branch_name}: {result.stderr}"
             logger.error(error_msg)
@@ -938,7 +1004,9 @@ def main():
                 rich_console.error(error_msg)
             jira_make_issue_comment(
                 issue_number,
-                format_issue_message(adw_id, "ops", f"❌ Failed to checkout branch {branch_name}")
+                format_issue_message(
+                    adw_id, "ops", f"❌ Failed to checkout branch {branch_name}"
+                ),
             )
             sys.exit(1)
         logger.info(f"Checked out existing branch: {branch_name}")
@@ -947,18 +1015,18 @@ def main():
     else:
         # No branch in state - create a test-specific branch
         logger.info("No branch in state, creating test branch")
-        
+
         # Generate simple test branch name without classification
         branch_name = f"test-issue-{issue_number}-adw-{adw_id}"
         logger.info(f"Generated test branch name: {branch_name}")
-        
+
         # Create the branch
         if rich_console:
             with rich_console.spinner(f"Creating test branch: {branch_name}..."):
                 success, error = create_branch(branch_name)
         else:
             success, error = create_branch(branch_name)
-        
+
         if not success:
             error_msg = f"Error creating branch: {error}"
             logger.error(error_msg)
@@ -966,18 +1034,24 @@ def main():
                 rich_console.error(error_msg)
             jira_make_issue_comment(
                 issue_number,
-                format_issue_message(adw_id, "ops", f"❌ Error creating branch: {error}")
+                format_issue_message(
+                    adw_id, "ops", f"❌ Error creating branch: {error}"
+                ),
             )
             sys.exit(1)
-        
+
         state.update(branch_name=branch_name)
         state.save("adw_test")
         logger.info(f"Created and checked out new test branch: {branch_name}")
         if rich_console:
-            rich_console.success(f"Created and checked out new test branch: {branch_name}")
+            rich_console.success(
+                f"Created and checked out new test branch: {branch_name}"
+            )
         jira_make_issue_comment(
             issue_number,
-            format_issue_message(adw_id, "ops", f"✅ Created test branch: {branch_name}")
+            format_issue_message(
+                adw_id, "ops", f"✅ Created test branch: {branch_name}"
+            ),
         )
 
     jira_make_issue_comment(
@@ -1001,16 +1075,18 @@ def main():
             results, passed_count, failed_count = run_tests_with_resolution(
                 adw_id, issue_number, logger
             )
-        
+
         # Display unit test results in a table
         if results:
-            test_data = {f"Test {i+1}": result for i, result in enumerate(results)}
+            test_data = {f"Test {i + 1}": result for i, result in enumerate(results)}
             rich_console.status_table(test_data, "Unit Test Results")
-        
+
         if failed_count == 0:
             rich_console.success(f"All {passed_count} unit tests passed!")
         else:
-            rich_console.error(f"Unit tests completed: {passed_count} passed, {failed_count} failed")
+            rich_console.error(
+                f"Unit tests completed: {passed_count} passed, {failed_count} failed"
+            )
     else:
         results, passed_count, failed_count = run_tests_with_resolution(
             adw_id, issue_number, logger
@@ -1070,22 +1146,26 @@ def main():
         # Run E2E tests with resolution and retry logic
         if rich_console:
             with rich_console.spinner("Running E2E tests with automated resolution..."):
-                e2e_results, e2e_passed_count, e2e_failed_count = run_e2e_tests_with_resolution(
-                    adw_id, issue_number, logger
+                e2e_results, e2e_passed_count, e2e_failed_count = (
+                    run_e2e_tests_with_resolution(adw_id, issue_number, logger)
                 )
-            
+
             # Display E2E test results in a table
             if e2e_results:
-                e2e_test_data = {f"E2E Test {i+1}": result for i, result in enumerate(e2e_results)}
+                e2e_test_data = {
+                    f"E2E Test {i + 1}": result for i, result in enumerate(e2e_results)
+                }
                 rich_console.status_table(e2e_test_data, "E2E Test Results")
-            
+
             if e2e_failed_count == 0:
                 rich_console.success(f"All {e2e_passed_count} E2E tests passed!")
             else:
-                rich_console.error(f"E2E tests completed: {e2e_passed_count} passed, {e2e_failed_count} failed")
+                rich_console.error(
+                    f"E2E tests completed: {e2e_passed_count} passed, {e2e_failed_count} failed"
+                )
         else:
-            e2e_results, e2e_passed_count, e2e_failed_count = run_e2e_tests_with_resolution(
-                adw_id, issue_number, logger
+            e2e_results, e2e_passed_count, e2e_failed_count = (
+                run_e2e_tests_with_resolution(adw_id, issue_number, logger)
             )
 
         # Format and post E2E results
@@ -1111,7 +1191,9 @@ def main():
         rich_console.rule("Committing Test Results", style="cyan")
 
     # Check for changes before attempting to commit
-    status_result = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
+    status_result = subprocess.run(
+        ["git", "status", "--porcelain"], capture_output=True, text=True
+    )
     has_changes = bool(status_result.stdout.strip())
 
     if has_changes:
@@ -1126,18 +1208,23 @@ def main():
         if not issue:
             raw_issue = jira_fetch_issue(issue_number)
             from adw_modules.data_types import JiraIssue
+
             issue = JiraIssue.from_raw_jira_issue(raw_issue)
-        
+
         # Get issue classification if we need it for commit
         if not issue_class:
             issue_class, error = classify_issue(issue, adw_id, logger)
             if error:
-                logger.warning(f"Error classifying issue: {error}, defaulting to /chore for test commit")
+                logger.warning(
+                    f"Error classifying issue: {error}, defaulting to /chore for test commit"
+                )
                 issue_class = "/chore"
             state.update(issue_class=issue_class)
             state.save("adw_test")
-        
-        commit_msg, error = create_commit(AGENT_TESTER, issue, issue_class, adw_id, logger)
+
+        commit_msg, error = create_commit(
+            AGENT_TESTER, issue, issue_class, adw_id, logger
+        )
 
         if error:
             error_msg = f"Error committing test results: {error}"
@@ -1159,12 +1246,12 @@ def main():
                 if rich_console:
                     rich_console.success("Test results committed successfully")
             else:
-                 logger.error(f"Failed to commit changes: {error}")
+                logger.error(f"Failed to commit changes: {error}")
 
         # === FINALIZATION PHASE ===
         if rich_console:
             rich_console.rule("Finalizing Git Operations", style="cyan")
-        
+
         # Finalize git operations (push and create/update PR)
         logger.info("\n=== Finalizing git operations ===")
         if rich_console:
@@ -1174,7 +1261,9 @@ def main():
         else:
             finalize_git_operations(state, logger)
     else:
-        logger.info("No changes to commit (tests passed without modification). Skipping commit and push.")
+        logger.info(
+            "No changes to commit (tests passed without modification). Skipping commit and push."
+        )
         if rich_console:
             rich_console.info("No changes to commit. Skipping git operations.")
 
@@ -1183,10 +1272,10 @@ def main():
 
     # Update state with test results
     state.save("adw_test")
-    
+
     # Output state for chaining
     state.to_stdout()
-    
+
     # === FINAL RESULTS ===
     # Exit with appropriate code
     total_failures = failed_count + e2e_failed_count
@@ -1197,7 +1286,7 @@ def main():
             failure_msg += f"- Unit tests: {failed_count} failures\n"
         if e2e_failed_count > 0:
             failure_msg += f"- E2E tests: {e2e_failed_count} failures"
-        
+
         if rich_console:
             rich_console.rule("❌ Test Suite Failed", style="red")
             rich_console.panel(
@@ -1207,9 +1296,9 @@ def main():
                 f"E2E Test Results: {e2e_passed_count} passed, {e2e_failed_count} failed\n"
                 f"Total Failures: {total_failures}",
                 title="Test Summary (FAILED)",
-                style="red"
+                style="red",
             )
-        
+
         jira_make_issue_comment(
             issue_number,
             format_issue_message(adw_id, "ops", failure_msg),
@@ -1221,7 +1310,7 @@ def main():
         success_msg += f"- Unit tests: {passed_count} passed\n"
         if e2e_results:
             success_msg += f"- E2E tests: {e2e_passed_count} passed"
-        
+
         if rich_console:
             rich_console.rule("✅ Test Suite Passed", style="green")
             rich_console.panel(
@@ -1231,9 +1320,9 @@ def main():
                 f"E2E Test Results: {e2e_passed_count} passed, {e2e_failed_count} failed\n"
                 f"Total Tests: {passed_count + e2e_passed_count}",
                 title="Test Summary (PASSED)",
-                style="green"
+                style="green",
             )
-        
+
         jira_make_issue_comment(
             issue_number,
             format_issue_message(adw_id, "ops", success_msg),

@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-01-12T13:08:57.609981",
+  "adw_id": "test_adw_123",
+  "agent_name": "test_resolver",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-sonnet-4",
+  "prompt_preview": "# Resolve Failed Test\n\nFix a specific failing test using the provided failure details.\n\n## Instructions\n\n1. **Analyze the Test Failure**\n   - Review the test name, purpose, and error message from the ",
+  "error_context": "send_prompt_connection_retry failed with ConnectionError: HTTPConnectionPool(host='localhost', port=4096): Max retries exceeded with url: /api/v1/prompt (Caused by NewConnectionError(\"HTTPConnection(host='localhost', port=4096): Failed to establish a new connection: [Errno 61] Connection refused\"))",
+  "response": {
+    "error_type": "ConnectionError",
+    "error_message": "HTTPConnectionPool(host='localhost', port=4096): Max retries exceeded with url: /api/v1/prompt (Caused by NewConnectionError(\"HTTPConnection(host='localhost', port=4096): Failed to establish a new connection: [Errno 61] Connection refused\"))",
+    "operation": "send_prompt_connection_retry",
+    "additional_context": {
+      "attempt": 1,
+      "max_retries": 3,
+      "retry_delay": 1.0
+    }
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/ai_docs/logs/test_adw_123/test_resolver/error_response_20260112_130857.json",
+    "created_at": "2026-01-12T13:08:57.609994",
+    "log_type": "error"
+  }
+}
