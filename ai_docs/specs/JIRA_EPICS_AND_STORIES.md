@@ -772,21 +772,22 @@ As a developer, I want classify_issue() to use OpenCode HTTP API, so that issue 
 
 ---
 
-#### Story 2.4: Migrate build_plan() to OpenCode lightweight model
+#### Story 2.4: Migrate build_plan() to OpenCode lightweight model ✅ COMPLETE
 **Summary:** Migrate build_plan() to OpenCode with Claude Haiku 4.5 (GitHub Copilot)  
 **Type:** Story  
 **Estimation:** 2 hours  
 **Dependencies:** Story 2.1
+**Status:** ✅ COMPLETE - Implementation finished, comprehensive unit tests passing, all AC met
 
 **Description**
 As a developer, I want build_plan() to use OpenCode HTTP API, so that planning is more efficient and maintainable.
 
 **Acceptance Criteria**
-- Given build_plan() is called with issue context
+- ✅ Given build_plan() is called with issue context
    When it executes via OpenCode
    Then task_type="plan" is used → Model: Claude Haiku 4.5 (GitHub Copilot)
    
-- Given OpenCode response contains implementation plan
+- ✅ Given OpenCode response contains implementation plan
    When response is parsed
    Then markdown plan structure is preserved
 

@@ -19,7 +19,7 @@ from scripts.adw_modules.data_types import (
     IssueClassSlashCommand,
     ReviewIssue,
 )
-from scripts.adw_modules.agent import execute_template
+from scripts.adw_modules.agent import execute_template, execute_opencode_prompt
 from scripts.adw_modules.bitbucket_ops import (
     check_pr_exists,
     create_pull_request as bb_create_pr,
@@ -224,21 +224,17 @@ def build_plan(
     logger.debug(f"Prompt after substitution (first 500 chars):\n{prompt[:500]}")
     logger.debug(f"Issue context keys present in prompt: {list(issue_context.keys())}")
 
-    request = AgentTemplateRequest(
-        agent_name=AGENT_PLANNER,
+    # Story 2.4: Migrate build_plan() to OpenCode HTTP API with task_type="plan"
+    # This routes to Claude Haiku 4.5 (GitHub Copilot) for lightweight planning tasks
+    logger.debug(f"Executing build_plan() via OpenCode with task_type='plan'")
+    response = execute_opencode_prompt(
         prompt=prompt,
+        task_type="plan",  # Routes to Claude Haiku 4.5 (GitHub Copilot)
         adw_id=adw_id,
-        model="opus",
-        domain=domain,
-        workflow_agent_name=workflow_agent_name,
+        agent_name=AGENT_PLANNER,
     )
-
     logger.debug(
-        f"Build plan request: {request.model_dump_json(indent=2, by_alias=True)}"
-    )
-    response = execute_template(request)
-    logger.debug(
-        f"Build plan response: {response.model_dump_json(indent=2, by_alias=True)}"
+        f"Build plan response: {response.model_dump_json(indent=2, by_alias=True) if hasattr(response, 'model_dump_json') else response}"
     )
 
     return response
