@@ -10,6 +10,7 @@ import logging
 import subprocess
 import re
 import os
+import sys
 from typing import Tuple, Optional, cast
 from scripts.adw_modules.data_types import (
     AgentTemplateRequest,
@@ -65,12 +66,26 @@ def extract_adw_info(
     Returns (workflow_command, adw_id) tuple."""
 
     try:
-        prompt = load_prompt("classify_adw").format(text=text)
+        # Story 2.8: Add comprehensive error handling with logging and context
+        logger = logging.getLogger(__name__)
+        logger.debug(
+            f"Extracting ADW info from text (length: {len(text)}) with temp_adw_id: {temp_adw_id}"
+        )
+
+        try:
+            prompt = load_prompt("classify_adw").format(text=text)
+        except Exception as e:
+            error_msg = f"Failed to load or format classify_adw prompt: {str(e)}"
+            logger.error(error_msg)
+            return None, None
 
         # Import here to avoid circular imports
         from .agent import execute_opencode_prompt
 
         # Use OpenCode HTTP API with task_type="extract_adw" → Claude Haiku 4.5
+        logger.debug(
+            "Calling OpenCode HTTP API for ADW extraction with Claude Haiku 4.5"
+        )
         response = execute_opencode_prompt(
             prompt=prompt,
             task_type="extract_adw",  # Routes to Claude Haiku 4.5 (GitHub Copilot)
@@ -79,16 +94,22 @@ def extract_adw_info(
         )
 
         if not response.success:
-            print(f"Failed to classify ADW: {response.output}")
+            error_msg = f"OpenCode API call failed for ADW extraction. Response: {response.output[:200]}..."
+            logger.error(error_msg)
             return None, None
 
         # Parse JSON response using utility that handles markdown
         try:
+            logger.debug(
+                f"Parsing ADW extraction response (length: {len(response.output)})"
+            )
             data = parse_json(response.output, dict)
             adw_command = data.get("adw_slash_command", "").replace(
                 "/", ""
             )  # Remove slash
             adw_id = data.get("adw_id")
+
+            logger.debug(f"Extracted ADW command: '{adw_command}', ADW ID: '{adw_id}'")
 
             # Validate command
             valid_workflows = [
@@ -99,16 +120,34 @@ def extract_adw_info(
                 "adw_plan_build_test",
             ]
             if adw_command and adw_command in valid_workflows:
+                logger.info(
+                    f"Successfully extracted ADW info: command='{adw_command}', id='{adw_id}'"
+                )
                 return adw_command, adw_id
-
-            return None, None
+            else:
+                logger.warning(
+                    f"Invalid or missing ADW command. Got: '{adw_command}', expected one of: {valid_workflows}"
+                )
+                return None, None
 
         except ValueError as e:
-            print(f"Failed to parse classify_adw response: {e}")
+            error_msg = f"Failed to parse JSON from ADW classification response: {str(e)}. Response preview: {response.output[:200]}..."
+            logger.error(error_msg)
+            return None, None
+        except KeyError as e:
+            error_msg = f"Missing expected field in ADW classification response: {str(e)}. Response: {response.output[:200]}..."
+            logger.error(error_msg)
             return None, None
 
+    except ImportError as e:
+        error_msg = f"Failed to import required OpenCode module: {str(e)}"
+        # Use print if logger not available yet
+        print(error_msg, file=sys.stderr)
+        return None, None
     except Exception as e:
-        print(f"Error calling classify_adw: {e}")
+        error_msg = f"Unexpected error during ADW extraction: {str(e)}. temp_adw_id={temp_adw_id}, text_length={len(text)}"
+        # Use print if logger not available yet
+        print(error_msg, file=sys.stderr)
         return None, None
 
 
