@@ -318,27 +318,48 @@ As a developer, I want to send prompts to OpenCode server and receive structured
 
 ---
 
-#### Story 1.3: Create OpenCode data types (OpenCodeResponse, OpenCodePart, etc.)
+#### Story 1.3: Create OpenCode data types (OpenCodeResponse, OpenCodePart, etc.) ✅ COMPLETE
 **Summary:** Create OpenCode data types in data_types.py  
 **Type:** Story  
 **Estimation:** 2 hours  
 **Dependencies:** None
+**Status:** ✅ COMPLETE - Implementation finished, 16 unit tests passing, all AC met
 
 **Description**
 As a developer, I want strongly-typed data models for OpenCode responses, so that I have type safety and IDE autocomplete.
 
 **Acceptance Criteria**
-- Given an OpenCode API response
+- ✅ Given an OpenCode API response
   When I parse it into OpenCodeResponse, OpenCodeMessageInfo, and OpenCodePart models
   Then all fields are correctly mapped with proper types
   
-- Given a Part with type=tool_use
+- ✅ Given a Part with type=tool_use
   When I access the tool and input fields
   Then they are correctly typed as Optional[str] and Optional[Dict[str, Any]]
   
-- Given a Part with type=tool_result
+- ✅ Given a Part with type=tool_result
   When I access the output field
   Then it contains the tool execution output
+
+**Implementation Details**
+- File modified: `scripts/adw_modules/data_types.py`
+- Test file created: `tests/test_opencode_data_types.py`
+- 3 new Pydantic models added:
+  - `OpenCodePart` - for individual response parts (text, tool_use, tool_result, code_block)
+  - `OpenCodeMessageInfo` - for message metadata (role, model, timestamp, token_usage)  
+  - `OpenCodeResponse` - for full API response structure with message + parts
+- 16 comprehensive unit tests covering:
+  - Text, tool_use, tool_result, and code_block part creation
+  - Type validation and field mapping
+  - Optional field handling (tool, input, output)
+  - Complex response parsing with multiple parts
+  - Type safety and IDE autocomplete support
+  - ConfigDict with populate_by_name=True for alias support
+- All tests passing (16/16)
+- Full test suite: 278 tests passing with 0 regressions
+- Strong typing with Literal for part types
+- Proper Pydantic patterns following project conventions
+- Ready for Story 1.4 (depends on this story)
 
 ---
 

@@ -1,7 +1,7 @@
-"""Data types for GitHub API responses and Bedrock agent."""
+"""Data types for GitHub API responses, Bedrock agent, and OpenCode HTTP API."""
 
 from datetime import datetime
-from typing import Optional, List, Literal
+from typing import Optional, List, Literal, Dict, Any
 from pydantic import BaseModel, Field, ConfigDict
 
 # Supported slash commands for issue classification
@@ -10,11 +10,11 @@ IssueClassSlashCommand = Literal["/chore", "/bug", "/feature", "/new"]
 
 # ADW workflow types
 ADWWorkflow = Literal[
-    "adw_plan",           # Planning only
-    "adw_build",          # Building only (excluded from webhook)
-    "adw_test",           # Testing only  
-    "adw_plan_build",     # Plan + Build
-    "adw_plan_build_test" # Plan + Build + Test
+    "adw_plan",  # Planning only
+    "adw_build",  # Building only (excluded from webhook)
+    "adw_test",  # Testing only
+    "adw_plan_build",  # Plan + Build
+    "adw_plan_build_test",  # Plan + Build + Test
 ]
 
 
@@ -93,23 +93,36 @@ class GitHubIssue(BaseModel):
 
 class JiraUser(BaseModel):
     """Jira user model (simplified for ADW needs)."""
-    login: str = Field(alias="displayName") # Map displayName to login for compatibility
+
+    login: str = Field(
+        alias="displayName"
+    )  # Map displayName to login for compatibility
 
     model_config = ConfigDict(populate_by_name=True)
 
+
 class JiraLabel(BaseModel):
     """Jira label model (simplified for ADW needs)."""
+
     name: str
+
 
 class JiraIssue(BaseModel):
     """Jira issue model (simplified to match GitHubIssue for ADW needs)."""
-    key: str # Jira issue key, e.g., "PROJECT-123"
-    number: int # Derived from key, e.g., 123
+
+    key: str  # Jira issue key, e.g., "PROJECT-123"
+    number: int  # Derived from key, e.g., 123
     title: str = Field(alias="summary")
     body: Optional[str] = Field(None, alias="description")
-    state: str = Field(alias="status_name") # maps from raw_jira_issue.fields.status.name
-    author: JiraUser = Field(alias="reporter_user") # maps from raw_jira_issue.fields.reporter
-    labels: List[JiraLabel] = Field([], alias="labels_list") # maps from raw_jira_issue.fields.labels
+    state: str = Field(
+        alias="status_name"
+    )  # maps from raw_jira_issue.fields.status.name
+    author: JiraUser = Field(
+        alias="reporter_user"
+    )  # maps from raw_jira_issue.fields.reporter
+    labels: List[JiraLabel] = Field(
+        [], alias="labels_list"
+    )  # maps from raw_jira_issue.fields.labels
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -117,15 +130,15 @@ class JiraIssue(BaseModel):
     @classmethod
     def from_raw_jira_issue(cls, raw_issue):
         # Extract number from key (assuming key is like "PROJECT-123")
-        issue_number = int(raw_issue.key.split('-')[-1]) if '-' in raw_issue.key else 0
-        
+        issue_number = int(raw_issue.key.split("-")[-1]) if "-" in raw_issue.key else 0
+
         # Create JiraUser from raw_issue.fields.reporter
         reporter_user = JiraUser(displayName=raw_issue.fields.reporter.displayName)
 
         # Create list of JiraLabel from raw_issue.fields.labels
         # Labels from Jira API can be strings or label objects, handle both
         labels_list = []
-        if hasattr(raw_issue.fields, 'labels') and raw_issue.fields.labels:
+        if hasattr(raw_issue.fields, "labels") and raw_issue.fields.labels:
             for label in raw_issue.fields.labels:
                 if isinstance(label, str):
                     labels_list.append(JiraLabel(name=label))
@@ -139,7 +152,7 @@ class JiraIssue(BaseModel):
             description=raw_issue.fields.description,
             status_name=raw_issue.fields.status.name,
             reporter_user=reporter_user,
-            labels_list=labels_list
+            labels_list=labels_list,
         )
 
 
@@ -212,7 +225,7 @@ class ADWStateData(BaseModel):
 
 class ReviewIssue(BaseModel):
     """Individual review issue found during implementation review."""
-    
+
     review_issue_number: int
     screenshot_path: str = ""
     issue_description: str
@@ -223,8 +236,45 @@ class ReviewIssue(BaseModel):
 
 class ReviewResult(BaseModel):
     """Result of implementation review process."""
-    
+
     success: bool
     review_issues: List[ReviewIssue] = []
     screenshots: List[str] = []
     screenshot_urls: List[str] = []
+
+
+# OpenCode HTTP API Data Types
+
+
+class OpenCodePart(BaseModel):
+    """OpenCode response part model for structured response parsing."""
+
+    type: Literal["text", "tool_use", "tool_result", "code_block"]
+    content: str
+    tool: Optional[str] = None
+    input: Optional[Dict[str, Any]] = None
+    output: Optional[str] = None
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class OpenCodeMessageInfo(BaseModel):
+    """OpenCode message metadata model."""
+
+    role: str
+    model: str
+    timestamp: Optional[datetime] = None
+    token_usage: Optional[Dict[str, Any]] = None
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class OpenCodeResponse(BaseModel):
+    """OpenCode HTTP API response model."""
+
+    message: OpenCodeMessageInfo
+    parts: List[OpenCodePart] = []
+    session_id: Optional[str] = None
+    success: bool = True
+
+    model_config = ConfigDict(populate_by_name=True)
