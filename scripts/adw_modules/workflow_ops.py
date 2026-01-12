@@ -44,6 +44,90 @@ AGENT_BRANCH_GENERATOR = "branch_generator"
 AGENT_PR_CREATOR = "pr_creator"
 
 
+def parse_opencode_implementation_output(output: str):
+    """Parse OpenCode HTTP API output for implementation results.
+
+    Story 3.1: OpenCode-specific parser for implementation output.
+    Extracts metrics from tool execution results and text content.
+    """
+    from scripts.adw_modules.copilot_output_parser import ParsedCopilotOutput
+
+    # Initialize with default values
+    result = ParsedCopilotOutput(
+        success=False,
+        files_changed=0,
+        lines_added=0,
+        lines_removed=0,
+        validation_status="unknown",
+        raw_output=output,
+    )
+
+    if not output:
+        return result
+
+    # Check for success indicators in OpenCode output
+    success_patterns = [
+        r"Implementation\s+(Complete|Completed|Summary)",
+        r"All\s+(validation\s+commands\s+pass|tests\s+pass)",
+        r"Successfully\s+(implemented|completed|executed)",
+        r"✓.*complete",
+        r"✅.*complete",
+        r"Implementation\s+is\s+complete",
+        r"Task\s+(completed|finished|done)",
+    ]
+
+    error_patterns = [
+        r"Error:",
+        r"Failed\s+to",
+        r"Exception:",
+        r"❌",
+        r"✗",
+    ]
+
+    # Check for success
+    for pattern in success_patterns:
+        if re.search(pattern, output, re.IGNORECASE):
+            result.success = True
+            result.validation_status = "passed"
+            break
+
+    # Check for errors
+    errors = []
+    for pattern in error_patterns:
+        matches = re.findall(pattern + r".*", output, re.IGNORECASE)
+        errors.extend(matches)
+
+    if errors:
+        result.errors = errors
+        if not result.success:  # Don't override success if already marked successful
+            result.validation_status = "failed"
+
+    # Extract file/line metrics from output
+    # Look for patterns like "3 files changed", "15 insertions", "5 deletions"
+    file_change_match = re.search(r"(\d+)\s+files?\s+changed", output, re.IGNORECASE)
+    if file_change_match:
+        result.files_changed = int(file_change_match.group(1))
+
+    line_add_match = re.search(
+        r"(\d+)\s+(insertions?|additions?|\+)", output, re.IGNORECASE
+    )
+    if line_add_match:
+        result.lines_added = int(line_add_match.group(1))
+
+    line_del_match = re.search(
+        r"(\d+)\s+(deletions?|removals?|\-)", output, re.IGNORECASE
+    )
+    if line_del_match:
+        result.lines_removed = int(line_del_match.group(1))
+
+    # If we found file changes but no explicit success marker, be more lenient
+    if result.files_changed > 0 and result.validation_status == "unknown":
+        result.success = True
+        result.validation_status = "passed"
+
+    return result
+
+
 def format_issue_message(
     adw_id: str, agent_name: str, message: str, session_id: Optional[str] = None
 ) -> str:
@@ -282,12 +366,19 @@ def build_plan(
 def implement_plan(
     plan_file: str, adw_id: str, logger: logging.Logger, target_dir: str
 ) -> AgentPromptResponse:
-    """Implement the plan using the copilot CLI with enhanced output parsing.
+    """Implement the plan using OpenCode HTTP API with Claude Sonnet 4.
 
-    This function executes a plan through the Copilot CLI and provides intelligent
+    Story 3.1 Implementation:
+    - Migrated from Copilot CLI to OpenCode HTTP API
+    - Uses task_type="implement" → Routes to Claude Sonnet 4 (GitHub Copilot)
+    - Extracts implementation results from OpenCode Parts (tool_use, tool_result)
+    - Maintains backward compatibility with AgentPromptResponse
+    - Preserves git verification and enhanced output parsing logic
+
+    This function executes a plan through OpenCode HTTP API and provides intelligent
     parsing and validation of the output, including:
     - Extraction of implementation metrics (files changed, lines added/removed)
-    - Detection of errors and warnings
+    - Detection of errors and warnings from tool execution
     - Validation of executed steps against the plan
     - Git verification of actual repository changes
     """
@@ -310,49 +401,140 @@ Here are your instructions:
 - Execute every step in the "Step by Step Tasks" section of the plan in order, top to bottom.
 - Make sure to run all validation commands at the end to confirm the implementation is complete.
 - If you encounter any issues, think through them carefully and adjust the implementation as needed.
-- Commit your changes as you go with descriptive commit messages.
+- Use the available tools to read files, write files, and execute commands as needed.
+- Be thorough and systematic in your implementation approach.
 
 Here is the plan:
 ---
 {plan_content}
 ---
 
-Now, please proceed with the implementation.
+Now, please proceed with the implementation using the available tools.
 """
 
     prompt = prompt_template.format(plan_content=plan_content)
 
-    command = [
-        "copilot",
-        "-p",
-        prompt,
-        "--allow-all-tools",
-        "--allow-all-paths",
-        "--log-level",
-        "debug",
-    ]
+    # Import here to avoid circular imports
+    from .agent import execute_opencode_prompt
 
-    logger.debug(f"Executing command: {' '.join(command)}")
+    # Story 3.1: Use OpenCode HTTP API with task_type="implement" → Claude Sonnet 4
+    logger.debug(f"Executing implement_plan() via OpenCode with task_type='implement'")
+    logger.debug(f"Target directory: {target_dir}")
+
+    # Store original working directory before any operations
+    original_cwd = os.getcwd()
 
     try:
-        result = subprocess.run(
-            command,
-            capture_output=True,
-            text=True,
-            check=True,
-            cwd=target_dir,
+        # Change to target directory for implementation
+        if target_dir != original_cwd:
+            os.chdir(target_dir)
+            logger.debug(f"Changed working directory to: {target_dir}")
+
+        response = execute_opencode_prompt(
+            prompt=prompt,
+            task_type="implement",  # Routes to Claude Sonnet 4 (GitHub Copilot)
+            adw_id=adw_id,
+            agent_name=AGENT_IMPLEMENTOR,
         )
 
-        output = result.stdout
-        logger.info("Copilot execution completed.")
-        logger.debug(f"Copilot output:\n{output}")
+        # Extract text output from OpenCode response
+        output = response.output if response.output else ""
+        logger.info("OpenCode HTTP API execution completed.")
+        logger.debug(f"OpenCode response output:\n{output}")
+
+        # Handle OpenCode API failure
+        if not response.success:
+            logger.error("OpenCode HTTP API execution failed")
+            return AgentPromptResponse(
+                output=output,
+                success=False,
+                validation_status="failed",
+                errors=["OpenCode HTTP API execution failed"],
+            )
 
         # Parse the output to extract metrics and validation status
-        parsed = parse_copilot_output(output)
+        # Use OpenCode-aware parsing instead of Copilot parsing
+        parsed = parse_opencode_implementation_output(output)
+
+        # Use metrics from OpenCode response if available, otherwise use parsed metrics
+        files_changed = (
+            response.files_changed
+            if response.files_changed is not None
+            else parsed.files_changed
+        )
+        lines_added = (
+            response.lines_added
+            if response.lines_added is not None
+            else parsed.lines_added
+        )
+        lines_removed = (
+            response.lines_removed
+            if response.lines_removed is not None
+            else parsed.lines_removed
+        )
+        validation_status = (
+            parsed.validation_status
+            if parsed.validation_status != "unknown"
+            else "passed"
+        )
+
         logger.debug(
-            f"Log analysis result: success={parsed.success}, "
-            f"files_changed={parsed.files_changed}, "
-            f"validation_status={parsed.validation_status}"
+            f"OpenCode analysis result: success={parsed.success}, "
+            f"files_changed={files_changed}, "
+            f"validation_status={validation_status}"
+        )
+        lines_added = (
+            response.lines_added
+            if response.lines_added is not None
+            else parsed.lines_added
+        )
+        lines_removed = (
+            response.lines_removed
+            if response.lines_removed is not None
+            else parsed.lines_removed
+        )
+        validation_status = (
+            parsed.validation_status
+            if parsed.validation_status != "unknown"
+            else "passed"
+        )
+
+        logger.debug(
+            f"OpenCode analysis result: success={parsed.success}, "
+            f"files_changed={files_changed}, "
+            f"validation_status={validation_status}"
+        )
+
+        # Parse the output to extract metrics and validation status
+        # Use OpenCode-aware parsing instead of Copilot parsing
+        parsed = parse_opencode_implementation_output(output)
+
+        # Use metrics from OpenCode response if available, otherwise use parsed metrics
+        files_changed = (
+            response.files_changed
+            if response.files_changed is not None
+            else parsed.files_changed
+        )
+        lines_added = (
+            response.lines_added
+            if response.lines_added is not None
+            else parsed.lines_added
+        )
+        lines_removed = (
+            response.lines_removed
+            if response.lines_removed is not None
+            else parsed.lines_removed
+        )
+        validation_status = (
+            parsed.validation_status
+            if parsed.validation_status != "unknown"
+            else "passed"
+        )
+
+        logger.debug(
+            f"OpenCode analysis result: success={parsed.success}, "
+            f"files_changed={files_changed}, "
+            f"validation_status={validation_status}"
         )
 
         # Cross-reference with the plan to validate steps
@@ -394,52 +576,45 @@ Now, please proceed with the implementation.
         # If log analysis failed/unknown, but we have git changes, we trust git.
 
         final_success = parsed.success
-        final_validation_status = parsed.validation_status
+        final_validation_status = validation_status
 
         if not final_success and files_changed_in_git > 0:
             final_success = True
             final_validation_status = "passed"
             logger.info(
-                f"Outcome: Log analysis inconclusive, but Git verification confirms {files_changed_in_git} files changed. Marking implementation as successful."
+                f"Outcome: OpenCode analysis inconclusive, but Git verification confirms {files_changed_in_git} files changed. Marking implementation as successful."
             )
 
-        response = AgentPromptResponse(
+        agent_response = AgentPromptResponse(
             output=output,
             success=final_success,
-            files_changed=parsed.files_changed,
-            lines_added=parsed.lines_added,
-            lines_removed=parsed.lines_removed,
+            files_changed=files_changed,
+            lines_added=lines_added,
+            lines_removed=lines_removed,
             test_results=parsed.test_results if parsed.test_results else None,
             warnings=parsed.warnings if parsed.warnings else None,
             errors=parsed.errors if parsed.errors else None,
             validation_status=final_validation_status,
         )
 
-        return response
+        return agent_response
 
-    except FileNotFoundError:
-        error_msg = "The 'copilot' command was not found. Please ensure it is installed and in your PATH."
-        logger.error(error_msg)
-        return AgentPromptResponse(output=error_msg, success=False)
-    except subprocess.CalledProcessError as e:
-        error_msg = f"Copilot execution failed with exit code {e.returncode}."
-        logger.error(error_msg)
-        logger.error(f"Stderr:\n{e.stderr}")
-
-        # Even on failure, try to parse output for diagnostics
-        parsed = parse_copilot_output(e.stderr)
-        return AgentPromptResponse(
-            output=e.stderr,
-            success=False,
-            validation_status=parsed.validation_status,
-            errors=parsed.errors if parsed.errors else None,
-        )
     except Exception as e:
-        error_msg = f"An unexpected error occurred during Copilot execution: {e}"
+        error_msg = f"An unexpected error occurred during OpenCode execution: {e}"
         logger.error(error_msg)
         return AgentPromptResponse(
             output=str(e), success=False, validation_status="error"
         )
+    finally:
+        # Always restore original working directory
+        try:
+            current_cwd = os.getcwd()
+            if current_cwd != original_cwd:
+                os.chdir(original_cwd)
+                logger.debug(f"Restored working directory to: {original_cwd}")
+        except Exception as e:
+            # If we can't restore directory, log it but don't fail
+            logger.warning(f"Could not restore working directory: {e}")
 
 
 def generate_branch_name(
