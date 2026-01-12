@@ -411,7 +411,14 @@ def generate_branch_name(
     domain: str = "ADW_Core",
     workflow_agent_name: Optional[str] = None,
 ) -> Tuple[Optional[str], Optional[str]]:
-    """Generate and create a git branch for the issue.
+    """Generate and create a git branch for the issue using OpenCode HTTP API with Claude Haiku 4.5.
+
+    Story 2.5 Implementation:
+    - Migrated to use execute_opencode_prompt() with task_type="branch_gen"
+    - Routes to Claude Haiku 4.5 via GitHub Copilot (lightweight model)
+    - Maintains backward compatibility with existing return format
+    - Preserves all existing validation and parsing logic
+
     Returns (branch_name, error_message) tuple."""
 
     issue_type = issue_class.replace("/", "")
@@ -420,16 +427,19 @@ def generate_branch_name(
     prompt = prompt.replace("$2", adw_id)
     prompt = prompt.replace("$3", issue.model_dump_json(by_alias=True))
 
-    request = AgentTemplateRequest(
-        agent_name=AGENT_BRANCH_GENERATOR,
-        prompt=prompt,
-        adw_id=adw_id,
-        model="sonnet",
-        domain=domain,
-        workflow_agent_name=workflow_agent_name,
-    )
+    # Import here to avoid circular imports
+    from .agent import execute_opencode_prompt
 
-    response = execute_template(request)
+    # Story 2.5: Use OpenCode HTTP API with task_type="branch_gen" → Claude Haiku 4.5
+    logger.debug(
+        f"Executing generate_branch_name() via OpenCode with task_type='branch_gen'"
+    )
+    response = execute_opencode_prompt(
+        prompt=prompt,
+        task_type="branch_gen",  # Routes to Claude Haiku 4.5 (GitHub Copilot)
+        adw_id=adw_id,
+        agent_name=AGENT_BRANCH_GENERATOR,
+    )
 
     if not response.success:
         return None, response.output
@@ -465,7 +475,14 @@ def create_commit(
     domain: str = "ADW_Core",
     workflow_agent_name: Optional[str] = None,
 ) -> Tuple[Optional[str], Optional[str]]:
-    """Create a git commit with a properly formatted message.
+    """Create a git commit with a properly formatted message using OpenCode HTTP API with Claude Haiku 4.5.
+
+    Story 2.6 Implementation:
+    - Migrated to use execute_opencode_prompt() with task_type="commit_msg"
+    - Routes to Claude Haiku 4.5 via GitHub Copilot (lightweight model)
+    - Maintains backward compatibility with existing return format
+    - Preserves all existing functionality and error handling
+
     Returns (commit_message, error_message) tuple."""
 
     issue_type = issue_class.replace("/", "")
@@ -478,16 +495,17 @@ def create_commit(
         issue_json=issue.model_dump_json(by_alias=True),
     )
 
-    request = AgentTemplateRequest(
-        agent_name=unique_agent_name,
-        prompt=prompt,
-        adw_id=adw_id,
-        model="sonnet",
-        domain=domain,
-        workflow_agent_name=workflow_agent_name,
-    )
+    # Import here to avoid circular imports
+    from .agent import execute_opencode_prompt
 
-    response = execute_template(request)
+    # Story 2.6: Use OpenCode HTTP API with task_type="commit_msg" → Claude Haiku 4.5
+    logger.debug(f"Executing create_commit() via OpenCode with task_type='commit_msg'")
+    response = execute_opencode_prompt(
+        prompt=prompt,
+        task_type="commit_msg",  # Routes to Claude Haiku 4.5 (GitHub Copilot)
+        adw_id=adw_id,
+        agent_name=unique_agent_name,
+    )
 
     if not response.success:
         return None, response.output

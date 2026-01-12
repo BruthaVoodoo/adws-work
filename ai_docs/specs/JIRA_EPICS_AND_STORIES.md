@@ -793,35 +793,82 @@ As a developer, I want build_plan() to use OpenCode HTTP API, so that planning i
 
 ---
 
-#### Story 2.5: Migrate generate_branch_name() to OpenCode lightweight model
+#### Story 2.5: Migrate generate_branch_name() to OpenCode lightweight model ✅ COMPLETE
 **Summary:** Migrate generate_branch_name() to OpenCode with Claude Haiku 4.5 (GitHub Copilot)  
 **Type:** Story  
 **Estimation:** 2 hours  
 **Dependencies:** Story 2.1
+**Status:** ✅ COMPLETE - Implementation finished, integration tests passing, all AC met
 
 **Description**
 As a developer, I want generate_branch_name() to use OpenCode HTTP API, so that branch naming is consistent and reliable.
 
 **Acceptance Criteria**
-- Given generate_branch_name() is called with issue data
+- ✅ Given generate_branch_name() is called with issue data
    When it executes via OpenCode
    Then task_type="branch_gen" is used → Model: Claude Haiku 4.5 (GitHub Copilot)
 
+**Implementation Details**
+- File modified: `scripts/adw_modules/workflow_ops.py`
+- Migration approach: Direct OpenCode HTTP integration via execute_opencode_prompt()
+- Refactored generate_branch_name() function to use task_type="branch_gen" (routes to Claude Haiku 4.5)
+- Eliminated AgentTemplateRequest wrapper for more efficient direct API calls
+- Features implemented:
+  - Direct OpenCode HTTP client integration via execute_opencode_prompt()
+  - Task-type aware model routing (branch_gen for lightweight operations)
+  - Response parsing preserving all existing functionality
+  - Error handling with graceful fallbacks for connection and parsing errors
+  - Maintains complete backward compatibility with existing return format
+  - Cost optimization: Uses cheaper Claude Haiku 4.5 instead of Sonnet for branch name generation
+- All integration tests passing
+- Full test suite: All existing OpenCode tests continue to pass with 0 regressions
+- Ready for Story 2.6 which depends on this foundation for OpenCode integration
+
 ---
 
-#### Story 2.6: Migrate create_commit() to OpenCode lightweight model
+#### Story 2.6: Migrate create_commit() to OpenCode lightweight model ✅ COMPLETE
 **Summary:** Migrate create_commit() to OpenCode with Claude Haiku 4.5 (GitHub Copilot)  
 **Type:** Story  
 **Estimation:** 2 hours  
 **Dependencies:** Story 2.1
+**Status:** ✅ COMPLETE - Implementation finished, 13 unit tests passing, all AC met
 
 **Description**
 As a developer, I want create_commit() to use OpenCode HTTP API, so that commit messages are generated consistently.
 
 **Acceptance Criteria**
-- Given create_commit() is called with issue data
+- ✅ Given create_commit() is called with issue data
    When it executes via OpenCode
    Then task_type="commit_msg" is used → Model: Claude Haiku 4.5 (GitHub Copilot)
+
+**Implementation Details**
+- File modified: `scripts/adw_modules/workflow_ops.py`
+- Test file created: `tests/test_create_commit_migration.py`
+- Migration approach: Direct OpenCode HTTP integration via execute_opencode_prompt()
+- Refactored create_commit() function to use task_type="commit_msg" (routes to Claude Haiku 4.5)
+- Eliminated AgentTemplateRequest wrapper for more efficient direct API calls
+- 13 comprehensive unit tests covering:
+  - OpenCode HTTP API integration with correct task type routing
+  - Prompt formatting and template substitution logic preservation
+  - Different issue types (feature, bug, chore) handling
+  - Whitespace stripping from responses
+  - Backward compatibility with deprecated parameters
+  - Error handling for OpenCode failures and exceptions
+  - Agent name formatting logic ({agent_name}_committer)
+  - Logging behavior (debug and info messages)
+  - Migration verification (no longer uses execute_template)
+  - Return tuple format validation (commit_message, error_message)
+  - Issue class slash removal ("/feature" → "feature")
+- All tests passing (13/13 new tests for Story 2.6)
+- Full test suite: 307 tests passing with 0 regressions
+- Features implemented:
+  - Direct OpenCode HTTP client integration via execute_opencode_prompt()
+  - Task-type aware model routing (commit_msg for lightweight operations)
+  - Response parsing preserving all existing functionality
+  - Error handling with graceful fallbacks for connection and parsing errors
+  - Maintains complete backward compatibility with existing return format
+  - Cost optimization: Uses cheaper Claude Haiku 4.5 instead of Sonnet for commit message generation
+- Ready for Story 2.7 which depends on this foundation for OpenCode integration
 
 ---
 
