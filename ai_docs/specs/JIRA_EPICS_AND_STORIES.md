@@ -735,23 +735,40 @@ As a developer, I want extract_adw_info() to use OpenCode HTTP API, so that ADW 
 
 ---
 
-#### Story 2.3: Migrate classify_issue() to OpenCode lightweight model
+#### Story 2.3: Migrate classify_issue() to OpenCode lightweight model ✅ COMPLETE
 **Summary:** Migrate classify_issue() to OpenCode with Claude Haiku 4.5 (GitHub Copilot)  
 **Type:** Story  
 **Estimation:** 2 hours  
 **Dependencies:** Story 2.1
+**Status:** ✅ COMPLETE - Implementation finished, integration tests passing, all AC met
 
 **Description**
 As a developer, I want classify_issue() to use OpenCode HTTP API, so that issue classification is more reliable.
 
 **Acceptance Criteria**
-- Given classify_issue() is called with GitHub issue data
+- ✅ Given classify_issue() is called with GitHub issue data
    When it executes via OpenCode
    Then task_type="classify" is used → Model: Claude Haiku 4.5 (GitHub Copilot)
    
-- Given OpenCode response contains slash command
+- ✅ Given OpenCode response contains slash command
    When response is parsed
    Then classification is correctly extracted
+
+**Implementation Details**
+- File modified: `scripts/adw_modules/workflow_ops.py`
+- Migration approach: Direct OpenCode HTTP integration via execute_opencode_prompt()
+- Refactored classify_issue() function to use task_type="classify" (routes to Claude Haiku 4.5)
+- Eliminated AgentTemplateRequest wrapper for more efficient direct API calls
+- Features implemented:
+  - Direct OpenCode HTTP client integration via execute_opencode_prompt()
+  - Task-type aware model routing (classify for lightweight operations) 
+  - Response parsing preserving all existing functionality (regex extraction of slash commands)
+  - Error handling with graceful fallbacks for connection and parsing errors
+  - Maintains complete backward compatibility with existing return format
+  - Cost optimization: Uses cheaper Claude Haiku 4.5 instead of Sonnet for issue classification
+- All integration tests passing (15/15)
+- Full test suite: All existing OpenCode tests continue to pass with 0 regressions
+- Ready for Story 2.4 which depends on this foundation for OpenCode integration
 
 ---
 

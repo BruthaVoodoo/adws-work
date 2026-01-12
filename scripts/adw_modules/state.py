@@ -9,8 +9,8 @@ import os
 import sys
 import logging
 from typing import Dict, Any, Optional
-from adw_modules.data_types import ADWStateData
-from .config import config
+from scripts.adw_modules.data_types import ADWStateData
+from scripts.adw_modules.config import config
 
 
 class ADWState:
@@ -20,13 +20,13 @@ class ADWState:
 
     def __init__(self, adw_id: str):
         """Initialize ADWState with a required ADW ID.
-        
+
         Args:
             adw_id: The ADW ID for this state (required)
         """
         if not adw_id:
             raise ValueError("adw_id is required for ADWState")
-        
+
         self.adw_id = adw_id
         # Start with minimal state
         self.data: Dict[str, Any] = {"adw_id": self.adw_id}
@@ -35,7 +35,15 @@ class ADWState:
     def update(self, **kwargs):
         """Update state with new key-value pairs."""
         # Filter to only our core fields
-        core_fields = {"adw_id", "issue_number", "branch_name", "plan_file", "issue_class", "domain", "agent_name"}
+        core_fields = {
+            "adw_id",
+            "issue_number",
+            "branch_name",
+            "plan_file",
+            "issue_class",
+            "domain",
+            "agent_name",
+        }
         for key, value in kwargs.items():
             if key in core_fields:
                 self.data[key] = value
@@ -74,10 +82,14 @@ class ADWState:
 
     @classmethod
     def load(
-        cls, adw_id: str, logger: Optional[logging.Logger] = None, domain: str = "ADW_Core", agent_name: Optional[str] = None
+        cls,
+        adw_id: str,
+        logger: Optional[logging.Logger] = None,
+        domain: str = "ADW_Core",
+        agent_name: Optional[str] = None,
     ) -> Optional["ADWState"]:
         """Load state from file if it exists.
-        
+
         Args:
             adw_id: The ADW ID to load
             logger: Optional logger instance

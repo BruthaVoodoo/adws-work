@@ -10,8 +10,8 @@ import logging
 import subprocess
 import re
 import os
-from typing import Tuple, Optional
-from adw_modules.data_types import (
+from typing import Tuple, Optional, cast
+from scripts.adw_modules.data_types import (
     AgentTemplateRequest,
     GitHubIssue,  # Keep for now if other functions use it
     JiraIssue,
@@ -19,19 +19,19 @@ from adw_modules.data_types import (
     IssueClassSlashCommand,
     ReviewIssue,
 )
-from adw_modules.agent import execute_template
-from adw_modules.bitbucket_ops import (
+from scripts.adw_modules.agent import execute_template
+from scripts.adw_modules.bitbucket_ops import (
     check_pr_exists,
     create_pull_request as bb_create_pr,
     update_pull_request,
 )
-from adw_modules.state import ADWState
-from adw_modules.utils import parse_json, load_prompt
-from adw_modules.issue_formatter import format_issue_context
-from adw_modules.copilot_output_parser import parse_copilot_output
-from adw_modules.git_verification import verify_git_changes, get_file_changes
-from adw_modules.plan_validator import cross_reference_plan_output
-from .config import config
+from scripts.adw_modules.state import ADWState
+from scripts.adw_modules.utils import parse_json, load_prompt
+from scripts.adw_modules.issue_formatter import format_issue_context
+from scripts.adw_modules.copilot_output_parser import parse_copilot_output
+from scripts.adw_modules.git_verification import verify_git_changes, get_file_changes
+from scripts.adw_modules.plan_validator import cross_reference_plan_output
+from scripts.adw_modules.config import config
 
 
 # Agent name constants
@@ -119,7 +119,14 @@ def classify_issue(
     domain: str = "ADW_Core",
     workflow_agent_name: Optional[str] = None,
 ) -> Tuple[Optional[IssueClassSlashCommand], Optional[str]]:
-    """Classify GitHub issue and return appropriate slash command.
+    """Classify GitHub issue and return appropriate slash command using OpenCode HTTP API with Claude Haiku 4.5.
+
+    Story 2.3 Implementation:
+    - Migrated to use execute_opencode_prompt() with task_type="classify"
+    - Routes to Claude Haiku 4.5 via GitHub Copilot (lightweight model)
+    - Maintains backward compatibility with existing return format
+    - Preserves all error handling and validation logic
+
     Returns (command, error_message) tuple."""
 
     minimal_issue_json = issue.model_dump_json(
@@ -128,17 +135,19 @@ def classify_issue(
 
     try:
         prompt = load_prompt("classify_issue").replace("$ARGUMENTS", minimal_issue_json)
-        request = AgentTemplateRequest(
-            agent_name=AGENT_CLASSIFIER,
+
+        # Import here to avoid circular imports
+        from .agent import execute_opencode_prompt
+
+        # Use OpenCode HTTP API with task_type="classify" → Claude Haiku 4.5
+        logger.debug(f"Classifying issue: {issue.title}")
+        response = execute_opencode_prompt(
             prompt=prompt,
+            task_type="classify",  # Routes to Claude Haiku 4.5 (GitHub Copilot)
             adw_id=adw_id,
-            model="sonnet",
-            domain=domain,
-            workflow_agent_name=workflow_agent_name,
+            agent_name=AGENT_CLASSIFIER,
         )
 
-        logger.debug(f"Classifying issue: {issue.title}")
-        response = execute_template(request)
         logger.debug(
             f"Classification response: {response.model_dump_json(indent=2, by_alias=True)}"
         )
@@ -161,7 +170,8 @@ def classify_issue(
         if issue_command not in ["/chore", "/bug", "/feature", "/new"]:
             return None, f"Invalid command selected: {response.output}"
 
-        return issue_command, None  # type: ignore
+        # Type is validated above, safe to cast
+        return cast(IssueClassSlashCommand, issue_command), None
     except Exception as e:
         logger.error(f"Error during issue classification: {e}")
         return None, str(e)
