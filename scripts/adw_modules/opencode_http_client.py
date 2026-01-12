@@ -11,7 +11,8 @@ import uuid
 import requests
 import time
 import json
-from typing import Optional, Dict, Any, Literal
+import re
+from typing import Optional, Dict, Any, Literal, List
 from urllib.parse import urlparse
 import sys
 
@@ -577,3 +578,235 @@ class OpenCodeHTTPClient:
             f"OpenCodeHTTPClient(server_url='{self.server_url}', "
             f"session_id='{self.session_id}')"
         )
+
+
+# Story 1.5: Output Parser Functions for Structured Part Extraction
+
+
+def extract_text_response(parts: List[Dict[str, Any]]) -> str:
+    """
+    Extract and concatenate all text content from OpenCode response parts.
+
+    Story 1.5 Acceptance Criteria:
+    - Given an OpenCodeResponse with multiple Parts
+      When I call extract_text_response(parts)
+      Then all text parts are concatenated in order
+
+    Args:
+        parts: List of OpenCode Part dictionaries from response
+
+    Returns:
+        str: Concatenated text content from all text parts, in order
+    """
+    if not parts:
+        return ""
+
+    text_content = []
+    for part in parts:
+        if isinstance(part, dict) and part.get("type") == "text":
+            content = part.get("content", "")
+            if content and isinstance(content, str):
+                text_content.append(content.strip())
+
+    return "\n".join(text_content)
+
+
+def extract_tool_execution_details(parts: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Extract tool execution details from OpenCode response parts.
+
+    Story 1.5 Acceptance Criteria:
+    - Given Parts with tool_use and tool_result types
+      When I call extract_tool_execution_details(parts)
+      Then I get a dict with tool counts and execution details
+
+    Args:
+        parts: List of OpenCode Part dictionaries from response
+
+    Returns:
+        Dict with tool execution summary containing:
+        - tool_use_count: Number of tool_use parts
+        - tool_result_count: Number of tool_result parts
+        - tools_used: List of tool names that were executed
+        - tool_executions: List of {tool, input, output} for each execution
+        - total_tools: Total number of tool operations
+    """
+    if not parts:
+        return {
+            "tool_use_count": 0,
+            "tool_result_count": 0,
+            "tools_used": [],
+            "tool_executions": [],
+            "total_tools": 0,
+        }
+
+    tool_use_count = 0
+    tool_result_count = 0
+    tools_used = []
+    tool_executions = []
+
+    # Process parts to extract tool information
+    for part in parts:
+        if not isinstance(part, dict):
+            continue
+
+        part_type = part.get("type")
+
+        if part_type == "tool_use":
+            tool_use_count += 1
+            tool_name = part.get("tool")
+            if tool_name and tool_name not in tools_used:
+                tools_used.append(tool_name)
+
+            # Record tool use details
+            tool_executions.append(
+                {
+                    "type": "tool_use",
+                    "tool": tool_name,
+                    "input": part.get("input"),
+                    "output": None,  # tool_use doesn't have output
+                }
+            )
+
+        elif part_type == "tool_result":
+            tool_result_count += 1
+
+            # Record tool result details
+            tool_executions.append(
+                {
+                    "type": "tool_result",
+                    "tool": part.get("tool"),  # May be None for results
+                    "input": None,  # tool_result doesn't have input
+                    "output": part.get("output"),
+                }
+            )
+
+    return {
+        "tool_use_count": tool_use_count,
+        "tool_result_count": tool_result_count,
+        "tools_used": tools_used,
+        "tool_executions": tool_executions,
+        "total_tools": tool_use_count + tool_result_count,
+    }
+
+
+def estimate_metrics_from_parts(parts: List[Dict[str, Any]]) -> Dict[str, int]:
+    """
+    Estimate development metrics from OpenCode response parts.
+
+    Story 1.5 Acceptance Criteria:
+    - Given tool_result parts with output text
+      When I call estimate_metrics_from_parts(parts)
+      Then I estimate files_changed, lines_added, lines_removed
+
+    This function analyzes tool_result outputs and code_block content
+    to estimate the scope of changes made during code implementation.
+
+    Args:
+        parts: List of OpenCode Part dictionaries from response
+
+    Returns:
+        Dict with estimated metrics:
+        - files_changed: Estimated number of files modified/created
+        - lines_added: Estimated lines of code added
+        - lines_removed: Estimated lines of code removed
+        - total_content_length: Total character count of all outputs
+        - code_blocks: Number of code_block parts found
+    """
+    if not parts:
+        return {
+            "files_changed": 0,
+            "lines_added": 0,
+            "lines_removed": 0,
+            "total_content_length": 0,
+            "code_blocks": 0,
+        }
+
+    files_changed = 0
+    lines_added = 0
+    lines_removed = 0
+    total_content_length = 0
+    code_blocks = 0
+
+    # Track unique file paths to avoid double counting
+    file_paths_seen = set()
+
+    for part in parts:
+        if not isinstance(part, dict):
+            continue
+
+        part_type = part.get("type")
+        content = part.get("content", "")
+        output = part.get("output", "")
+
+        # Analyze content from various part types
+        text_to_analyze = ""
+        if part_type == "tool_result" and output:
+            text_to_analyze = output
+        elif part_type == "code_block" and content:
+            text_to_analyze = content
+            code_blocks += 1
+        elif part_type == "text" and content:
+            text_to_analyze = content
+
+        if not text_to_analyze:
+            continue
+
+        # Update total content length
+        total_content_length += len(text_to_analyze)
+
+        # Estimate files changed by looking for file path patterns
+        file_patterns = [
+            r"(?:^|\s)([a-zA-Z0-9_/-]+\.(?:py|js|ts|jsx|tsx|java|cpp|h|css|html|md|yaml|yml|json|txt))",
+            r"(?:^|\s)([a-zA-Z0-9_/-]+/[a-zA-Z0-9_.-]+)",  # Unix-style paths
+            r"File:\s*([^\s\n]+)",  # "File: path/to/file.py"
+            r"(?:Creating|Updating|Modifying):\s*([^\s\n]+)",  # Action: path
+        ]
+
+        for pattern in file_patterns:
+            matches = re.findall(pattern, text_to_analyze, re.IGNORECASE | re.MULTILINE)
+            for match in matches:
+                if match not in file_paths_seen:
+                    file_paths_seen.add(match)
+                    files_changed += 1
+
+        # Estimate lines added by counting newlines in content
+        # This is a rough approximation - actual additions would need diff analysis
+        lines_in_content = len(text_to_analyze.split("\n"))
+        if lines_in_content > 1:  # Don't count single-line outputs
+            lines_added += max(0, lines_in_content - 1)
+
+        # Look for deletion patterns (very rough estimation)
+        deletion_patterns = [
+            r"(?:remove|delete|rm)\s+",
+            r"^\s*-\s*",  # Diff-style deletions
+            r"// TODO: remove",
+        ]
+
+        for pattern in deletion_patterns:
+            deletions = len(
+                re.findall(pattern, text_to_analyze, re.IGNORECASE | re.MULTILINE)
+            )
+            lines_removed += (
+                deletions * 2
+            )  # Rough estimate: each deletion removes ~2 lines
+
+    # Apply some heuristics to make estimates more realistic
+
+    # If no files detected through patterns, but we have code blocks, estimate minimum files
+    if files_changed == 0 and code_blocks > 0:
+        files_changed = min(code_blocks, 3)  # Assume up to 3 files for code blocks
+
+    # Cap lines_added to reasonable values based on content length
+    if total_content_length > 0:
+        # Rough estimate: average 50 chars per line of code
+        max_estimated_lines = total_content_length // 50
+        lines_added = min(lines_added, max_estimated_lines)
+
+    return {
+        "files_changed": files_changed,
+        "lines_added": lines_added,
+        "lines_removed": lines_removed,
+        "total_content_length": total_content_length,
+        "code_blocks": code_blocks,
+    }

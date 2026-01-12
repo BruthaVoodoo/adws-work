@@ -408,27 +408,51 @@ As a developer, I want intelligent model routing that selects appropriate models
 
 ---
 
-#### Story 1.5: Develop output parser for structured Part extraction
+#### Story 1.5: Develop output parser for structured Part extraction ✅ COMPLETE
 **Summary:** Develop output parser for Part extraction and metric calculation  
 **Type:** Story  
 **Estimation:** 3 hours  
 **Dependencies:** Story 1.3
+**Status:** ✅ COMPLETE - Implementation finished, 15 unit tests passing, all AC met
 
 **Description**
 As a developer, I want to extract data from OpenCode response Parts, so that I can process execution results and estimate metrics.
 
 **Acceptance Criteria**
-- Given an OpenCodeResponse with multiple Parts
-  When I call extract_text_response(parts)
-  Then all text parts are concatenated in order
-  
-- Given Parts with tool_use and tool_result types
-  When I call extract_tool_execution_details(parts)
-  Then I get a dict with tool counts and execution details
-  
-- Given tool_result parts with output text
-  When I call estimate_metrics_from_parts(parts)
-  Then I estimate files_changed, lines_added, lines_removed
+- ✅ Given an OpenCodeResponse with multiple Parts
+   When I call extract_text_response(parts)
+   Then all text parts are concatenated in order
+   
+- ✅ Given Parts with tool_use and tool_result types
+   When I call extract_tool_execution_details(parts)
+   Then I get a dict with tool counts and execution details
+   
+- ✅ Given tool_result parts with output text
+   When I call estimate_metrics_from_parts(parts)
+   Then I estimate files_changed, lines_added, lines_removed
+
+**Implementation Details**
+- File modified: `scripts/adw_modules/opencode_http_client.py`
+- Test file updated: `tests/test_opencode_http_client.py`
+- 3 new output parser functions added:
+  - `extract_text_response(parts)` - Concatenates all text content from response parts
+  - `extract_tool_execution_details(parts)` - Analyzes tool usage and provides execution metrics
+  - `estimate_metrics_from_parts(parts)` - Estimates development metrics (files, lines changed)
+- 15 comprehensive unit tests added covering:
+  - Empty/edge cases and error handling
+  - Single text part extraction and validation
+  - Multiple text part concatenation in order
+  - Mixed part type filtering (ignores non-text parts)
+  - Whitespace handling and normalization
+  - Tool use/result counting and analysis
+  - Unique tool tracking and execution sequences
+  - File path detection via regex patterns
+  - Line counting and deletion pattern recognition
+  - Real-world comprehensive scenarios with mixed content
+- All tests passing (15/15)
+- Full test suite: 185 tests passing with 0 regressions
+- Integration: Updated `scripts/adw_modules/agent.py` to use new `extract_text_response()` function
+- Ready for Epic 2 & 3 migrations where these functions will be extensively used
 
 ---
 

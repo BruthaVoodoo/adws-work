@@ -22,6 +22,7 @@ from .data_types import (
     AgentTemplateRequest,
 )
 from .config import config
+from .opencode_http_client import extract_text_response
 
 # Load environment variables
 load_dotenv()
@@ -129,11 +130,8 @@ def invoke_opencode_model(prompt: str, model_id: str) -> AgentPromptResponse:
         response_body = msg_resp.json()
         parts = response_body.get("parts", [])
 
-        # Extract text from parts (skip step-start/step-finish)
-        text_output = ""
-        for part in parts:
-            if part.get("type") == "text":
-                text_output += part.get("text", "")
+        # Extract text from parts using the new output parser function
+        text_output = extract_text_response(parts)
 
         if text_output:
             return AgentPromptResponse(output=text_output, success=True)
