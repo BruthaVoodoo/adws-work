@@ -20,9 +20,14 @@ from dotenv import load_dotenv
 from .data_types import (
     AgentPromptResponse,
     AgentTemplateRequest,
+    OpenCodeResponse,
 )
 from .config import config
-from .opencode_http_client import extract_text_response
+from .opencode_http_client import (
+    extract_text_response,
+    OpenCodeHTTPClient,
+    estimate_metrics_from_parts,
+)
 
 # Load environment variables
 load_dotenv()
@@ -36,6 +41,95 @@ OPENCODE_MODEL_HEAVY = os.getenv(
 OPENCODE_MODEL_LIGHT = os.getenv(
     "OPENCODE_MODEL_LIGHT", "github-copilot/claude-haiku-4.5"
 )  # Classification, planning
+
+
+def convert_opencode_to_agent_response(
+    response_data: dict, client: OpenCodeHTTPClient
+) -> AgentPromptResponse:
+    """
+    Convert OpenCode HTTP response to AgentPromptResponse for backward compatibility.
+
+    Args:
+        response_data: Raw response dict from OpenCode HTTP API
+        client: OpenCodeHTTPClient instance for additional parsing methods
+
+    Returns:
+        AgentPromptResponse with compatible fields populated
+    """
+    try:
+        # Extract parts from raw response data
+        parts = response_data.get("parts", [])
+        success = response_data.get("success", True)
+        session_id = response_data.get("session_id")
+
+        # Extract text content from parts (using raw dicts)
+        text_output = extract_text_response(parts)
+
+        # Estimate metrics from parts (using raw dicts)
+        metrics = estimate_metrics_from_parts(parts)
+
+        return AgentPromptResponse(
+            output=text_output or "No text response from OpenCode",
+            success=success and bool(text_output),
+            session_id=session_id,
+            files_changed=metrics.get("files_changed"),
+            lines_added=metrics.get("lines_added"),
+            lines_removed=metrics.get("lines_removed"),
+        )
+
+    except Exception as e:
+        return AgentPromptResponse(
+            output=f"Error parsing OpenCode response: {str(e)}",
+            success=False,
+        )
+
+
+def execute_opencode_prompt(
+    prompt: str,
+    task_type: str,
+    adw_id: str = "unknown",
+    agent_name: str = "agent",
+    model_id: Optional[str] = None,
+) -> AgentPromptResponse:
+    """
+    Execute a prompt using OpenCode HTTP API with task-aware model selection.
+
+    Story 2.1 Implementation:
+    - Uses OpenCodeHTTPClient instead of direct HTTP calls
+    - Supports task_type parameter for intelligent model routing
+    - Converts OpenCodeResponse to AgentPromptResponse for backward compatibility
+
+    Args:
+        prompt: The prompt text to execute
+        task_type: Task type for automatic model selection (classify, plan, implement, etc.)
+        adw_id: ADW workflow ID for logging
+        agent_name: Agent name for logging
+        model_id: Optional explicit model override
+
+    Returns:
+        AgentPromptResponse: Backward-compatible response format
+    """
+    try:
+        # Create OpenCode client using configuration
+        client = OpenCodeHTTPClient.from_config()
+
+        # Send prompt with task-aware model selection
+        response_data = client.send_prompt(
+            prompt=prompt,
+            task_type=task_type,
+            model_id=model_id,
+            adw_id=adw_id,
+            agent_name=agent_name,
+        )
+
+        # Convert to backward-compatible format
+        return convert_opencode_to_agent_response(response_data, client)
+
+    except Exception as e:
+        return AgentPromptResponse(
+            output=f"OpenCode execution error: {str(e)}",
+            success=False,
+        )
 
 
 def save_prompt(
@@ -167,13 +261,17 @@ def invoke_model(prompt: str, model_id: str) -> AgentPromptResponse:
 
 def execute_template(request: AgentTemplateRequest) -> AgentPromptResponse:
     """
-    Execute a prompt template using GitHub Copilot models via OpenCode.
+    Execute a prompt template using OpenCode HTTP API with task-aware model selection.
 
-    Model selection:
-    - "opus" or request.model=="opus" → Claude Sonnet 4 (heavy lifting)
-    - other → Claude Haiku 4.5 (lightweight tasks)
+    Story 2.1 Implementation:
+    - Refactored to use execute_opencode_prompt() with task_type parameter
+    - Maintains backward compatibility with existing AgentTemplateRequest interface
+    - Uses intelligent model routing based on request.model mapping
+
+    Model mapping:
+    - "opus" or request.model=="opus" → task_type for heavy lifting operations
+    - other → task_type for lightweight operations
     """
-
     prompt = request.prompt
     save_prompt(
         prompt,
@@ -183,11 +281,19 @@ def execute_template(request: AgentTemplateRequest) -> AgentPromptResponse:
         workflow_agent_name=request.workflow_agent_name,
     )
 
-    # Map to GitHub Copilot models
-    # Note: Legacy AWS_MODEL env var is ignored; using OpenCode models instead
+    # Map request.model to task_type for intelligent routing
+    # Note: This is a transitional mapping until calling code is updated to provide task_type directly
     if request.model == "opus":
-        model_id = OPENCODE_MODEL_HEAVY  # Claude Sonnet 4.5 for complex tasks
+        # Heavy lifting task - will route to Claude Sonnet 4
+        task_type = "implement"  # Default heavy lifting task type
     else:
-        model_id = OPENCODE_MODEL_LIGHT  # Claude Haiku 4.5 for lightweight tasks
+        # Lightweight task - will route to Claude Haiku 4.5
+        task_type = "classify"  # Default lightweight task type
 
-    return invoke_model(prompt, model_id)
+    # Execute using OpenCode HTTP client with task-aware model selection
+    return execute_opencode_prompt(
+        prompt=prompt,
+        task_type=task_type,
+        adw_id=request.adw_id,
+        agent_name=request.agent_name,
+    )
