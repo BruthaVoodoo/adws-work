@@ -28,7 +28,7 @@ class TestStory28ErrorHandling:
                 self.messages.append(record)
 
         self.test_handler = TestLogHandler(self.log_messages)
-        self.logger = logging.getLogger("adw_modules.workflow_ops")
+        self.logger = logging.getLogger("scripts.adw_modules.workflow_ops")
         self.logger.addHandler(self.test_handler)
         self.logger.setLevel(logging.DEBUG)
 

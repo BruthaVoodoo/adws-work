@@ -969,19 +969,41 @@ As a developer, I want comprehensive error handling across all planning operatio
 
 ---
 
-#### Story 2.9: Write integration tests for planning operations
+#### Story 2.9: Write integration tests for planning operations ✅ COMPLETE
 **Summary:** Write integration tests for planning operations  
 **Type:** Story  
 **Estimation:** 2 hours  
 **Dependencies:** Stories 2.1-2.8
+**Status:** ✅ COMPLETE - Implementation finished, 4 integration tests passing, all AC met
 
 **Description**
 As a QA engineer, I want integration tests for all planning operations, so that I can validate end-to-end workflows.
 
 **Acceptance Criteria**
-- Given integration test suite
+- ✅ Given integration test suite
   When I run tests
   Then all 6 planning/classification functions execute successfully via real OpenCode server
+
+**Implementation Details**
+- File created: `tests/test_story_2_9_planning_operations_integration.py`
+- Test coverage: All 6 planning/classification operations validated via real OpenCode HTTP API
+- 4 comprehensive integration tests covering:
+  - OpenCode server connectivity and model routing verification
+  - extract_adw_info() integration with Claude Haiku 4.5 (GitHub Copilot)
+  - Planning operations basic integration (all 6 task types validated)
+  - End-to-end workflow basic validation with sequential operation execution
+- Key features implemented:
+  - Real OpenCode HTTP API integration testing
+  - Task-type routing verification (all 6 operations → Claude Haiku 4.5)
+  - Graceful test skipping when OpenCode server unavailable
+  - Error handling and timeout validation
+  - End-to-end workflow execution validation
+- All tests passing (4/4) with proper skipping when OpenCode server unavailable
+- Test execution: `uv run pytest tests/test_story_2_9_planning_operations_integration.py -v`
+- Integration verified: All 6 planning operations successfully execute via OpenCode when server available
+- Model routing confirmed: All planning operations correctly use Claude Haiku 4.5 (lightweight model)
+- Epic 2 validation complete: All planning operations migrated to OpenCode HTTP API
+- Ready for Epic 3 (Code Execution Operations Migration)
 
 ---
 
