@@ -5,6 +5,7 @@ It handles session management, connection validation, authentication, prompt exe
 - Story 1.1: Session management and connection handling
 - Story 1.2: Prompt sending with exponential backoff retry logic
 - Story 1.4: Model routing logic with task-aware selection
+- Story 1.10: Configuration loading from ADWConfig
 """
 
 import uuid
@@ -18,6 +19,9 @@ from pathlib import Path
 from typing import Optional, Dict, Any, Literal, List
 from urllib.parse import urlparse
 import sys
+
+# Import configuration singleton
+from .config import config, ADWConfig
 
 # Task type definitions for intelligent model routing
 TaskType = Literal[
@@ -155,6 +159,32 @@ class OpenCodeHTTPClient:
         # Store session-related attributes
         self._session: Optional[requests.Session] = None
         self._is_authenticated = False
+
+    @classmethod
+    def from_config(cls, api_key: Optional[str] = None) -> "OpenCodeHTTPClient":
+        """
+        Create OpenCodeHTTPClient instance using ADWConfig settings.
+
+        This method reads all OpenCode configuration from the .adw.yaml file
+        via the ADWConfig singleton, providing a convenient way to create
+        properly configured clients.
+
+        Args:
+            api_key: Optional API key override (uses environment if not provided)
+
+        Returns:
+            OpenCodeHTTPClient: Configured client instance
+
+        Example:
+            >>> client = OpenCodeHTTPClient.from_config()
+            >>> # Uses server_url, timeout, etc. from .adw.yaml
+        """
+        return cls(
+            server_url=config.opencode_server_url,
+            api_key=api_key,
+            timeout=config.opencode_timeout,
+            lightweight_timeout=config.opencode_lightweight_timeout,
+        )
 
     @staticmethod
     def _is_valid_url(url: str) -> bool:

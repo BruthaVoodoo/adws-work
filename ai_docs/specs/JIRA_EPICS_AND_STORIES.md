@@ -90,9 +90,9 @@ This document contains all Epics and Stories for the complete migration of ADWS 
 - [x] HTTP client successfully connects to OpenCode server and manages sessions
 - [x] All Part types (text, tool_use, tool_result, code_block) correctly parsed from responses
 - [x] Model routing selects correct model for each task type (heavy vs lightweight)
-- [ ] Configuration loaded from .adw.yaml with sensible defaults
+- [x] Configuration loaded from .adw.yaml with sensible defaults
 - [ ] Connection health checks pass at startup
-- [ ] Comprehensive unit test coverage (50+ tests)
+- [x] Comprehensive unit test coverage (50+ tests)
 
 ### Stories
 1. Create OpenCodeHTTPClient class with session management (4 hours)
@@ -605,19 +605,40 @@ As a developer, I want unit tests for the output parser, so that Part extraction
 
 ---
 
-#### Story 1.10: Add OpenCode configuration to .adw.yaml
+#### Story 1.10: Add OpenCode configuration to .adw.yaml ✅ COMPLETE
 **Summary:** Add OpenCode configuration to .adw.yaml  
 **Type:** Story  
 **Estimation:** 1 hour  
 **Dependencies:** Stories 1.1-1.3
+**Status:** ✅ COMPLETE - Implementation finished, 27 unit tests passing, all AC met
 
 **Description**
 As a developer, I want OpenCode configuration in .adw.yaml, so that users can customize server URL, models, and timeouts.
 
 **Acceptance Criteria**
-- Given .adw.yaml file
+- ✅ Given .adw.yaml file
   When it's loaded
   Then opencode section is parsed with keys: server_url, models.heavy_lifting, models.lightweight, timeout, lightweight_timeout, max_retries
+
+**Implementation Details**
+- OpenCode section already existed in `.adw.yaml` with comprehensive configuration
+- Extended `ADWConfig` class with 10 new properties for OpenCode configuration access:
+  - `opencode_server_url`, `opencode_model_heavy_lifting`, `opencode_model_lightweight`
+  - `opencode_timeout`, `opencode_lightweight_timeout`, `opencode_max_retries`
+  - `opencode_retry_backoff`, `opencode_reuse_sessions`, `opencode_connection_timeout`, `opencode_read_timeout`
+- Added `OpenCodeHTTPClient.from_config()` class method for easy integration
+- Test files: `tests/test_opencode_config.py` (23 tests) and `tests/test_opencode_integration.py` (4 tests)
+- 27 comprehensive unit tests covering:
+  - Default configuration fallbacks for all properties
+  - Custom configuration loading and property mapping
+  - Partial configuration with graceful defaults
+  - Integration with OpenCodeHTTPClient class
+  - Error handling and type safety
+- All tests passing (27/27)
+- Full test suite: All existing tests continue to pass with 0 regressions
+- Integration verified: `OpenCodeHTTPClient.from_config()` successfully loads from .adw.yaml
+- Configuration properties accessible: All AC keys available via config singleton
+- Ready for Epic 2 migrations where OpenCode client will use this configuration
 
 ---
 
