@@ -13,17 +13,17 @@ This document reflects the Phase 0 architectural decision (January 9, 2026):
 - ✅ **Deluxe LLM fallback permanently removed** (token expired Dec 30, 2025)
 - ✅ **Epic 1: OpenCode HTTP Client Infrastructure** - COMPLETE
 - ✅ **Epic 2: Planning & Classification Operations** - COMPLETE (using OpenCode HTTP API)
-- ⏳ **Epic 3: Code Execution Operations** - IN PROGRESS (still uses Copilot CLI, migration pending)
+- ⏳ **Epic 3: Code Execution Operations** - IN PROGRESS (Story 3.1 complete, remaining 7 stories)
 - ✅ **GitHub Copilot models verified and accessible**:
   - Claude Sonnet 4 (heavy lifting: via OpenCode when Epic 3 complete)
   - Claude Haiku 4.5 (lightweight: planning & classification via OpenCode, ACTIVE NOW)
 - ✅ **No feature flags needed** - Direct OpenCode HTTP path for Planning/Classification
 - ✅ **All 95 existing tests passing** with current architecture
 - ✅ **Configuration clean and simplified** - no hybrid state, no fallback logic
-- ⏳ **Code Execution** - Currently uses Copilot CLI, will migrate to OpenCode in Epic 3
+- ⏳ **Code Execution** - Story 3.1 (implement_plan) migrated, 7 stories remaining
 
 **Current State**: Planning and classification operations are fully migrated to OpenCode HTTP API.
-Code execution operations (implement, test fixing, review) still use Copilot CLI but will migrate in Epic 3.
+Code execution operations: Story 3.1 (implement_plan) complete with 12 new tests. 7 stories remaining.
 
 **Key Decision**: Phase 0 removed Deluxe fallback and confirmed direct OpenCode HTTP path for
 lightweight operations. Code execution migration is Epic 3 work (currently in progress).
