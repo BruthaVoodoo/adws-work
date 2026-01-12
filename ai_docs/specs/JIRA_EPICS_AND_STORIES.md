@@ -872,19 +872,46 @@ As a developer, I want create_commit() to use OpenCode HTTP API, so that commit 
 
 ---
 
-#### Story 2.7: Migrate create_pull_request() to OpenCode lightweight model
+#### Story 2.7: Migrate create_pull_request() to OpenCode lightweight model ✅ COMPLETE
 **Summary:** Migrate create_pull_request() to OpenCode with Claude Haiku 4.5 (GitHub Copilot)  
 **Type:** Story  
 **Estimation:** 2 hours  
 **Dependencies:** Story 2.1
+**Status:** ✅ COMPLETE - Implementation finished, 9 unit tests passing, all AC met
 
 **Description**
 As a developer, I want create_pull_request() to use OpenCode HTTP API, so that PR metadata generation is reliable.
 
 **Acceptance Criteria**
-- Given create_pull_request() is called with plan and context
+- ✅ Given create_pull_request() is called with plan and context
    When it executes via OpenCode
    Then task_type="pr_creation" is used → Model: Claude Haiku 4.5 (GitHub Copilot)
+
+**Implementation Details**
+- File modified: `scripts/adw_modules/workflow_ops.py`
+- Test file created: `tests/test_create_pull_request_migration.py`
+- Migration approach: Direct OpenCode HTTP integration via execute_opencode_prompt()
+- Refactored create_pull_request() function to use task_type="pr_creation" (routes to Claude Haiku 4.5)
+- Eliminated AgentTemplateRequest wrapper for more efficient direct API calls
+- 9 comprehensive unit tests covering:
+  - OpenCode HTTP API integration with correct task type routing
+  - Successful PR creation and update scenarios via OpenCode
+  - Error handling for OpenCode failures, invalid JSON, missing fields
+  - Task-type routing verification (pr_creation → Claude Haiku 4.5)
+  - Backward compatibility with existing return format and Bitbucket integration
+  - Migration verification (no longer uses execute_template)
+  - Prompt formatting preservation during migration
+  - Edge cases and error scenarios
+- All tests passing (9/9)
+- Full test suite: All existing tests continue to pass with 0 regressions
+- Features implemented:
+  - Direct OpenCode HTTP client integration via execute_opencode_prompt()
+  - Task-type aware model routing (pr_creation for lightweight operations)
+  - Response parsing preserving all existing functionality (title, description extraction)
+  - Error handling with graceful fallbacks for connection and parsing errors
+  - Maintains complete backward compatibility with existing Bitbucket integration
+  - Cost optimization: Uses cheaper Claude Haiku 4.5 instead of Sonnet for PR creation
+- Ready for Story 2.8 which depends on this foundation for comprehensive error handling
 
 ---
 

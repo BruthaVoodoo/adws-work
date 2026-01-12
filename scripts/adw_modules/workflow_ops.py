@@ -521,7 +521,13 @@ def create_pull_request(
     state: ADWState,
     logger: logging.Logger,
 ) -> Tuple[Optional[str], Optional[str]]:
-    """Create or update a pull request in Bitbucket for the implemented changes.
+    """Create or update a pull request in Bitbucket for the implemented changes using OpenCode HTTP API with Claude Haiku 4.5.
+
+    Story 2.7 Implementation:
+    - Migrated to use execute_opencode_prompt() with task_type="pr_creation"
+    - Routes to Claude Haiku 4.5 via GitHub Copilot (lightweight model)
+    - Maintains backward compatibility with existing return format
+    - Preserves all existing validation and Bitbucket integration logic
 
     Args:
         branch_name: Git branch name for the PR
@@ -547,21 +553,22 @@ def create_pull_request(
             f"Calling AI agent for PR creation with prompt length: {len(prompt)}"
         )
 
-        request = AgentTemplateRequest(
-            agent_name=AGENT_PR_CREATOR,
+        # Story 2.7: Use OpenCode HTTP API with task_type="pr_creation" → Claude Haiku 4.5
+        logger.debug(
+            f"Executing create_pull_request() via OpenCode with task_type='pr_creation'"
+        )
+        response = execute_opencode_prompt(
             prompt=prompt,
-            adw_id=adw_id,
-            model="sonnet",
-            domain=state.get("domain", "ADW_Core"),
-            workflow_agent_name=state.get("agent_name"),
+            task_type="pr_creation",  # Routes to Claude Haiku 4.5 (GitHub Copilot)
+            adw_id=adw_id or "unknown",  # Handle None case
+            agent_name=AGENT_PR_CREATOR,
         )
 
-        response = execute_template(request)
         logger.debug(
-            f"AI agent response success: {response.success}, length: {len(response.output)}"
+            f"OpenCode response success: {response.success}, length: {len(response.output)}"
         )
         logger.debug(
-            f"AI agent raw response (first 500 chars): {response.output[:500]}"
+            f"OpenCode raw response (first 500 chars): {response.output[:500]}"
         )
 
         if not response.success:

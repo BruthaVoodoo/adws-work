@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-01-12T11:35:46.010452",
+  "adw_id": "test-adw-123",
+  "agent_name": "pr_creator",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Branch: feature-issue-42-adw-test-123, Issue: 42, Plan: /path/to/plan.md, ADW: test-adw-123",
+  "error_context": "send_prompt_connection_retry failed with ConnectionError: HTTPConnectionPool(host='localhost', port=4096): Max retries exceeded with url: /api/v1/prompt (Caused by NewConnectionError(\"HTTPConnection(host='localhost', port=4096): Failed to establish a new connection: [Errno 61] Connection refused\"))",
+  "response": {
+    "error_type": "ConnectionError",
+    "error_message": "HTTPConnectionPool(host='localhost', port=4096): Max retries exceeded with url: /api/v1/prompt (Caused by NewConnectionError(\"HTTPConnection(host='localhost', port=4096): Failed to establish a new connection: [Errno 61] Connection refused\"))",
+    "operation": "send_prompt_connection_retry",
+    "additional_context": {
+      "attempt": 1,
+      "max_retries": 3,
+      "retry_delay": 1.0
+    }
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/ai_docs/logs/test-adw-123/pr_creator/error_response_20260112_113546.json",
+    "created_at": "2026-01-12T11:35:46.010462",
+    "log_type": "error"
+  }
+}
