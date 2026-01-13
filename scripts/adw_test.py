@@ -25,7 +25,6 @@ import json
 import subprocess
 import sys
 import os
-import shutil
 import logging
 import re
 import glob

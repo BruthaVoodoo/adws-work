@@ -26,7 +26,6 @@ import os
 import logging
 import json
 import subprocess
-import shutil
 from typing import Optional, List, Tuple
 from dotenv import load_dotenv
 
