@@ -14,7 +14,7 @@ This document reflects the Phase 0 architectural decision (January 9, 2026):
 - ✅ **Epic 1: OpenCode HTTP Client Infrastructure** - COMPLETE
 - ✅ **Epic 2: Planning & Classification Operations** - COMPLETE (using OpenCode HTTP API)
 - ✅ **Epic 3: Code Execution Operations** - COMPLETE (Story 3.1 complete, Story 3.2 complete, Story 3.3 complete, Story 3.4 complete, Story 3.5 complete, Story 3.6 complete, Story 3.7 complete, Story 3.8 complete)
-- ⏳ **Epic 4: Cleanup & Deprecated Code Removal** - IN PROGRESS (Story 4.1 complete, Story 4.2 complete, Story 4.3 complete, Story 4.4 pending, Story 4.5 pending)
+- ⏳ **Epic 4: Cleanup & Deprecated Code Removal** - IN PROGRESS (Story 4.1 complete, Story 4.2 complete, Story 4.3 complete, Story 4.4 complete, Story 4.5 pending)
 - ✅ **GitHub Copilot models verified and accessible**:
   - Claude Sonnet 4 (heavy lifting: via OpenCode when Epic 3 complete)
   - Claude Haiku 4.5 (lightweight: planning & classification via OpenCode, ACTIVE NOW)
@@ -22,11 +22,11 @@ This document reflects the Phase 0 architectural decision (January 9, 2026):
 - ✅ **All 95 existing tests passing** with current architecture
 - ✅ **Configuration clean and simplified** - no hybrid state, no fallback logic
 - ✅ **Code Execution** - Story 3.1 (implement_plan) migrated, Story 3.2 (resolve_failed_tests) migrated, Story 3.3 (execute_single_e2e_test) migrated, Story 3.4 (run_review) migrated, Story 3.5 (update error handling in adw_test.py) migrated, Story 3.6 (update error handling in adw_review.py) migrated, Story 3.7 (integration tests for code execution operations) complete with 6 new tests, Story 3.8 (git fallback validation) complete with 7 new tests, Epic 3 complete
-- ✅ **Cleanup** - Story 4.1 (bedrock_agent.py deprecated) complete, Story 4.2 (copilot_output_parser.py deprecated) complete, Story 4.3 (AWS environment variables removed) complete with 9 new tests
+- ✅ **Cleanup** - Story 4.1 (bedrock_agent.py deprecated) complete, Story 4.2 (copilot_output_parser.py deprecated) complete, Story 4.3 (AWS environment variables removed) complete with 9 new tests, Story 4.4 (health_check.py OpenCode migration) complete with 12 new tests
 
 **Current State**: Planning and classification operations are fully migrated to OpenCode HTTP API.
 Code execution operations: Story 3.1 (implement_plan) complete with 12 new tests. Story 3.2 (resolve_failed_tests) complete with 13 new tests. Story 3.3 (execute_single_e2e_test) complete with 14 new tests. Story 3.4 (run_review) migrated. Story 3.5 (update error handling in adw_test.py) complete with 12 new tests. Story 3.6 (update error handling in adw_review.py) complete with 12 new tests. Story 3.7 (integration tests for code execution operations) complete with 6 new tests. Story 3.8 (git fallback validation) complete with 7 new tests. Epic 3 COMPLETE.
-Cleanup operations: Story 4.1 complete with 4 tests, Story 4.2 complete with 9 tests, Story 4.3 complete with 9 tests. Epic 4 IN PROGRESS (3/5 complete).
+Cleanup operations: Story 4.1 complete with 4 tests, Story 4.2 complete with 9 tests, Story 4.3 complete with 9 tests, Story 4.4 complete with 12 tests. Epic 4 IN PROGRESS (4/5 complete).
 
 **Key Decision**: Phase 0 removed Deluxe fallback and confirmed direct OpenCode HTTP path for
 lightweight operations. Code execution migration is Epic 3 work (currently in progress).
@@ -67,7 +67,7 @@ This document contains all Epics and Stories for the complete migration of ADWS 
 
 ### Epic 4: Cleanup & Deprecated Code Removal
 - **Summary:** Remove deprecated AWS code, environment variables, and update system checks to OpenCode
-- **Story Count:** 5 stories (3 complete, 2 remaining)
+- **Story Count:** 5 stories (4 complete, 1 remaining)
 - **Estimated Duration:** 2-3 hours
 - **Status:** Sequential (after Epic 2 & 3)
 - **Dependencies:** Epic 2, Epic 3
@@ -75,7 +75,7 @@ This document contains all Epics and Stories for the complete migration of ADWS 
 ### Acceptance Criteria
 - [x] Deprecated files marked with clear deprecation notices
 - [x] All old environment variable checks removed
-- [ ] Health checks updated to verify OpenCode server
+- [x] Health checks updated to verify OpenCode server
 - [ ] Copilot CLI checks replaced with OpenCode checks
 - [ ] No functional changes to core logic
 
@@ -83,7 +83,7 @@ This document contains all Epics and Stories for the complete migration of ADWS 
 1. Mark bedrock_agent.py as deprecated (30 min) ✅ COMPLETE
 2. Mark copilot_output_parser.py as deprecated (30 min) ✅ COMPLETE
 3. Remove AWS environment variable validation from codebase (1 hour) ✅ COMPLETE
-4. Update health_check.py to verify OpenCode server (1 hour)
+4. Update health_check.py to verify OpenCode server (1 hour) ✅ COMPLETE
 5. Remove Copilot CLI checks from adw_test.py and adw_review.py (30 min)
 6. Write integration tests for code execution operations (3 hours)
 
@@ -1381,19 +1381,59 @@ As a developer, I want AWS environment variable checks removed from codebase, so
 
 ---
 
-#### Story 4.4: Update health_check.py to verify OpenCode server
-**Summary:** Update health_check.py to verify OpenCode server  
-**Type:** Story  
-**Estimation:** 1 hour  
+#### Story 4.4: Update health_check.py to verify OpenCode server ✅ COMPLETE
+**Summary:** Update health_check.py to verify OpenCode server
+**Type:** Story
+**Estimation:** 1 hour
 **Dependencies:** Epic 1, Epic 3
+**Status:** ✅ COMPLETE - Implementation finished, 12 unit tests passing, all AC met
 
 **Description**
 As a developer, I want health_check.py to verify OpenCode server instead of custom proxy, so that startup verification is correct.
 
 **Acceptance Criteria**
-- Given health_check.py runs at startup
+- ✅ Given health_check.py runs at startup
   When it executes
   Then it calls check_opencode_server_available()
+
+**Implementation Details**
+- File modified: `scripts/adw_tests/health_check.py`
+- Test file created: `tests/test_story_4_4_health_check_opencode_migration.py`
+- Changes made:
+  - Module docstring updated to reference OpenCode instead of GitHub Copilot CLI
+  - Import added: `check_opencode_server_available` from `adw_modules.opencode_http_client`
+  - Removed: `check_github_copilot_cli()` function (lines 203-229)
+  - Added: `check_opencode_server()` function that:
+    - Calls `check_opencode_server_available()` to verify OpenCode server connectivity
+    - Returns `CheckResult` with success status, server URL, and status details
+    - Provides helpful error messages with troubleshooting steps (opencode serve --port 4096)
+    - Handles import errors and exceptions gracefully
+  - Updated `run_health_check()` checks dictionary:
+    - Changed: `"github_copilot_cli": check_github_copilot_cli`
+    - To: `"opencode_server": check_opencode_server`
+- 12 comprehensive unit tests covering:
+  - `check_opencode_server()` calls `check_opencode_server_available()`
+  - Success and failure scenarios for OpenCode server check
+  - Config server URL usage
+  - Import error handling
+  - Integration with `run_health_check()`
+  - Health check includes opencode_server check
+  - Health check success when server available
+  - Health check failure when server unavailable
+  - Health check no longer includes github_copilot_cli check
+  - Module docstring mentions OpenCode
+  - `check_opencode_server()` has proper docstring
+  - Other health checks (env vars, Jira, Bitbucket, GitHub CLI) still work
+- All tests passing (12/12)
+- Full test suite: 420 tests passing with 0 regressions (excluding pre-existing test_story_2_8_error_handling failures)
+- Features implemented:
+  - Direct OpenCode HTTP server availability check via `check_opencode_server_available()`
+  - Helpful error messages with troubleshooting steps (opencode serve, opencode auth login, curl health endpoint)
+  - Proper error handling for import errors and unexpected exceptions
+  - Complete migration from GitHub Copilot CLI dependency
+  - Backward compatibility preserved for all other health checks
+  - Module docstring updated to reflect new OpenCode check
+- Ready for Story 4.5 (final Epic 4 story)
 
 ---
 
