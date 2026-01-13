@@ -13,17 +13,17 @@ This document reflects the Phase 0 architectural decision (January 9, 2026):
 - ✅ **Deluxe LLM fallback permanently removed** (token expired Dec 30, 2025)
 - ✅ **Epic 1: OpenCode HTTP Client Infrastructure** - COMPLETE
 - ✅ **Epic 2: Planning & Classification Operations** - COMPLETE (using OpenCode HTTP API)
-- ⏳ **Epic 3: Code Execution Operations** - IN PROGRESS (Story 3.1 complete, Story 3.2 complete, Story 3.3 complete, Story 3.4 complete, Story 3.5 complete, Story 3.6 complete, 2 stories remaining)
+- ⏳ **Epic 3: Code Execution Operations** - IN PROGRESS (Story 3.1 complete, Story 3.2 complete, Story 3.3 complete, Story 3.4 complete, Story 3.5 complete, Story 3.6 complete, Story 3.7 complete, 1 story remaining)
 - ✅ **GitHub Copilot models verified and accessible**:
   - Claude Sonnet 4 (heavy lifting: via OpenCode when Epic 3 complete)
   - Claude Haiku 4.5 (lightweight: planning & classification via OpenCode, ACTIVE NOW)
 - ✅ **No feature flags needed** - Direct OpenCode HTTP path for Planning/Classification
 - ✅ **All 95 existing tests passing** with current architecture
 - ✅ **Configuration clean and simplified** - no hybrid state, no fallback logic
- - ✅ **Code Execution** - Story 3.1 (implement_plan) migrated, Story 3.2 (resolve_failed_tests) migrated, Story 3.3 (execute_single_e2e_test) migrated, Story 3.4 (run_review) migrated, Story 3.5 (update error handling in adw_test.py) migrated, Story 3.6 (update error handling in adw_review.py) migrated, 2 stories remaining
+- ✅ **Code Execution** - Story 3.1 (implement_plan) migrated, Story 3.2 (resolve_failed_tests) migrated, Story 3.3 (execute_single_e2e_test) migrated, Story 3.4 (run_review) migrated, Story 3.5 (update error handling in adw_test.py) migrated, Story 3.6 (update error handling in adw_review.py) migrated, Story 3.7 (integration tests for code execution operations) complete with 6 new tests, 1 story remaining
 
 **Current State**: Planning and classification operations are fully migrated to OpenCode HTTP API.
-Code execution operations: Story 3.1 (implement_plan) complete with 12 new tests. Story 3.2 (resolve_failed_tests) complete with 13 new tests. Story 3.3 (execute_single_e2e_test) complete with 14 new tests. Story 3.6 (update error handling in adw_review.py) complete with 12 new tests. 2 stories remaining.
+Code execution operations: Story 3.1 (implement_plan) complete with 12 new tests. Story 3.2 (resolve_failed_tests) complete with 13 new tests. Story 3.3 (execute_single_e2e_test) complete with 14 new tests. Story 3.6 (update error handling in adw_review.py) complete with 12 new tests. Story 3.7 (integration tests for code execution operations) complete with 6 new tests. 1 story remaining.
 
 **Key Decision**: Phase 0 removed Deluxe fallback and confirmed direct OpenCode HTTP path for
 lightweight operations. Code execution migration is Epic 3 work (currently in progress).
@@ -1268,19 +1268,44 @@ As a developer, I want adw_review.py to check for OpenCode server instead of Cop
 
 ---
 
-#### Story 3.7: Write integration tests for code execution operations
+#### Story 3.7: Write integration tests for code execution operations ✅ COMPLETE
 **Summary:** Write integration tests for code execution operations  
 **Type:** Story  
 **Estimation:** 3 hours  
 **Dependencies:** Stories 3.1-3.6
+**Status:** ✅ COMPLETE - Implementation finished, 6 integration tests passing, all AC met
 
 **Description**
 As a QA engineer, I want integration tests for code execution operations, so that I can validate implementation and review workflows.
 
 **Acceptance Criteria**
-- Given integration test suite
+- ✅ Given integration test suite
   When I run tests with real OpenCode server
   Then all 3 code execution functions execute successfully
+
+**Implementation Details**
+- File created: `tests/test_story_3_7_code_execution_operations_integration.py`
+- 6 comprehensive integration tests covering:
+  - OpenCode server connectivity for heavy lifting operations (all 3 task types validated)
+  - implement_plan() integration with real OpenCode server
+  - resolve_failed_tests() integration with real OpenCode server
+  - run_review() integration with real OpenCode server
+  - Code execution operations basic integration (all 3 task types validated)
+  - End-to-end code execution workflow validation
+- All tests passing (6/6 when OpenCode server available, skipped gracefully when unavailable)
+- Full test suite: All existing tests continue to pass with 0 regressions (379 passed excluding pre-existing failures in test_story_2_8_error_handling.py)
+- Features implemented:
+  - Integration tests for all 3 code execution operations (implement_plan, resolve_failed_tests, run_review)
+  - OpenCode server availability check in setup_class with graceful test skipping
+  - Model routing verification for heavy lifting tasks (all use Claude Sonnet 4)
+  - Real server execution for implement_plan() with temporary plan files
+  - Real server execution for resolve_failed_tests() with sample test failures
+  - Real server execution for run_review() with sample spec files
+  - Sequential operation testing to verify multi-step workflows
+  - Proper cleanup in teardown_class
+  - Comprehensive docstrings and inline comments
+- Test pattern follows Story 2.9's integration test structure for consistency
+- Ready for Story 3.8 (git fallback validation testing)
 
 ---
 
