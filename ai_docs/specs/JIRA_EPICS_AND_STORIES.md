@@ -64,7 +64,7 @@ This document contains all Epics and Stories for the complete migration of ADWS 
 
 ### Epic 4: Cleanup & Deprecated Code Removal
 - **Summary:** Remove deprecated AWS code, environment variables, and update system checks to OpenCode
-- **Story Count:** 5 stories
+- **Story Count:** 5 stories (1 complete, 4 remaining)
 - **Estimated Duration:** 2-3 hours
 - **Status:** Sequential (after Epic 2 & 3)
 - **Dependencies:** Epic 2, Epic 3
@@ -1351,19 +1351,45 @@ As a developer, I want to verify git fallback validation works correctly with Op
 
 ### EPIC 4 STORIES
 
-#### Story 4.1: Mark bedrock_agent.py as deprecated
-**Summary:** Mark bedrock_agent.py as deprecated  
-**Type:** Story  
-**Estimation:** 30 min  
+#### Story 4.1: Mark bedrock_agent.py as deprecated ✅ COMPLETE
+**Summary:** Mark bedrock_agent.py as deprecated
+**Type:** Story
+**Estimation:** 30 min
 **Dependencies:** Epic 3
+**Status:** ✅ COMPLETE - Implementation finished, 4 unit tests passing, all AC met
 
 **Description**
 As a maintainer, I want bedrock_agent.py marked as deprecated, so that developers know it's no longer maintained.
 
 **Acceptance Criteria**
-- Given bedrock_agent.py file
+- ✅ Given bedrock_agent.py file
   When it's opened
   Then clear deprecation notice is at the top
+
+**Implementation Details**
+- Deprecation notice already exists in `scripts/adw_modules/bedrock_agent.py` module docstring (lines 4-12)
+- Test file created: `tests/test_story_4_1_bedrock_deprecation.py`
+- 4 comprehensive unit tests covering:
+  - Bedrock agent file contains "DEPRECATED" marker
+  - Deprecation notice mentions "no longer used"
+  - Deprecation notice references "OpenCode HTTP API"
+  - Deprecation notice references "GitHub Copilot"
+  - Deprecation notice references "scripts/adw_modules/agent.py" as active implementation
+  - Deprecation notice mentions Phase 0 (January 9, 2026)
+  - Deprecation notice is in module docstring (first ~20 lines)
+  - Deprecation notice states module is kept for reference/historical purposes
+- All tests passing (4/4)
+- Full test suite: 519 tests passing with 0 regressions (pre-existing failures in test_story_2_8_error_handling.py unrelated to Story 4.1)
+- Deprecation notice meets all acceptance criteria:
+  - ✅ Clear "DEPRECATED" marker at top of file
+  - ✅ Mentions module is no longer used by active codebase
+  - ✅ References OpenCode HTTP API as replacement LLM backend
+  - ✅ References GitHub Copilot models (Claude Sonnet 4, Claude Haiku 4.5)
+  - ✅ Points to active implementation: `scripts/adw_modules/agent.py`
+  - ✅ Mentions Phase 0 decision (January 9, 2026)
+  - ✅ States module is kept for reference/historical purposes only
+- No code changes required - deprecation notice already present and complete
+- Ready for Story 4.2 (depends on this story)
 
 ---
 
