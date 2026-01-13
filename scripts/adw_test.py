@@ -10,15 +10,15 @@ Usage:
   uv run adw_test.py <issue-number> [adw-id] [--skip-e2e]
 
 Workflow:
-1. Fetch GitHub issue details (if not in state)
+1. Fetch Jira issue details (if not in state)
 2. Run application test suite locally (via subprocess)
 3. Report results to issue
-4. If failed, use Copilot CLI to resolve failures
+4. If failed, use OpenCode HTTP API to resolve failures
 5. Create commit with test results
 6. Push and update PR
 
 Environment Requirements:
-- Copilot CLI installed and available in PATH
+- OpenCode server running and accessible (Story 3.5: migrated from Copilot CLI)
 """
 
 import json
@@ -70,6 +70,7 @@ from scripts.adw_modules.jira import (
 )
 from scripts.adw_modules.config import config
 from scripts.adw_modules.agent import execute_opencode_prompt
+from scripts.adw_modules.opencode_http_client import check_opencode_server_available
 
 # Agent name constants
 AGENT_TESTER = "test_runner"
@@ -82,9 +83,20 @@ MAX_E2E_TEST_RETRY_ATTEMPTS = 2  # E2E ui tests
 
 
 def check_env_vars(logger: Optional[logging.Logger] = None) -> None:
-    """Check that required tools are available."""
-    if not shutil.which("copilot"):
-        error_msg = "Error: 'copilot' CLI not found in PATH."
+    """Check that required tools are available.
+
+    Story 3.5: Migrated from Copilot CLI check to OpenCode server check.
+    Now checks if OpenCode server is available instead of checking for copilot binary.
+    """
+    # Story 3.5: Check OpenCode server availability instead of Copilot CLI
+    if not check_opencode_server_available():
+        error_msg = (
+            "Error: OpenCode server is not available or not responding.\n"
+            "Please ensure OpenCode is running:\n"
+            "  1. Start server: opencode serve --port 4096\n"
+            "  2. Authenticate: opencode auth login\n"
+            "  3. Verify: curl http://localhost:4096/health"
+        )
         if logger:
             logger.error(error_msg)
         else:

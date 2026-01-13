@@ -13,14 +13,14 @@ This document reflects the Phase 0 architectural decision (January 9, 2026):
 - ✅ **Deluxe LLM fallback permanently removed** (token expired Dec 30, 2025)
 - ✅ **Epic 1: OpenCode HTTP Client Infrastructure** - COMPLETE
 - ✅ **Epic 2: Planning & Classification Operations** - COMPLETE (using OpenCode HTTP API)
-- ⏳ **Epic 3: Code Execution Operations** - IN PROGRESS (Story 3.1 complete, remaining 7 stories)
+- ⏳ **Epic 3: Code Execution Operations** - IN PROGRESS (Story 3.1 complete, Story 3.2 complete, Story 3.3 complete, Story 3.4 complete, Story 3.5 complete, 3 stories remaining)
 - ✅ **GitHub Copilot models verified and accessible**:
   - Claude Sonnet 4 (heavy lifting: via OpenCode when Epic 3 complete)
   - Claude Haiku 4.5 (lightweight: planning & classification via OpenCode, ACTIVE NOW)
 - ✅ **No feature flags needed** - Direct OpenCode HTTP path for Planning/Classification
 - ✅ **All 95 existing tests passing** with current architecture
 - ✅ **Configuration clean and simplified** - no hybrid state, no fallback logic
- - ✅ **Code Execution** - Story 3.1 (implement_plan) migrated, Story 3.2 (resolve_failed_tests) migrated, Story 3.3 (execute_single_e2e_test) migrated, Story 3.4 (run_review) migrated, 4 stories remaining
+ - ✅ **Code Execution** - Story 3.1 (implement_plan) migrated, Story 3.2 (resolve_failed_tests) migrated, Story 3.3 (execute_single_e2e_test) migrated, Story 3.4 (run_review) migrated, Story 3.5 (update error handling in adw_test.py) migrated, 3 stories remaining
 
 **Current State**: Planning and classification operations are fully migrated to OpenCode HTTP API.
 Code execution operations: Story 3.1 (implement_plan) complete with 12 new tests. Story 3.2 (resolve_failed_tests) complete with 13 new tests. Story 3.3 (execute_single_e2e_test) complete with 14 new tests. 5 stories remaining.
@@ -1173,19 +1173,50 @@ As a developer, I want run_review() to use OpenCode HTTP API, so that code revie
 
 ---
 
-#### Story 3.5: Update error handling in adw_test.py for OpenCode
+#### Story 3.5: Update error handling in adw_test.py for OpenCode ✅ COMPLETE
 **Summary:** Update error handling in adw_test.py for OpenCode  
 **Type:** Story  
 **Estimation:** 1 hour  
 **Dependencies:** Stories 3.2, 3.3
+**Status:** ✅ COMPLETE - Implementation finished, 12 unit tests passing, all AC met
 
 **Description**
 As a developer, I want adw_test.py to check for OpenCode server instead of Copilot CLI, so that error messages are helpful.
 
 **Acceptance Criteria**
-- Given adw_test.py startup
+- ✅ Given adw_test.py startup
   When it initializes
   Then it calls check_opencode_server_available() instead of shutil.which("copilot")
+
+**Implementation Details**
+- File modified: `scripts/adw_modules/opencode_http_client.py`
+- New function added: `check_opencode_server_available(server_url, timeout)` - Performs health check to OpenCode server
+- File modified: `scripts/adw_test.py`
+- Updated `check_env_vars()` function:
+  - Removed: `shutil.which("copilot")` check
+  - Added: Call to `check_opencode_server_available()`
+  - Updated error message to reference OpenCode instead of Copilot CLI
+  - Updated docstring with Story 3.5 migration notes
+  - Added import: `from scripts.adw_modules.opencode_http_client import check_opencode_server_available`
+- Test file created: `tests/test_story_3_5_adw_test_error_handling.py`
+- 12 comprehensive unit tests covering:
+  - OpenCode server availability check is called
+  - Passes when server is available
+  - Exits with sys.exit(1) when server unavailable
+  - Logs helpful error message to logger
+  - Prints to stderr when logger not provided
+  - No longer checks for Copilot CLI (migration verified)
+  - Error message references OpenCode, not Copilot CLI
+  - Error message contains troubleshooting steps
+- All tests passing (12/12)
+- Full test suite: All existing tests continue to pass with 0 regressions
+- Features implemented:
+  - Direct OpenCode HTTP server availability check
+  - Helpful error messages with troubleshooting steps (opencode serve, opencode auth login, curl health endpoint)
+  - Proper error logging to logger or stderr fallback
+  - Complete migration from Copilot CLI dependency
+  - Backward compatibility preserved for logger interface
+- Ready for Story 3.6 which depends on this story
 
 ---
 

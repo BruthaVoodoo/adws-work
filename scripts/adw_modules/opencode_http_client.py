@@ -1144,13 +1144,97 @@ def estimate_metrics_from_parts(parts: List[Dict[str, Any]]) -> Dict[str, int]:
     }
 
 
-# Story 1.6: Response Logging and Error Handling Functions
+# Story 3.5: OpenCode Server Availability Check
 
-# Import config at module level for easier mocking in tests
-try:
-    from .config import config
-except ImportError:
-    config = None
+
+def check_opencode_server_available(
+    server_url: Optional[str] = None,
+    timeout: float = 5.0,
+) -> bool:
+    """
+    Check if OpenCode server is available and responding.
+
+    Story 3.5 Acceptance Criteria:
+    - Given adw_test.py startup
+      When it initializes
+      Then it calls check_opencode_server_available() instead of shutil.which("copilot")
+
+    This function performs a quick connectivity check to the OpenCode server
+    by attempting to hit the health endpoint. It's used by scripts like
+    adw_test.py and adw_review.py to verify the server is accessible
+    before attempting operations.
+
+    Args:
+        server_url: Optional server URL to check. If None, uses config.opencode_server_url
+        timeout: Connection timeout in seconds (default 5.0)
+
+    Returns:
+        bool: True if server is available, False otherwise
+
+    Note:
+        - This is a lightweight check - it doesn't verify authentication
+        - Only checks if server is reachable and responding
+        - Returns True for 2xx responses, False for errors/timeout
+    """
+    import requests
+
+    # Determine server URL from parameter or config
+    if not server_url:
+        try:
+            server_url = config.opencode_server_url
+        except Exception:
+            # Fallback to default localhost if config access fails
+            server_url = os.getenv("OPENCODE_URL", "http://localhost:4096")
+
+    # Validate URL format
+    if not server_url:
+        return False
+
+    # Clean URL and construct health check endpoint
+    server_url = server_url.rstrip("/")
+    health_url = f"{server_url}/health"
+
+    try:
+        # Make a quick GET request to health endpoint
+        response = requests.get(health_url, timeout=timeout)
+
+        # Consider any 2xx response as server available
+        # (Don't check for specific status - just that it's responding)
+        return 200 <= response.status_code < 300
+
+    except requests.exceptions.Timeout:
+        # Server not responding within timeout
+        return False
+    except requests.exceptions.ConnectionError:
+        # Cannot connect to server
+        return False
+    except Exception:
+        # Any other error means server is not available
+        return False
+
+    # Story 1.6: Response Logging and Error Handling Functions
+
+    # Clean URL and construct health check endpoint
+    server_url = server_url.rstrip("/")
+    health_url = f"{server_url}/health"
+
+    try:
+        # Make a quick GET request to health endpoint
+        response = requests.get(health_url, timeout=timeout)
+
+        # Consider any 2xx response as server available
+        # (Don't check for specific status - just that it's responding)
+        return 200 <= response.status_code < 300
+
+    except requests.exceptions.Timeout:
+        # Server not responding within timeout
+        return False
+    except requests.exceptions.ConnectionError:
+        # Cannot connect to server
+        return False
+    except Exception:
+        # Any other error means server is not available
+        return False
 
 
 def save_response_log(
