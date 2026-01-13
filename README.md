@@ -69,16 +69,28 @@ Set these in `.env` or your shell environment:
 JIRA_SERVER=https://your-jira.atlassian.net
 JIRA_USERNAME=your-username
 JIRA_API_TOKEN=your-api-token
-AWS_ENDPOINT_URL=https://your-ai-endpoint
-AWS_MODEL_KEY=your-model-key
 ```
 
 **Optional:**
 ```bash
-AWS_MODEL=sonnet                          # Default model (sonnet or opus)
 BITBUCKET_WORKSPACE=your-workspace       # For Bitbucket integration
 BITBUCKET_REPO_NAME=your-repo
 BITBUCKET_API_TOKEN=your-token
+```
+
+**OpenCode Configuration:**
+Configure OpenCode HTTP API in `.adw.yaml`:
+```yaml
+opencode:
+  server_url: "http://localhost:4096"
+  models:
+    heavy_lifting: "github-copilot/claude-sonnet-4"
+    lightweight: "github-copilot/claude-haiku-4.5"
+```
+
+Start the OpenCode server:
+```bash
+opencode serve --port 4096
 ```
 
 ## Quick Start
@@ -251,9 +263,6 @@ Check that all required variables are set:
 ```bash
 # Verify Jira credentials
 echo $JIRA_SERVER $JIRA_USERNAME $JIRA_API_TOKEN
-
-# Verify AWS/AI credentials
-echo $AWS_ENDPOINT_URL $AWS_MODEL_KEY
 ```
 
 ### Tests fail to run

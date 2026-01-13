@@ -34,12 +34,12 @@ cp .env.example .env
 JIRA_SERVER=https://jira.company.com
 JIRA_USERNAME=your-username
 JIRA_API_TOKEN=your-token
-AWS_ENDPOINT_URL=https://api.example.com
-AWS_MODEL_KEY=your-key
 BITBUCKET_WORKSPACE=workspace
 BITBUCKET_REPO_NAME=repo
 BITBUCKET_API_TOKEN=token
 ```
+
+**Note:** OpenCode HTTP API is used for LLM operations. Configure via `.adw.yaml` (opencode section). Start OpenCode server with: `opencode serve --port 4096`
 
 4. **Verify Configuration**
 ```bash
@@ -246,16 +246,20 @@ JIRA_USERNAME=user@company.com
 JIRA_API_TOKEN=your-token-here
 ```
 
-**AI Model (One set required)**
-```bash
-# Option 1: AWS Bedrock (direct)
-AWS_REGION=us-east-1
-# AWS credentials via environment or ~/.aws/credentials
+**AI Model (OpenCode HTTP API)**
+OpenCode HTTP API is used for LLM operations. Configure in `.adw.yaml`:
 
-# Option 2: Custom Proxy (recommended)
-AWS_ENDPOINT_URL=https://api.example.com
-AWS_MODEL_KEY=your-api-key
-AWS_MODEL=sonnet  # or opus (optional, default: sonnet)
+```yaml
+opencode:
+  server_url: "http://localhost:4096"
+  models:
+    heavy_lifting: "github-copilot/claude-sonnet-4"
+    lightweight: "github-copilot/claude-haiku-4.5"
+```
+
+Start OpenCode server:
+```bash
+opencode serve --port 4096
 ```
 
 **Bitbucket (For PR management)**

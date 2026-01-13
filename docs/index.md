@@ -136,8 +136,9 @@ language: "python"          # Project language
 ### .env (Environment Variables)
 Required:
 - `JIRA_SERVER`, `JIRA_USERNAME`, `JIRA_API_TOKEN` (Jira)
-- `AWS_ENDPOINT_URL`, `AWS_MODEL_KEY` (AI proxy) OR AWS credentials (direct)
 - `BITBUCKET_WORKSPACE`, `BITBUCKET_REPO_NAME`, `BITBUCKET_API_TOKEN` (optional)
+
+**Note:** OpenCode HTTP API is used for LLM operations. Configure via `.adw.yaml` (opencode section).
 
 ## Common Tasks
 
@@ -299,8 +300,7 @@ Updates should be made when:
 | Service | Variables | Required | Use Case |
 |---------|-----------|----------|----------|
 | Jira | `JIRA_*` (3 vars) | Yes | Issue tracking |
-| Bedrock | AWS region + credentials | Conditional | Direct LLM execution |
-| Proxy | `AWS_ENDPOINT_URL`, `AWS_MODEL_KEY` | Conditional | Custom LLM endpoint |
+| OpenCode | Configured in `.adw.yaml` (opencode section) | Yes | LLM operations (Claude Sonnet 4, Claude Haiku 4.5) |
 | Bitbucket | `BITBUCKET_*` (3 vars) | No | PR management |
 
 ### Test Summary

@@ -176,18 +176,17 @@ The following environment variables are required (set in `.env` or system):
 - `JIRA_SERVER`: Jira server URL
 - `JIRA_USERNAME`: Jira username
 - `JIRA_API_TOKEN`: Jira API token
-- `AWS_ENDPOINT_URL`: AWS proxy endpoint URL
-- `AWS_MODEL_KEY`: AWS model authorization key
-- `AWS_MODEL`: Model selection (default: `sonnet` or `opus`)
 - `BITBUCKET_WORKSPACE`: Bitbucket workspace name (if using Bitbucket)
 - `BITBUCKET_REPO_NAME`: Bitbucket repository name (if using Bitbucket)
 - `BITBUCKET_API_TOKEN`: Bitbucket API token (if using Bitbucket)
+
+**Note:** OpenCode HTTP API is used for LLM operations. Configure via `.adw.yaml` (see Configuration section above).
 
 ## Testing Best Practices
 
 - Test files go in `tests/` directory
 - Use pytest conventions: test files start with `test_`, test functions start with `test_`
-- Mock external API calls (Jira, AWS, Bitbucket) when possible
+- Mock external API calls (Jira, OpenCode, Bitbucket) when possible
 - Validate that console output matches expected format (see `test_console_consistency.py`)
 - Run single tests frequently during development: `uv run pytest -s tests/test_file.py::test_function`
 
