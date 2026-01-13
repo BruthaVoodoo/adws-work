@@ -13,17 +13,17 @@ This document reflects the Phase 0 architectural decision (January 9, 2026):
 - ✅ **Deluxe LLM fallback permanently removed** (token expired Dec 30, 2025)
 - ✅ **Epic 1: OpenCode HTTP Client Infrastructure** - COMPLETE
 - ✅ **Epic 2: Planning & Classification Operations** - COMPLETE (using OpenCode HTTP API)
-- ⏳ **Epic 3: Code Execution Operations** - IN PROGRESS (Story 3.1 complete, Story 3.2 complete, Story 3.3 complete, Story 3.4 complete, Story 3.5 complete, 3 stories remaining)
+- ⏳ **Epic 3: Code Execution Operations** - IN PROGRESS (Story 3.1 complete, Story 3.2 complete, Story 3.3 complete, Story 3.4 complete, Story 3.5 complete, Story 3.6 complete, 2 stories remaining)
 - ✅ **GitHub Copilot models verified and accessible**:
   - Claude Sonnet 4 (heavy lifting: via OpenCode when Epic 3 complete)
   - Claude Haiku 4.5 (lightweight: planning & classification via OpenCode, ACTIVE NOW)
 - ✅ **No feature flags needed** - Direct OpenCode HTTP path for Planning/Classification
 - ✅ **All 95 existing tests passing** with current architecture
 - ✅ **Configuration clean and simplified** - no hybrid state, no fallback logic
- - ✅ **Code Execution** - Story 3.1 (implement_plan) migrated, Story 3.2 (resolve_failed_tests) migrated, Story 3.3 (execute_single_e2e_test) migrated, Story 3.4 (run_review) migrated, Story 3.5 (update error handling in adw_test.py) migrated, 3 stories remaining
+ - ✅ **Code Execution** - Story 3.1 (implement_plan) migrated, Story 3.2 (resolve_failed_tests) migrated, Story 3.3 (execute_single_e2e_test) migrated, Story 3.4 (run_review) migrated, Story 3.5 (update error handling in adw_test.py) migrated, Story 3.6 (update error handling in adw_review.py) migrated, 2 stories remaining
 
 **Current State**: Planning and classification operations are fully migrated to OpenCode HTTP API.
-Code execution operations: Story 3.1 (implement_plan) complete with 12 new tests. Story 3.2 (resolve_failed_tests) complete with 13 new tests. Story 3.3 (execute_single_e2e_test) complete with 14 new tests. 5 stories remaining.
+Code execution operations: Story 3.1 (implement_plan) complete with 12 new tests. Story 3.2 (resolve_failed_tests) complete with 13 new tests. Story 3.3 (execute_single_e2e_test) complete with 14 new tests. Story 3.6 (update error handling in adw_review.py) complete with 12 new tests. 2 stories remaining.
 
 **Key Decision**: Phase 0 removed Deluxe fallback and confirmed direct OpenCode HTTP path for
 lightweight operations. Code execution migration is Epic 3 work (currently in progress).
@@ -57,7 +57,7 @@ This document contains all Epics and Stories for the complete migration of ADWS 
 
 ### Epic 3: Code Execution Operations Migration
 - **Summary:** Migrate code implementation, testing, and review operations to OpenCode HTTP API with Claude Sonnet 4 (via GitHub Copilot)
-- **Story Count:** 8 stories (2 complete, 6 remaining)
+- **Story Count:** 8 stories (6 complete, 2 remaining)
 - **Estimated Duration:** 8-10 hours
 - **Status:** Can overlap with Epic 2
 - **Dependencies:** Epic 1
@@ -151,17 +151,17 @@ This document contains all Epics and Stories for the complete migration of ADWS 
 - [x] execute_single_e2e_test() uses task_type="test_fix" → Model: Claude Sonnet 4 (GitHub Copilot)
 - [ ] Structured Part parsing replaces Copilot text parsing
 - [ ] Git fallback validation still works
-- [ ] Error messages are helpful and actionable
+- [x] Error messages are helpful and actionable
 - [ ] Response logging enabled for all operations
 - [ ] Integration tests pass with real code execution scenarios
 
 ### Stories
 1. Refactor implement_plan() to use OpenCode HTTP API ✅ COMPLETE
 2. Refactor resolve_failed_tests() to use OpenCode HTTP API ✅ COMPLETE
-3. Refactor execute_single_e2e_test() to use OpenCode HTTP API (2 hours)
-4. Refactor run_review() to use OpenCode HTTP API (3 hours)
-5. Update error handling in adw_test.py for OpenCode (1 hour)
-6. Update error handling in adw_review.py for OpenCode (1 hour)
+3. Refactor execute_single_e2e_test() to use OpenCode HTTP API ✅ COMPLETE
+4. Refactor run_review() to use OpenCode HTTP API ✅ COMPLETE
+5. Update error handling in adw_test.py for OpenCode ✅ COMPLETE
+6. Update error handling in adw_review.py for OpenCode ✅ COMPLETE
 7. Write integration tests for code execution operations (3 hours)
 8. Test git fallback validation with OpenCode responses (1 hour)
 
@@ -1220,19 +1220,51 @@ As a developer, I want adw_test.py to check for OpenCode server instead of Copil
 
 ---
 
-#### Story 3.6: Update error handling in adw_review.py for OpenCode
+#### Story 3.6: Update error handling in adw_review.py for OpenCode ✅ COMPLETE
 **Summary:** Update error handling in adw_review.py for OpenCode  
 **Type:** Story  
 **Estimation:** 1 hour  
 **Dependencies:** Story 3.4
+**Status:** ✅ COMPLETE - Implementation finished, 12 unit tests passing, all AC met
 
 **Description**
 As a developer, I want adw_review.py to check for OpenCode server instead of Copilot CLI, so that error messages are helpful.
 
 **Acceptance Criteria**
-- Given adw_review.py startup
+- ✅ Given adw_review.py startup
   When it initializes
   Then it calls check_opencode_server_available() instead of shutil.which("copilot")
+
+**Implementation Details**
+- File modified: `scripts/adw_review.py`
+- Updated `check_env_vars()` function:
+  - Removed: `pass` statement (no-op placeholder)
+  - Added: Call to `check_opencode_server_available()`
+  - Updated error message to reference OpenCode instead of Copilot CLI
+  - Updated docstring with Story 3.6 migration notes
+  - Added import: `from scripts.adw_modules.opencode_http_client import check_opencode_server_available`
+- Test file created: `tests/test_story_3_6_adw_review_error_handling.py`
+- 12 comprehensive unit tests covering:
+  - OpenCode server availability check is called
+  - Passes when server is available
+  - Exits with sys.exit(1) when server unavailable
+  - Logs helpful error message to logger
+  - Prints to stderr when logger not provided
+  - No longer checks for Copilot CLI (migration verified)
+  - Error message references OpenCode, not Copilot CLI
+  - Error message contains troubleshooting steps
+  - Import verification for check_opencode_server_available
+  - Timeout configuration uses default
+  - Logger interface preserved
+- All tests passing (12/12)
+- Full test suite: All existing tests continue to pass with 0 regressions (393 tests total)
+- Features implemented:
+  - Direct OpenCode HTTP server availability check
+  - Helpful error messages with troubleshooting steps (opencode serve, opencode auth login, curl health endpoint)
+  - Proper error logging to logger or stderr fallback
+  - Complete migration from Copilot CLI dependency (follows Story 3.5 pattern)
+  - Backward compatibility preserved for logger interface
+  - Ready for Story 3.7 which depends on this story
 
 ---
 

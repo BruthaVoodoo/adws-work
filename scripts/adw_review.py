@@ -61,6 +61,7 @@ from adw_modules.data_types import (
     AgentPromptResponse,
 )
 from adw_modules.agent import save_prompt, execute_opencode_prompt
+from adw_modules.opencode_http_client import check_opencode_server_available
 from adw_modules.config import config
 
 # Agent name constants
@@ -73,10 +74,25 @@ MAX_REVIEW_RETRY_ATTEMPTS = 3
 
 
 def check_env_vars(logger: Optional[logging.Logger] = None) -> None:
-    """Check that required tools are available."""
-    # Story 3.4: Removed Copilot CLI check - OpenCode HTTP API is used instead
-    # This function is kept for potential future use but currently not blocking execution
-    pass
+    """Check that required tools are available.
+
+    Story 3.6: Migrated from Copilot CLI check to OpenCode server check.
+    Now checks if OpenCode server is available instead of checking for copilot binary.
+    """
+    # Story 3.6: Check OpenCode server availability instead of Copilot CLI
+    if not check_opencode_server_available():
+        error_msg = (
+            "Error: OpenCode server is not available or not responding.\n"
+            "Please ensure OpenCode is running:\n"
+            "  1. Start server: opencode serve --port 4096\n"
+            "  2. Authenticate: opencode auth login\n"
+            "  3. Verify: curl http://localhost:4096/health"
+        )
+        if logger:
+            logger.error(error_msg)
+        else:
+            print(error_msg, file=sys.stderr)
+        sys.exit(1)
 
 
 def run_review(
