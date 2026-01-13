@@ -46,7 +46,12 @@ from adw_modules.workflow_ops import (
     find_spec_file,
     AGENT_IMPLEMENTOR,
 )
-from adw_modules.utils import setup_logger, parse_json, get_rich_console_instance, load_prompt
+from adw_modules.utils import (
+    setup_logger,
+    parse_json,
+    get_rich_console_instance,
+    load_prompt,
+)
 from adw_modules.data_types import (
     GitHubIssue,
     JiraIssue,
@@ -55,7 +60,7 @@ from adw_modules.data_types import (
     ReviewIssue,
     AgentPromptResponse,
 )
-from adw_modules.agent import save_prompt
+from adw_modules.agent import save_prompt, execute_opencode_prompt
 from adw_modules.config import config
 
 # Agent name constants
@@ -69,17 +74,9 @@ MAX_REVIEW_RETRY_ATTEMPTS = 3
 
 def check_env_vars(logger: Optional[logging.Logger] = None) -> None:
     """Check that required tools are available."""
-    if not shutil.which("copilot"):
-        error_msg = "Error: 'copilot' CLI not found in PATH."
-        if logger:
-            logger.error(error_msg)
-        else:
-            console = get_rich_console_instance()
-            if console:
-                console.error(error_msg)
-            else:
-                print(error_msg, file=sys.stderr)
-        sys.exit(1)
+    # Story 3.4: Removed Copilot CLI check - OpenCode HTTP API is used instead
+    # This function is kept for potential future use but currently not blocking execution
+    pass
 
 
 def run_review(
@@ -87,45 +84,44 @@ def run_review(
     adw_id: str,
     logger: logging.Logger,
 ) -> ReviewResult:
-    """Run the review using GitHub Copilot CLI."""
-    
+    """Run review using OpenCode HTTP API.
+
+    Story 3.4 Implementation:
+    - Migrated from Copilot CLI to OpenCode HTTP API
+    - Uses task_type="review" → Routes to Claude Sonnet 4 (GitHub Copilot)
+    - Maintains backward compatibility with ReviewResult
+    - Preserves all existing error handling and validation logic
+    """
+
     # Load the review prompt template
     prompt_template = load_prompt("review")
-    
-    # Format the prompt with the required parameters
+
+    # Format prompt with required parameters
     prompt = prompt_template.replace("{adw_id}", adw_id)
     prompt = prompt.replace("{spec_file}", spec_file)
     prompt = prompt.replace("{agent_name}", AGENT_REVIEWER)
-    
-    # Save prompt for audit
-    save_prompt(
-        prompt, 
-        adw_id, 
-        AGENT_REVIEWER
-    )
 
-    logger.debug(f"Running review via Copilot CLI...")
+    # Save prompt for audit
+    save_prompt(prompt, adw_id, AGENT_REVIEWER)
+
+    logger.debug(f"Running review via OpenCode HTTP API with task_type='review'...")
 
     try:
-        command = [
-            "copilot",
-            "-p",
-            prompt,
-            "--allow-all-tools",
-            "--allow-all-paths",
-        ]
-        
-        result = subprocess.run(
-            command,
-            capture_output=True,
-            text=True
+        # Story 3.4: Use OpenCode HTTP API with task_type="review" → Claude Sonnet 4
+        response = execute_opencode_prompt(
+            prompt=prompt,
+            task_type="review",  # Routes to Claude Sonnet 4 (GitHub Copilot)
+            adw_id=adw_id,
+            agent_name=AGENT_REVIEWER,
         )
-        
-        output = result.stdout
-        logger.debug(f"Copilot output preview: {output[:500]}...")
-        
-        if result.returncode != 0:
-            error_msg = f"Copilot execution failed: {result.stderr}"
+
+        logger.debug(
+            f"OpenCode response output preview: {response.output[:500] if response.output else 'No output'}..."
+        )
+
+        # Handle OpenCode API failure
+        if not response.success:
+            error_msg = f"OpenCode execution failed: {response.output}"
             logger.error(error_msg)
             return ReviewResult(
                 success=False,
@@ -133,15 +129,15 @@ def run_review(
                     ReviewIssue(
                         review_issue_number=1,
                         screenshot_path="",
-                        issue_description=f"Copilot execution error: {error_msg}",
-                        issue_resolution="Fix Copilot CLI execution environment",
+                        issue_description=f"OpenCode execution error: {error_msg}",
+                        issue_resolution="Fix OpenCode API execution environment",
                         issue_severity="blocker",
                     )
                 ],
             )
 
         # Parse the review result
-        result = parse_json(output, ReviewResult)
+        result = parse_json(response.output, ReviewResult)
         return result
 
     except Exception as e:
@@ -153,7 +149,7 @@ def run_review(
                     review_issue_number=1,
                     screenshot_path="",
                     issue_description=f"Review execution exception: {str(e)}",
-                    issue_resolution="Fix the review script error",
+                    issue_resolution="Fix review script error",
                     issue_severity="blocker",
                 )
             ],
@@ -197,7 +193,9 @@ def resolve_review_issues(
     for idx, issue in enumerate(blocker_issues):
         # Use rich_console step to mark issue resolution steps if available
         if get_rich_console_instance():
-            get_rich_console_instance().step(f"Resolving blocker issue {idx + 1}/{len(blocker_issues)}: Issue #{issue.review_issue_number}")
+            get_rich_console_instance().step(
+                f"Resolving blocker issue {idx + 1}/{len(blocker_issues)}: Issue #{issue.review_issue_number}"
+            )
         else:
             logger.info(
                 f"\n=== Resolving blocker issue {idx + 1}/{len(blocker_issues)}: Issue #{issue.review_issue_number} ==="
@@ -205,9 +203,13 @@ def resolve_review_issues(
 
         # Create and implement patch
         # Prepare unique agent names with iteration and issue number for tracking
-        agent_name_planner = f"{AGENT_REVIEW_PATCH_PLANNER}_{iteration}_{issue.review_issue_number}"
-        agent_name_implementor = f"{AGENT_REVIEW_PATCH_IMPLEMENTOR}_{iteration}_{issue.review_issue_number}"
-        
+        agent_name_planner = (
+            f"{AGENT_REVIEW_PATCH_PLANNER}_{iteration}_{issue.review_issue_number}"
+        )
+        agent_name_implementor = (
+            f"{AGENT_REVIEW_PATCH_IMPLEMENTOR}_{iteration}_{issue.review_issue_number}"
+        )
+
         jira_make_issue_comment(
             issue_number,
             format_issue_message(
@@ -219,19 +221,15 @@ def resolve_review_issues(
 
         # Create patch plan using the new workflow operation
         if rich_console:
-            with rich_console.spinner(f"Creating patch plan for issue #{issue.review_issue_number}..."):
+            with rich_console.spinner(
+                f"Creating patch plan for issue #{issue.review_issue_number}..."
+            ):
                 patch_file = create_patch_plan(
-                    issue=issue,
-                    spec_path=spec_file,
-                    adw_id=adw_id,
-                    logger=logger
+                    issue=issue, spec_path=spec_file, adw_id=adw_id, logger=logger
                 )
         else:
             patch_file = create_patch_plan(
-                issue=issue,
-                spec_path=spec_file,
-                adw_id=adw_id,
-                logger=logger
+                issue=issue, spec_path=spec_file, adw_id=adw_id, logger=logger
             )
 
         if not patch_file:
@@ -255,10 +253,14 @@ def resolve_review_issues(
 
         # Implement the patch plan using the existing implement_plan function
         target_dir = str(config.project_root)
-        
+
         if rich_console:
-            with rich_console.spinner(f"Implementing patch for issue #{issue.review_issue_number}..."):
-                implement_response = implement_plan(patch_file, adw_id, logger, target_dir)
+            with rich_console.spinner(
+                f"Implementing patch for issue #{issue.review_issue_number}..."
+            ):
+                implement_response = implement_plan(
+                    patch_file, adw_id, logger, target_dir
+                )
         else:
             implement_response = implement_plan(patch_file, adw_id, logger, target_dir)
 
@@ -299,10 +301,10 @@ def process_screenshots(
 ) -> None:
     """
     Process screenshots and populate URL fields in the review result.
-    
+
     Note: R2 upload functionality has been removed as legacy dependency.
     Screenshots will be referenced by their local paths only.
-    
+
     Args:
         review_result: The review result containing screenshots to process
         adw_id: ADW workflow ID
@@ -315,24 +317,26 @@ def process_screenshots(
     ):
         logger.info("Processing review screenshots")
 
-        # For now, we'll use the local paths as the URLs (legacy R2 upload removed)
+        # For now, we'll use the local paths as URLs (legacy R2 upload removed)
         # This maintains compatibility while removing the dependency
         review_result.screenshot_urls = list(review_result.screenshots)
-        
+
         # Set screenshot_url for each ReviewIssue to the local path
         for review_issue in review_result.review_issues:
             if review_issue.screenshot_path:
                 review_issue.screenshot_url = review_issue.screenshot_path
 
-        logger.info(f"Screenshot processing complete - {len(review_result.screenshots)} files processed")
-
-    # Save screenshot paths to state for documentation workflow
-    if review_result.screenshot_urls:
-        state.update(review_screenshots=review_result.screenshot_urls)
-        state.save("adw_review")
         logger.info(
-            f"Saved {len(review_result.screenshot_urls)} screenshot paths to state for documentation"
+            f"Screenshot processing complete - {len(review_result.screenshots)} files processed"
         )
+
+        # Save screenshot paths to state for documentation workflow
+        if review_result.screenshot_urls:
+            state.update(review_screenshots=review_result.screenshot_urls)
+            state.save("adw_review")
+            logger.info(
+                f"Saved {len(review_result.screenshot_urls)} screenshot paths to state for documentation"
+            )
 
 
 def format_review_comment(review_result: ReviewResult) -> str:
@@ -439,10 +443,14 @@ def main():
     # adw-id is REQUIRED for review to find the correct state and spec
     if len(sys.argv) < 3:
         if rich_console:
-            rich_console.error("Usage: uv run adw_review.py <issue-number> <adw-id> [--skip-resolution]")
+            rich_console.error(
+                "Usage: uv run adw_review.py <issue-number> <adw-id> [--skip-resolution]"
+            )
             rich_console.error("adw-id is required to locate the spec file and state")
         else:
-            print("Usage: uv run adw_review.py <issue-number> <adw-id> [--skip-resolution]")
+            print(
+                "Usage: uv run adw_review.py <issue-number> <adw-id> [--skip-resolution]"
+            )
             print("\nadw-id is required to locate the spec file and state")
         sys.exit(1)
 
@@ -480,7 +488,7 @@ def main():
         if rich_console:
             rich_console.error(error_msg)
         sys.exit(1)
-    
+
     # Set up actual logger with valid ADW ID
     logger = setup_logger(adw_id, "adw_review")
     logger.info(f"ADW Review starting - ID: {adw_id}, Issue: {issue_number}")
@@ -547,7 +555,9 @@ def main():
             ),
         )
         if rich_console:
-            rich_console.error(f"Failed to checkout branch {branch_name}: {result.stderr}")
+            rich_console.error(
+                f"Failed to checkout branch {branch_name}: {result.stderr}"
+            )
         sys.exit(1)
     logger.info(f"Checked out branch: {branch_name}")
     if rich_console:
@@ -573,7 +583,7 @@ def main():
         format_issue_message(adw_id, "ops", f"✅ Found spec file: {spec_file}"),
     )
 
-    # Run review with resolution retry loop
+    # Run the review with resolution retry loop
     attempt = 0
     max_attempts = MAX_REVIEW_RETRY_ATTEMPTS if not skip_resolution else 1
 
@@ -602,33 +612,35 @@ def main():
         else:
             review_result = run_review(spec_file, adw_id, logger)
 
-        # Process screenshots (legacy R2 upload removed)
+        # Process the screenshots (legacy R2 upload removed)
         process_screenshots(review_result, adw_id, state, logger)
 
-        # Format and post review results
+        # Format and post the review results
         review_comment = format_review_comment(review_result)
         jira_make_issue_comment(
             issue_number, format_issue_message(adw_id, AGENT_REVIEWER, review_comment)
         )
 
-        # Save review summary to file and attach to Jira
+        # Save the review summary to file and attach to Jira
         try:
             log_dir = config.logs_dir / adw_id
             os.makedirs(log_dir, exist_ok=True)
-            
-            summary_file_path = log_dir / f"review_results_{adw_id}_attempt_{attempt}.md"
+
+            summary_file_path = (
+                log_dir / f"review_results_{adw_id}_attempt_{attempt}.md"
+            )
             with open(summary_file_path, "w") as f:
                 f.write(f"# Review Results (Attempt {attempt})\n\n{review_comment}")
-                
+
             logger.info(f"Saved review summary to {summary_file_path}")
-            
+
             jira_add_attachment(issue_number, str(summary_file_path))
             logger.info(f"Attached review summary to issue #{issue_number}")
-            
+
         except Exception as e:
             logger.error(f"Failed to attach review summary: {e}")
 
-        # Log summary
+        # Log the summary
         if review_result.success:
             logger.info(
                 "Review passed - implementation matches specification (no blocking issues)"
@@ -682,7 +694,7 @@ def main():
                 iteration=attempt,
             )
 
-            # Report resolution results
+            # Report the resolution results
             if resolved_count > 0:
                 jira_make_issue_comment(
                     issue_number,
@@ -705,7 +717,11 @@ def main():
 
                 # Use a generic review patch implementor name for the commit
                 commit_msg, error = create_commit(
-                    AGENT_REVIEW_PATCH_IMPLEMENTOR, review_issue_pydantic, issue_command, adw_id, logger
+                    AGENT_REVIEW_PATCH_IMPLEMENTOR,
+                    review_issue_pydantic,
+                    issue_command,
+                    adw_id,
+                    logger,
                 )
 
                 if not error:
@@ -735,19 +751,6 @@ def main():
                                 f"❌ Error committing resolution: {error}",
                             ),
                         )
-
-                # Continue to next iteration to re-review
-                logger.info(
-                    f"\n=== Preparing for re-review after resolving {resolved_count} issues ==="
-                )
-                jira_make_issue_comment(
-                    issue_number,
-                    format_issue_message(
-                        adw_id,
-                        AGENT_REVIEWER,
-                        f"🔄 Re-running review (attempt {attempt + 1}/{max_attempts})...",
-                    ),
-                )
             else:
                 # No issues were resolved, no point in retrying
                 logger.info("No issues were resolved, stopping retry attempts")
@@ -786,7 +789,7 @@ def main():
     # Get issue classification from state
     issue_command = state.get("issue_class", "/chore")
 
-    # Create commit message
+    # Create the commit message
     logger.info("Creating review commit")
     commit_msg, error = create_commit(
         AGENT_REVIEWER, review_issue_pydantic, issue_command, adw_id, logger
@@ -852,7 +855,9 @@ def main():
 
     # Display a formatted summary panel matching adw_build styling
     try:
-        blockers = sum(1 for i in review_result.review_issues if i.issue_severity == "blocker")
+        blockers = sum(
+            1 for i in review_result.review_issues if i.issue_severity == "blocker"
+        )
         total_issues = len(review_result.review_issues)
         status = "PASSED" if review_result.success else "FAILED"
         panel_text = (
@@ -867,9 +872,15 @@ def main():
                 rich_console.rule("✅ Review Complete", style="green")
             else:
                 rich_console.rule("❌ Review Failed", style="red")
-            rich_console.panel(panel_text, title="Review Summary", style=("green" if review_result.success else "red"))
+            rich_console.panel(
+                panel_text,
+                title="Review Summary",
+                style=("green" if review_result.success else "red"),
+            )
         else:
-            print(f"Review Summary - Status: {status}, Total Issues: {total_issues}, Blocking: {blockers}")
+            print(
+                f"Review Summary - Status: {status}, Total Issues: {total_issues}, Blocking: {blockers}"
+            )
     except Exception:
         # If summary rendering fails, continue without blocking
         pass
