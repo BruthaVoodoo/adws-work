@@ -15,7 +15,7 @@ This document reflects the Phase 0 architectural decision (January 9, 2026):
 - ✅ **Epic 2: Planning & Classification Operations** - COMPLETE (using OpenCode HTTP API)
 - ✅ **Epic 3: Code Execution Operations** - COMPLETE (Story 3.1 complete, Story 3.2 complete, Story 3.3 complete, Story 3.4 complete, Story 3.5 complete, Story 3.6 complete, Story 3.7 complete, Story 3.8 complete)
 - ✅ **Epic 4: Cleanup & Deprecated Code Removal** - COMPLETE (Story 4.1 complete, Story 4.2 complete, Story 4.3 complete, Story 4.4 complete, Story 4.5 complete)
-- ⏳ **Epic 5: Comprehensive Testing, Validation & Documentation** - IN PROGRESS (7/11 stories complete - Stories 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7 complete)
+- ⏳ **Epic 5: Comprehensive Testing, Validation & Documentation** - IN PROGRESS (8/11 stories complete - Stories 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.9 complete)
 - ✅ **GitHub Copilot models verified and accessible**:
   - Claude Sonnet 4 (heavy lifting: via OpenCode when Epic 3 complete)
   - Claude Haiku 4.5 (lightweight: planning & classification via OpenCode, ACTIVE NOW)
@@ -122,7 +122,7 @@ This document contains all Epics and Stories for the complete migration of ADWS 
 6. Performance test comparison vs old system (2 hours) ✅ COMPLETE
 7. Update AGENTS.md with OpenCode section (2 hours) ✅ COMPLETE
 8. Create comprehensive MIGRATION_GUIDE.md (2 hours)
-9. Update .adw.yaml with OpenCode configuration examples (1 hour)
+9. Update .adw.yaml with OpenCode configuration examples (1 hour) ✅ COMPLETE - Implementation finished, documentation updated, Acceptance Criteria met
 10. Update README.md setup instructions (1 hour)
 11. Write troubleshooting guide (1 hour)
 
@@ -1799,6 +1799,8 @@ As a technical writer, I want a migration guide for users, so that they understa
 **Estimation:** 1 hour  
 **Dependencies:** Epic 1, 2, 3, 4
 
+**Status:** ✅ COMPLETE - Implementation finished, documentation updated, Acceptance Criteria met
+
 **Description**
 As a technical writer, I want .adw.yaml updated with OpenCode examples, so that users can see all available options.
 
@@ -1806,6 +1808,20 @@ As a technical writer, I want .adw.yaml updated with OpenCode examples, so that 
 - Given .adw.yaml file
   When it's reviewed
   Then opencode section contains detailed comments explaining each option with examples
+
+**Implementation Details**
+- File modified: `.adw.yaml` (expanded opencode section with examples, guidance, and optional environment snippets)
+- Test file created: `tests/test_story_5_9_adw_yaml_config_examples.py` - verifies opencode section contains:
+  - server_url examples (http, https, custom host/port)
+  - models.heavy_lifting and models.lightweight examples
+  - timeout and lightweight_timeout explanations
+  - retry configuration explanation and examples
+  - session reuse guidance and example override snippets
+  - connection_timeout and read_timeout guidance
+- 1 unit test added to validate presence and meaningful commented guidance in `.adw.yaml`
+- Notes:
+  - Guidance includes troubleshooting hints (opencode auth, model availability, increasing timeouts)
+  - Optional production/local-dev override snippets included for users to copy/paste
 
 ---
 

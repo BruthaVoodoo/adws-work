@@ -62,37 +62,89 @@ migration:
 
 opencode:
   # HTTP server endpoint where OpenCode is running
-  # Default: localhost:4096 (assumes: opencode serve --port 4096)
-  # Update if using different host/port
+  # Default: http://localhost:4096 (assumes you ran: opencode serve --port 4096)
+  # Example for a custom host/port: "http://opencode.mycompany.internal:8080"
+  # If you host OpenCode behind TLS, use https://my-opencode-host:443
   server_url: "http://localhost:4096"
 
   # Model selection per task type
+  # Use full OpenCode model IDs. Examples below reference GitHub Copilot-hosted
+  # Claude models which are recommended for this project:
   models:
     # Heavy lifting: code implementation, test fixing, code reviews
-    # Uses: Claude Sonnet 4 (most capable for code tasks via GitHub Copilot)
-    # Model ID format: github-copilot/model-name
+    # Example: "github-copilot/claude-sonnet-4"
+    # Notes: Sonnet 4 is more capable for code generation and analysis. Use for
+    # task_type values: implement, test_fix, review
     heavy_lifting: "github-copilot/claude-sonnet-4"
 
     # Lightweight: planning, classification, document generation
-    # Uses: Claude Haiku 4.5 (faster for lightweight tasks via GitHub Copilot)
-    # Model ID format: github-copilot/model-name
+    # Example: "github-copilot/claude-haiku-4.5"
+    # Notes: Haiku 4.5 is faster and cheaper; use for task_type values: classify,
+    # extract_adw, plan, branch_gen, commit_msg, pr_creation
     lightweight: "github-copilot/claude-haiku-4.5"
 
   # Timeout settings (in seconds)
-  timeout: 600                 # 10 minutes for heavy code operations
-  lightweight_timeout: 60      # 1 minute for planning/classification
+  # timeout: used for heavy / long-running operations (e.g. implement, review)
+  # lightweight_timeout: used for quick operations (e.g. classify, branch_gen)
+  # Example: set timeout: 900 for very large code generation jobs
+  timeout: 600                 # 10 minutes for heavy code operations (default)
+  lightweight_timeout: 60      # 1 minute for planning/classification (default)
   
   # Retry configuration
-  max_retries: 3              # Number of retries on transient failures
-  retry_backoff: 1.5          # Exponential backoff multiplier
+  # max_retries: number of retry attempts for transient failures (connect/timeouts/5xx)
+  # retry_backoff: multiplier used for exponential backoff (delay = base * backoff^(attempt-1))
+  # Example: max_retries: 5 and retry_backoff: 2.0 (1s, 2s, 4s, 8s, 16s delays)
+  max_retries: 3
+  retry_backoff: 1.5
 
   # Session management
-  reuse_sessions: false       # Create new session for each operation
-                              # Set to true for performance optimization (experimental)
+  # reuse_sessions: when true, the client will attempt to reuse OpenCode sessions
+  # between calls which can improve throughput. When false, a fresh session is
+  # created per operation which is safer for debugging and isolation.
+  # Note: set to true in CI/perf-sensitive environments only after validation.
+  reuse_sessions: false
 
   # Connection settings
-  connection_timeout: 30      # Seconds to wait for initial connection
-  read_timeout: 600           # Seconds to wait for response completion
+  # connection_timeout: how long (seconds) to wait for initial TCP/connect
+  # read_timeout: how long (seconds) to wait for the full response body
+  # Example: for very large code-review responses you may want read_timeout: 1200
+  connection_timeout: 30
+  read_timeout: 600
+
+  # OPTIONAL: Example override snippets (document-only)
+  # You can override these settings per-environment. Example YAML snippets:
+  #
+  # production:
+  #   opencode:
+  #     server_url: "https://opencode.example.com"
+  #     models:
+  #       heavy_lifting: "github-copilot/claude-sonnet-4"
+  #       lightweight: "github-copilot/claude-haiku-4.5"
+  #     timeout: 900
+  #     lightweight_timeout: 90
+  #     max_retries: 5
+  #     retry_backoff: 2.0
+  #     reuse_sessions: true
+  #
+  # local-dev:
+  #   opencode:
+  #     server_url: "http://localhost:4096"
+  #     models:
+  #       heavy_lifting: "github-copilot/claude-sonnet-4"
+  #       lightweight: "github-copilot/claude-haiku-4.5"
+  #     timeout: 600
+  #     lightweight_timeout: 60
+  #     max_retries: 2
+  #     retry_backoff: 1.5
+  #     reuse_sessions: false
+
+  # Guidance:
+  # - For most users, the defaults above will work (local OpenCode on port 4096).
+  # - If you see authentication or model-not-found errors, verify OpenCode auth
+  #   (opencode auth login) and that you have a GitHub Copilot subscription.
+  # - Increase timeout/read_timeout for very large code synthesis tasks.
+  # - Use reuse_sessions=true to improve throughput in CI but validate session
+  #   lifetime and cookie handling for your OpenCode deployment.
 
 # ============================================================================
 # NOTES FOR DEVELOPMENT
