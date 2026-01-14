@@ -29,10 +29,10 @@ Steps to install and run OpenCode (recommended defaults):
 ```bash
 # Install OpenCode (one of the common installers)
 # npm (recommended when available)
-npm install -g @github/copilot
+npm i -g opencode-ai
 
 # Or using Homebrew (macOS)
-brew install copilot
+brew install anomalyco/tap/opencode
 
 # Start the OpenCode HTTP server (default port 4096)
 opencode serve --port 4096
@@ -44,11 +44,8 @@ opencode auth login
 Verify the server is running and responding:
 
 ```bash
-# Health check (default port 4096)
-curl http://localhost:4096/health
-
-# Or use the built-in health check helper (from project root)
-python -c "from scripts.adw_modules.opencode_http_client import check_opencode_server_available; print(check_opencode_server_available('http://localhost:4096', 5))"
+# Run adw system health check
+adw healthcheck
 ```
 
 Notes:
@@ -147,6 +144,17 @@ opencode auth login
 ```
 
 ## Quick Start
+
+### Prerequisites Check
+
+Before starting a workflow, verify your system is configured correctly:
+
+```bash
+# Run comprehensive health check
+adw healthcheck
+```
+
+This will verify OpenCode server, environment variables, Jira, Bitbucket, and GitHub CLI are properly configured.
 
 ### Phase 1: Plan
 Generate an implementation plan from a Jira issue:
@@ -266,6 +274,21 @@ Arguments:
   ISSUE_KEY          Jira issue key (e.g., PROJ-123)
 ```
 
+### Healthcheck
+```bash
+adw healthcheck
+
+This command performs comprehensive system health checks:
+- Validates all required environment variables
+- Checks OpenCode HTTP server availability
+- Tests Jira API connectivity
+- Tests Bitbucket API connectivity (if configured)
+- Verifies GitHub CLI installation and authentication
+
+Returns:
+  Exit code 0 if all checks pass, 1 otherwise
+```
+
 ### Help & Version
 ```bash
 adw --help              # Show general help
@@ -274,6 +297,7 @@ adw plan --help         # Show plan-specific help
 adw build --help        # Show build-specific help
 adw test --help         # Show test-specific help
 adw review --help       # Show review-specific help
+adw healthcheck --help  # Show healthcheck-specific help
 ```
 
 ## State Management
@@ -322,11 +346,11 @@ echo $JIRA_SERVER $JIRA_USERNAME $JIRA_API_TOKEN
 If ADWS fails to contact the local OpenCode HTTP server or model calls fail:
 
 ```bash
-# Verify OpenCode server is running and healthy
-curl http://localhost:4096/health
+# Run comprehensive health check (recommended)
+adw healthcheck
 
-# Run the project's health check (from repo root)
-python -m scripts.adw_tests.health_check
+# Or verify OpenCode server directly
+curl http://localhost:4096/health
 ```
 
 Common fixes:

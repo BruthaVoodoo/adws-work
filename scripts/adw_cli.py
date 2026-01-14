@@ -31,16 +31,18 @@ def cli():
     Autonomous planning, building, testing, and reviewing for software development.
 
     Commands:
-      plan      Generate implementation plan from Jira issue
-      build     Implement the plan
-      test      Run tests and auto-resolve failures
-      review    Review implementation against criteria
+      plan        Generate implementation plan from Jira issue
+      build       Implement the plan
+      test        Run tests and auto-resolve failures
+      review      Review implementation against criteria
+      healthcheck Run system health check (OpenCode, Jira, Git, env vars)
 
     Examples:
       adw plan PROJ-123
       adw build a1b2c3d4 PROJ-123
       adw test a1b2c3d4 PROJ-123
       adw review a1b2c3d4 PROJ-123
+      adw healthcheck
     """
     pass
 
@@ -162,6 +164,30 @@ def review(adw_id: str, issue_key: str) -> None:
 
     try:
         review_main()
+    except SystemExit as e:
+        if e.code != 0:
+            raise
+
+
+@cli.command()
+def healthcheck() -> None:
+    """
+    Run comprehensive system health check.
+
+    This command verifies:
+    1. All required environment variables are set
+    2. OpenCode HTTP server is running and accessible
+    3. Jira API connectivity is working
+    4. Bitbucket API connectivity is working (if configured)
+    5. GitHub CLI is installed and authenticated
+
+    Returns:
+        Exit code 0 if all checks pass, 1 otherwise
+    """
+    from scripts.adw_tests.health_check import main as health_main
+
+    try:
+        health_main()
     except SystemExit as e:
         if e.code != 0:
             raise
