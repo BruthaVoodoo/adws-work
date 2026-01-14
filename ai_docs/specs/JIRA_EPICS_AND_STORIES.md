@@ -15,7 +15,7 @@ This document reflects the Phase 0 architectural decision (January 9, 2026):
 - ✅ **Epic 2: Planning & Classification Operations** - COMPLETE (using OpenCode HTTP API)
 - ✅ **Epic 3: Code Execution Operations** - COMPLETE (Story 3.1 complete, Story 3.2 complete, Story 3.3 complete, Story 3.4 complete, Story 3.5 complete, Story 3.6 complete, Story 3.7 complete, Story 3.8 complete)
 - ✅ **Epic 4: Cleanup & Deprecated Code Removal** - COMPLETE (Story 4.1 complete, Story 4.2 complete, Story 4.3 complete, Story 4.4 complete, Story 4.5 complete)
-- ⏳ **Epic 5: Comprehensive Testing, Validation & Documentation** - IN PROGRESS (8/11 stories complete - Stories 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.9 complete)
+- ⏳ **Epic 5: Comprehensive Testing, Validation & Documentation** - IN PROGRESS (9/11 stories complete - Stories 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.9, 5.10 complete)
 - ✅ **GitHub Copilot models verified and accessible**:
   - Claude Sonnet 4 (heavy lifting: via OpenCode when Epic 3 complete)
   - Claude Haiku 4.5 (lightweight: planning & classification via OpenCode, ACTIVE NOW)
@@ -123,7 +123,7 @@ This document contains all Epics and Stories for the complete migration of ADWS 
 7. Update AGENTS.md with OpenCode section (2 hours) ✅ COMPLETE
 8. Create comprehensive MIGRATION_GUIDE.md (2 hours)
 9. Update .adw.yaml with OpenCode configuration examples (1 hour) ✅ COMPLETE - Implementation finished, documentation updated, Acceptance Criteria met
-10. Update README.md setup instructions (1 hour)
+10. Update README.md setup instructions (1 hour) ✅ COMPLETE - Implementation finished, README updated, Acceptance Criteria met
 11. Write troubleshooting guide (1 hour)
 
 ---
@@ -1838,6 +1838,21 @@ As a technical writer, I want README.md updated with OpenCode setup, so that new
 - Given README.md file
   When it's reviewed
   Then setup section includes OpenCode installation, server startup, configuration, and verification steps
+
+**Status:** ✅ COMPLETE - Implementation finished, README updated, Acceptance Criteria met
+
+**Implementation Details**
+- File modified: `README.md` (path: `/Users/t449579/Desktop/DEV/ADWS/README.md`) — added an "OpenCode HTTP API (required)" setup section and related guidance
+- Changes include:
+  - OpenCode installation instructions (npm / Homebrew) and commands to start the server (`opencode serve --port 4096`) and authenticate (`opencode auth login`)
+  - Health-check examples (`curl http://localhost:4096/health` and Python helper snippet)
+  - Example `.adw.yaml` opencode configuration snippet (server_url, models, timeouts, retry settings, session reuse)
+  - Environment variable override example (`OPENCODE_URL`) and notes to start OpenCode before running ADWS commands
+  - Expanded troubleshooting notes covering common OpenCode-related issues
+  - Updated "Last updated" timestamp in README
+- Notes:
+  - No unit tests were added for this documentation change (can be added on request)
+  - This change aligns README guidance with the ADWConfig and OpenCode client expectations
 
 ---
 

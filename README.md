@@ -19,6 +19,44 @@ Each phase is independent but composable, enabling flexible workflows.
 - pip or uv package manager
 - Git (for local operations)
 
+### OpenCode HTTP API (required)
+ADWS uses a local OpenCode HTTP server as the LLM backend (GitHub Copilot models).
+You must run a local OpenCode server and authenticate it with a GitHub account that
+has an active Copilot subscription in order to access the Copilot models used by ADWS.
+
+Steps to install and run OpenCode (recommended defaults):
+
+```bash
+# Install OpenCode (one of the common installers)
+# npm (recommended when available)
+npm install -g @github/copilot
+
+# Or using Homebrew (macOS)
+brew install copilot
+
+# Start the OpenCode HTTP server (default port 4096)
+opencode serve --port 4096
+
+# Authenticate OpenCode with your GitHub account (opens browser)
+opencode auth login
+```
+
+Verify the server is running and responding:
+
+```bash
+# Health check (default port 4096)
+curl http://localhost:4096/health
+
+# Or use the built-in health check helper (from project root)
+python -c "from scripts.adw_modules.opencode_http_client import check_opencode_server_available; print(check_opencode_server_available('http://localhost:4096', 5))"
+```
+
+Notes:
+- An active GitHub Copilot subscription is required to access the following models:
+  - `github-copilot/claude-sonnet-4` (heavy lifting — code implementation, test fixing, reviews)
+  - `github-copilot/claude-haiku-4.5` (lightweight — planning, classification)
+- If your OpenCode server runs on a different port or host, update `.adw.yaml` accordingly.
+
 ### Setup
 
 ```bash
@@ -58,6 +96,20 @@ docs_dir: "ai_docs"
 
 # Project language (default: "python")
 language: "python"
+
+# OpenCode configuration (example)
+opencode:
+  server_url: "http://localhost:4096"
+  models:
+    heavy_lifting: "github-copilot/claude-sonnet-4"
+    lightweight: "github-copilot/claude-haiku-4.5"
+  timeout: 600
+  lightweight_timeout: 60
+  max_retries: 3
+  retry_backoff: 1.5
+  reuse_sessions: false
+  connection_timeout: 30
+  read_timeout: 600
 ```
 
 ### Environment Variables
@@ -78,19 +130,20 @@ BITBUCKET_REPO_NAME=your-repo
 BITBUCKET_API_TOKEN=your-token
 ```
 
-**OpenCode Configuration:**
-Configure OpenCode HTTP API in `.adw.yaml`:
-```yaml
-opencode:
-  server_url: "http://localhost:4096"
-  models:
-    heavy_lifting: "github-copilot/claude-sonnet-4"
-    lightweight: "github-copilot/claude-haiku-4.5"
+**OpenCode override (optional):**
+```bash
+# If you prefer to set OpenCode URL via env instead of .adw.yaml
+OPENCODE_URL=http://localhost:4096
 ```
 
-Start the OpenCode server:
+### Start OpenCode before running ADWS
+Before running any `adw` commands that call the LLM, ensure the OpenCode server is running and authenticated.
+
 ```bash
+# Example (start server in a separate terminal)
 opencode serve --port 4096
+# Authenticate if not already done
+opencode auth login
 ```
 
 ## Quick Start
@@ -265,6 +318,22 @@ Check that all required variables are set:
 echo $JIRA_SERVER $JIRA_USERNAME $JIRA_API_TOKEN
 ```
 
+### OpenCode / LLM issues
+If ADWS fails to contact the local OpenCode HTTP server or model calls fail:
+
+```bash
+# Verify OpenCode server is running and healthy
+curl http://localhost:4096/health
+
+# Run the project's health check (from repo root)
+python -m scripts.adw_tests.health_check
+```
+
+Common fixes:
+- Start the OpenCode server: `opencode serve --port 4096`
+- Authenticate OpenCode: `opencode auth login` (if you see authentication errors)
+- Update `.adw.yaml` or `OPENCODE_URL` environment variable if your server uses a custom URL/port
+
 ### Tests fail to run
 Ensure test command is correctly configured:
 
@@ -344,6 +413,7 @@ User Issue (Jira)
 ## Development
 
 ### Run Tests
+
 ```bash
 # All tests
 pytest
@@ -356,11 +426,13 @@ pytest --cov=scripts/adw_modules
 ```
 
 ### Reinstall in Development Mode
+
 ```bash
 pip install -e . --force-reinstall --no-deps
 ```
 
 ### Check Installation
+
 ```bash
 pip show adws
 which adw
@@ -388,4 +460,4 @@ For issues or questions:
 3. Review logs in `ai_docs/logs/{adw_id}/`
 4. Check `.adw.yaml` configuration
 
-Last updated: January 7, 2026
+Last updated: January 14, 2026
