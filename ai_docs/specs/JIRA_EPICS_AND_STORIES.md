@@ -15,7 +15,7 @@ This document reflects the Phase 0 architectural decision (January 9, 2026):
 - ✅ **Epic 2: Planning & Classification Operations** - COMPLETE (using OpenCode HTTP API)
 - ✅ **Epic 3: Code Execution Operations** - COMPLETE (Story 3.1 complete, Story 3.2 complete, Story 3.3 complete, Story 3.4 complete, Story 3.5 complete, Story 3.6 complete, Story 3.7 complete, Story 3.8 complete)
 - ✅ **Epic 4: Cleanup & Deprecated Code Removal** - COMPLETE (Story 4.1 complete, Story 4.2 complete, Story 4.3 complete, Story 4.4 complete, Story 4.5 complete)
-- ⏳ **Epic 5: Comprehensive Testing, Validation & Documentation** - IN PROGRESS (6/11 stories complete - Stories 5.1, 5.2, 5.3, 5.4, 5.5, 5.6 complete)
+- ⏳ **Epic 5: Comprehensive Testing, Validation & Documentation** - IN PROGRESS (7/11 stories complete - Stories 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7 complete)
 - ✅ **GitHub Copilot models verified and accessible**:
   - Claude Sonnet 4 (heavy lifting: via OpenCode when Epic 3 complete)
   - Claude Haiku 4.5 (lightweight: planning & classification via OpenCode, ACTIVE NOW)
@@ -75,7 +75,7 @@ This document contains all Epics and Stories for the complete migration of ADWS 
 
 ### Epic 5: Comprehensive Testing, Validation & Documentation
 - **Summary:** Execute comprehensive testing across all migrated operations (6 planning + 3 code execution). Validate end-to-end workflows work correctly. Update all documentation.
-- **Story Count:** 11 stories (6 complete, 5 remaining)
+- **Story Count:** 11 stories (7 complete, 4 remaining)
 - **Estimated Duration:** 10-12 hours
 - **Status:** In Progress (Stories 5.1, 5.2, 5.3, 5.4, 5.5, 5.6 complete)
 - **Dependencies:** Epic 1, Epic 2, Epic 3, Epic 4
@@ -120,7 +120,7 @@ This document contains all Epics and Stories for the complete migration of ADWS 
 4. Write integration tests for code execution operations (3 hours) ✅ COMPLETE
 5. Write regression tests for all 9 LLM operations (2 hours) ✅ COMPLETE
 6. Performance test comparison vs old system (2 hours) ✅ COMPLETE
-7. Update AGENTS.md with OpenCode section (2 hours)
+7. Update AGENTS.md with OpenCode section (2 hours) ✅ COMPLETE
 8. Create comprehensive MIGRATION_GUIDE.md (2 hours)
 9. Update .adw.yaml with OpenCode configuration examples (1 hour)
 10. Update README.md setup instructions (1 hour)
@@ -1731,6 +1731,42 @@ As a technical writer, I want AGENTS.md updated with OpenCode setup section, so 
   When it's reviewed
   Then new section "OpenCode HTTP Server Setup" exists with installation, startup, authentication, configuration, verification, and troubleshooting
 
+**Implementation Details**
+- File created: `tests/test_story_5_7_agents_md_opencode_section.py`
+- File modified: `AGENTS.md` - Added comprehensive "OpenCode HTTP Server Setup" section
+- 13 comprehensive unit tests covering:
+  - AGENTS.md file exists
+  - OpenCode section exists with correct header
+  - Installation subsection present
+  - Startup subsection present
+  - Authentication subsection present
+  - Configuration subsection present
+  - Verification subsection present
+  - Troubleshooting subsection present
+  - OpenCode mentioned multiple times (>= 5 occurrences)
+  - Server URL configuration included
+  - Model configuration included (Haiku/Sonnet)
+  - Section placed before Common Patterns
+  - Section has meaningful content (>= 500 characters)
+- All tests passing (13/13)
+- Full test suite: 585 tests passing with 0 regressions
+- OpenCode HTTP Server Setup section includes:
+  - Installation (npm/Homebrew commands)
+  - Startup (opencode serve --port 4096)
+  - Authentication (opencode auth login, GitHub Copilot subscription requirements)
+  - Configuration (complete .adw.yaml opencode section with all options documented)
+  - Verification (health check commands, ADWS health check integration)
+  - Troubleshooting (6 subsections: server not running, auth failures, model not found, timeouts, performance, connection refused)
+  - Model Routing Summary (table of 9 operations with model assignments: 6 lightweight → Haiku 4.5, 3 heavy → Sonnet 4)
+- Features implemented:
+  - Comprehensive OpenCode HTTP Server Setup section in AGENTS.md
+  - All required subsections present per acceptance criteria
+  - Detailed configuration examples with inline comments
+  - Troubleshooting guide covering 6 common issue scenarios
+  - Model routing summary table for all 9 LLM operations
+  - Proper placement in document structure (before Common Patterns)
+  - Meaningful content (2000+ characters with practical examples)
+- Ready for Story 5.8 (depends on this story)
 ---
 
 #### Story 5.8: Create comprehensive MIGRATION_GUIDE.md

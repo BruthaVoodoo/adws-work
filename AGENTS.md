@@ -190,6 +190,267 @@ The following environment variables are required (set in `.env` or system):
 - Validate that console output matches expected format (see `test_console_consistency.py`)
 - Run single tests frequently during development: `uv run pytest -s tests/test_file.py::test_function`
 
+## OpenCode HTTP Server Setup
+
+**Status**: Phase 0 Complete - Active LLM backend (since January 9, 2026)
+
+ADWS uses OpenCode HTTP API as the unified LLM backend for all operations. OpenCode provides access to GitHub Copilot models (Claude Sonnet 4 for heavy lifting, Claude Haiku 4.5 for lightweight tasks) via a local HTTP server.
+
+### Installation
+
+OpenCode is part of the GitHub Copilot ecosystem. Install using one of the following methods:
+
+```bash
+# Using npm (recommended)
+npm install -g @github/copilot
+
+# Using Homebrew (macOS)
+brew install copilot
+```
+
+Verify installation:
+```bash
+copilot --version
+```
+
+### Startup
+
+Start the OpenCode HTTP server before running ADWS:
+
+```bash
+# Default configuration (port 4096)
+opencode serve --port 4096
+
+# Or specify custom port
+opencode serve --port 8080
+```
+
+The server must be running for all ADW operations (plan, build, test, review). Keep the server running in a separate terminal window.
+
+### Authentication
+
+Authenticate with your GitHub account to access Copilot models:
+
+```bash
+opencode auth login
+```
+
+This will open a browser window for GitHub authentication. After successful authentication, OpenCode will have access to:
+
+- **Claude Sonnet 4** (`github-copilot/claude-sonnet-4`) - For code implementation, testing, and reviews
+- **Claude Haiku 4.5** (`github-copilot/claude-haiku-4.5`) - For planning, classification, and lightweight tasks
+
+**Note**: Requires an active GitHub Copilot subscription.
+
+### Configuration
+
+OpenCode is configured in `.adw.yaml`:
+
+```yaml
+opencode:
+  # HTTP server endpoint (default: localhost:4096)
+  server_url: "http://localhost:4096"
+
+  # Model selection per task type
+  models:
+    # Heavy lifting: code implementation, testing, reviews
+    heavy_lifting: "github-copilot/claude-sonnet-4"
+    
+    # Lightweight: planning, classification, document generation
+    lightweight: "github-copilot/claude-haiku-4.5"
+
+  # Timeout settings (seconds)
+  timeout: 600                 # 10 minutes for heavy code operations
+  lightweight_timeout: 60      # 1 minute for planning/classification
+  
+  # Retry configuration
+  max_retries: 3              # Number of retries on transient failures
+  retry_backoff: 1.5          # Exponential backoff multiplier
+
+  # Session management
+  reuse_sessions: false       # Create new session for each operation
+
+  # Connection settings
+  connection_timeout: 30      # Seconds to wait for initial connection
+  read_timeout: 600           # Seconds to wait for response completion
+```
+
+**Custom Configuration**: If using a different port or hosting options, update `server_url` accordingly.
+
+### Verification
+
+Verify OpenCode server is accessible:
+
+```bash
+# Check server health (assuming default port 4096)
+curl http://localhost:4096/health
+
+# Or use the built-in health check
+python -c "from scripts.adw_modules.opencode_http_client import check_opencode_server_available; check_opencode_server_available('http://localhost:4096', 30)"
+```
+
+Expected response: Server health status indicating OpenCode is running and accepting requests.
+
+Run ADW health check:
+```bash
+# From project root
+python -m scripts.adw_tests.health_check
+```
+
+This validates:
+- ✅ OpenCode server is running
+- ✅ Authentication is configured
+- ✅ All environment variables are set
+- ✅ Jira connection is valid
+- ✅ Git repository state is clean
+
+### Troubleshooting
+
+#### OpenCode Server Not Running
+
+**Symptoms**: Connection errors, timeouts, "OpenCode server unavailable"
+
+**Solutions**:
+1. Start the OpenCode server in a separate terminal:
+   ```bash
+   opencode serve --port 4096
+   ```
+
+2. Verify server is responding:
+   ```bash
+   curl http://localhost:4096/health
+   ```
+
+3. Check port is not in use by another process:
+   ```bash
+   lsof -i :4096  # macOS/Linux
+   netstat -ano | findstr :4096  # Windows
+   ```
+
+4. Use a different port if 4096 is occupied:
+   ```bash
+   opencode serve --port 8080
+   # Then update .adw.yaml: server_url: "http://localhost:8080"
+   ```
+
+#### Authentication Failures
+
+**Symptoms**: 401/403 errors, "unauthorized" messages
+
+**Solutions**:
+1. Re-authenticate:
+   ```bash
+   opencode auth login
+   ```
+
+2. Verify GitHub Copilot subscription is active:
+   - Check GitHub settings: https://github.com/settings/copilot
+
+3. Logout and login again:
+   ```bash
+   opencode auth logout
+   opencode auth login
+   ```
+
+#### Model Not Found
+
+**Symptoms**: "Model not found" errors, invalid model ID
+
+**Solutions**:
+1. Verify model IDs in `.adw.yaml` match GitHub Copilot model names:
+   - `github-copilot/claude-sonnet-4` (heavy lifting)
+   - `github-copilot/claude-haiku-4.5` (lightweight)
+
+2. Check available models:
+   ```bash
+   opencode models list
+   ```
+
+3. Update `.adw.yaml` if model names have changed (unlikely but possible)
+
+#### Request Timeouts
+
+**Symptoms**: Operations hang for 10+ minutes, timeout errors
+
+**Solutions**:
+1. Increase timeout in `.adw.yaml`:
+   ```yaml
+   opencode:
+     timeout: 900  # 15 minutes instead of 10
+     read_timeout: 900
+   ```
+
+2. Check network connectivity to GitHub Copilot servers
+
+3. Reduce task complexity for lightweight operations (Haiku 4.5)
+
+4. Check OpenCode server logs for bottlenecks
+
+#### Performance Issues
+
+**Symptoms**: Slower response times compared to old system
+
+**Solutions**:
+1. Verify using correct model for task type:
+   - Planning/Classification → Haiku 4.5 (faster)
+   - Code Implementation/Testing/Review → Sonnet 4 (slower but more capable)
+
+2. Check system resources (CPU, memory, network)
+
+3. Enable session reuse in `.adw.yaml` (experimental):
+   ```yaml
+   opencode:
+     reuse_sessions: true
+   ```
+
+4. Monitor OpenCode server logs for performance metrics
+
+#### Connection Refused
+
+**Symptoms**: "Connection refused" errors when starting ADWS
+
+**Solutions**:
+1. Ensure OpenCode server is running before ADWS commands
+
+2. Verify firewall is not blocking port 4096:
+   ```bash
+   # macOS
+   sudo pfctl -d  # Temporarily disable firewall (for testing)
+   
+   # Linux
+   sudo ufw allow 4096
+   ```
+
+3. Check `.adw.yaml` server_url matches OpenCode server port
+
+4. Restart OpenCode server if it crashed:
+   ```bash
+   # Kill existing process
+   pkill -f "opencode serve"
+   
+   # Restart
+   opencode serve --port 4096
+   ```
+
+### Model Routing Summary
+
+ADWS automatically routes operations to appropriate models:
+
+| Operation Type | Task Type | Model | Use Case |
+|---------------|-----------|--------|----------|
+| extract_adw_info | extract_adw | Claude Haiku 4.5 | ADW classification from issue text |
+| classify_issue | classify | Claude Haiku 4.5 | Issue type classification |
+| build_plan | plan | Claude Haiku 4.5 | Implementation planning |
+| generate_branch_name | branch_gen | Claude Haiku 4.5 | Branch name generation |
+| create_commit | commit_msg | Claude Haiku 4.5 | Commit message generation |
+| create_pull_request | pr_creation | Claude Haiku 4.5 | PR title/description generation |
+| implement_plan | implement | Claude Sonnet 4 | Code implementation |
+| resolve_failed_tests | test_fix | Claude Sonnet 4 | Test failure resolution |
+| run_review | review | Claude Sonnet 4 | Code review |
+
+**Lightweight tasks** (Haiku 4.5): Faster, cheaper, suitable for planning and classification.  
+**Heavy lifting tasks** (Sonnet 4): More capable, suitable for code implementation and analysis.
+
 ## Common Patterns
 
 ### Accessing Configuration
