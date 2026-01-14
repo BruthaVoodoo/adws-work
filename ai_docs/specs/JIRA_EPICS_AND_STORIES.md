@@ -15,7 +15,7 @@ This document reflects the Phase 0 architectural decision (January 9, 2026):
 - ✅ **Epic 2: Planning & Classification Operations** - COMPLETE (using OpenCode HTTP API)
 - ✅ **Epic 3: Code Execution Operations** - COMPLETE (Story 3.1 complete, Story 3.2 complete, Story 3.3 complete, Story 3.4 complete, Story 3.5 complete, Story 3.6 complete, Story 3.7 complete, Story 3.8 complete)
 - ✅ **Epic 4: Cleanup & Deprecated Code Removal** - COMPLETE (Story 4.1 complete, Story 4.2 complete, Story 4.3 complete, Story 4.4 complete, Story 4.5 complete)
-- ⏳ **Epic 5: Comprehensive Testing, Validation & Documentation** - IN PROGRESS (9/11 stories complete - Stories 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.9, 5.10 complete)
+- ⏳ **Epic 5: Comprehensive Testing, Validation & Documentation** - IN PROGRESS (10/11 stories complete - Stories 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.9, 5.10, 5.11 complete)
 - ✅ **GitHub Copilot models verified and accessible**:
   - Claude Sonnet 4 (heavy lifting: via OpenCode when Epic 3 complete)
   - Claude Haiku 4.5 (lightweight: planning & classification via OpenCode, ACTIVE NOW)
@@ -124,7 +124,7 @@ This document contains all Epics and Stories for the complete migration of ADWS 
 8. Create comprehensive MIGRATION_GUIDE.md (2 hours)
 9. Update .adw.yaml with OpenCode configuration examples (1 hour) ✅ COMPLETE - Implementation finished, documentation updated, Acceptance Criteria met
 10. Update README.md setup instructions (1 hour) ✅ COMPLETE - Implementation finished, README updated, Acceptance Criteria met
-11. Write troubleshooting guide (1 hour)
+11. Write troubleshooting guide (1 hour) ✅ COMPLETE - Implementation finished, Troubleshooting guide added to docs/TROUBLESHOOTING.md
 
 ---
 
@@ -1856,19 +1856,38 @@ As a technical writer, I want README.md updated with OpenCode setup, so that new
 
 ---
 
-#### Story 5.11: Write troubleshooting guide
+#### Story 5.11: Write troubleshooting guide ✅ COMPLETE
 **Summary:** Write troubleshooting guide for common issues  
 **Type:** Story  
 **Estimation:** 1 hour  
 **Dependencies:** Epic 1, 2, 3, 4
+**Status:** ✅ COMPLETE - Implementation finished, Troubleshooting guide added to docs/TROUBLESHOOTING.md, Acceptance Criteria met
 
 **Description**
-As a technical writer, I want a troubleshooting guide, so that users can self-serve common issues.
+As a technical writer, I want a troubleshooting guide, so that users can self-serve common issues and resolve common problems without opening support tickets.
 
 **Acceptance Criteria**
-- Given troubleshooting guide
+- ✅ Given troubleshooting guide
   When it's reviewed
   Then it covers connection errors, auth failures, model not found, timeouts, stuck requests, and performance issues
+
+**Implementation Details**
+- File created: `docs/TROUBLESHOOTING.md` (provides step-by-step diagnostics and fixes)
+- Content highlights:
+  - OpenCode server verification and health check examples (`curl`, Python helper)
+  - Authentication troubleshooting for OpenCode and Jira (opencode auth login, verify JIRA env vars)
+  - Model verification (`opencode models list`) and guidance for "Model not found"
+  - Timeout, retry, and exponential backoff guidance (when to increase `opencode.timeout`/`read_timeout`)
+  - Where to find logs: `ai_docs/logs/{ADW_ID}/` and which files to attach for debugging
+  - Git & repository state troubleshooting and recommended safe recovery steps
+  - Test execution troubleshooting and how to run tests with verbose output
+  - Performance and long-running request guidance, and when to escalate
+  - Commands and examples for quick verification and common fixes
+- Suggested follow-ups (recommended but not required):
+  - Add a lightweight unit test to assert the troubleshooting document exists in CI
+  - Link this guide from README.md and AGENTS.md for discoverability
+
+- All acceptance criteria satisfied by the created guide
 
 ---
 
