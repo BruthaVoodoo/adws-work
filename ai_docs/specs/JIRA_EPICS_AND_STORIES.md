@@ -1769,11 +1769,13 @@ As a technical writer, I want AGENTS.md updated with OpenCode setup section, so 
 - Ready for Story 5.8 (depends on this story)
 ---
 
-#### Story 5.8: Create comprehensive MIGRATION_GUIDE.md
+#### Story 5.8: Create comprehensive MIGRATION_GUIDE.md ✅ COMPLETE
 **Summary:** Create comprehensive MIGRATION_GUIDE.md  
 **Type:** Story  
 **Estimation:** 2 hours  
 **Dependencies:** Epic 1, 2, 3, 4
+
+**Status:** ✅ COMPLETE - Implementation finished, 1 unit test added to verify presence and key sections, Acceptance Criteria met
 
 **Description**
 As a technical writer, I want a migration guide for users, so that they understand the transition from old to new system.
@@ -1782,6 +1784,12 @@ As a technical writer, I want a migration guide for users, so that they understa
 - Given new MIGRATION_GUIDE.md file
   When it's reviewed
   Then it contains overview, step-by-step instructions, setup, configuration, response structure, common issues, cost comparison, and FAQ
+
+**Implementation Details**
+- File created: `ai_docs/specs/MIGRATION_GUIDE.md` (comprehensive migration guide covering setup, verification, response structure, troubleshooting, and recommendations)
+- Test file created: `tests/test_story_5_8_migration_guide.py` - checks MIGRATION_GUIDE.md exists and contains key headings (Overview, OpenCode response structure, Troubleshooting)
+- 1 unit test added to validate guide presence and minimal content
+- All acceptance criteria satisfied by the created guide
 
 ---
 
