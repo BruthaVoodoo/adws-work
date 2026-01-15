@@ -46,6 +46,8 @@ Additional Notes
 
 ## Story B1 — Refactor config discovery to prefer ADWS/config.yaml
 
+**Status: ✅ Complete**
+
 ##Summary
 Update ADWS config loader to search for ADWS/config.yaml in current working directory, falling back to legacy `.adw.yaml` with deprecation warning.
 
@@ -53,18 +55,34 @@ Update ADWS config loader to search for ADWS/config.yaml in current working dire
 As a user, I want ADWS to load configuration from an ADWS folder so that projects are not polluted and ADWS can be uninstalled cleanly.
 
 Acceptance Criteria
-  - Config loader checks for ./ADWS/config.yaml first.
-  - If not found, it falls back to legacy `.adw.yaml` and logs a deprecation warning indicating future removal.
-  - Unit tests validate both code paths.
+  - [x] Config loader checks for ./ADWS/config.yaml first.
+  - [x] If not found, it falls back to legacy `.adw.yaml` and logs a deprecation warning indicating future removal.
+  - [x] Unit tests validate both code paths.
 
 Traceability To Epic
   - Epic: Portable ADWS Refactor — Folder-based Zero-Pollution Deployment
 
 Estimate: 8–12 hours
 
+**Completed:** January 15, 2026
+
+**Implementation Details:**
+- Modified `scripts/adw_modules/config.py` to implement priority-based discovery:
+  - Priority 1: `./ADWS/config.yaml` in CWD
+  - Priority 2: Walk up directory tree for `ADWS/config.yaml`
+  - Priority 3: Fallback to legacy `.adw.yaml` with deprecation warning
+- Created `tests/test_config_discovery.py` with 7 comprehensive unit tests
+- Updated `project_root` property to correctly return parent of ADWS folder
+
+**Files Changed:**
+- `scripts/adw_modules/config.py`
+- `tests/test_config_discovery.py` (new)
+
 ---
 
 ## Story B2 — Implement `adw init` CLI command
+
+**Status: ✅ Complete**
 
 ##Summary
 Create a CLI command `adw init` that copies ADWS folder contents into the current project and creates ADWS/config.yaml with sensible defaults.
@@ -73,14 +91,36 @@ Create a CLI command `adw init` that copies ADWS folder contents into the curren
 As a developer, I want an easy way to install ADWS into a target repository so that I can test ADWS portability without manual copying.
 
 Acceptance Criteria
-  - `adw init` can be run from an empty repository and creates ADWS/ with required files and ADWS/config.yaml containing default settings.
-  - `adw init` is idempotent and will not overwrite existing ADWS/ files unless a --force flag is provided with explicit confirmation.
-  - Basic integration test demonstrates init success and default config presence.
+  - [x] `adw init` can be run from an empty repository and creates ADWS/ with required files and ADWS/config.yaml containing default settings.
+  - [x] `adw init` is idempotent and will not overwrite existing ADWS/ files unless a --force flag is provided with explicit confirmation.
+  - [x] Basic integration test demonstrates init success and default config presence.
 
 Traceability To Epic
   - Epic: Portable ADWS Refactor — Folder-based Zero-Pollution Deployment
 
 Estimate: 4–8 hours
+
+**Completed:** January 15, 2026
+
+**Implementation Details:**
+- Created `scripts/adw_templates/ADWS/` template directory with:
+  - `config.yaml` - Default configuration with sensible settings
+  - `README.md` - Documentation explaining folder structure
+  - `logs/.gitkeep` - Empty logs directory
+- Implemented `scripts/adw_init.py` with:
+  - Safe-copy logic that checks for existing ADWS folder
+  - `--force` flag with explicit confirmation prompt
+  - Clear success messages and next steps
+- Added `init` command to `scripts/adw_cli.py` CLI
+- Created comprehensive integration test suite with 9 tests
+
+**Files Changed:**
+- `scripts/adw_templates/ADWS/config.yaml` (new)
+- `scripts/adw_templates/ADWS/README.md` (new)
+- `scripts/adw_templates/ADWS/logs/.gitkeep` (new)
+- `scripts/adw_init.py` (new)
+- `scripts/adw_cli.py` (updated - added init command)
+- `tests/test_adw_init.py` (new)
 
 ---
 

@@ -159,11 +159,129 @@ The frontend uses Vite's proxy configuration to forward `/api/*` requests to `ht
 - [ ] No CORS errors in browser console
 
 ### Integration Verification
-
 - [ ] Both frontend (5173) and backend (3000) running
 - [ ] Frontend successfully proxies `/api` requests to backend
 - [ ] No network errors in browser DevTools
 - [ ] API responses displayed correctly in UI
+
+## Troubleshooting
+
+### Common Issues
+
+#### MongoDB connection errors
+
+**Symptom**: Backend logs "MongoDB connection error" and exits with code 1
+
+**Solutions**:
+1. Check MongoDB is running:
+   ```bash
+   docker-compose ps
+   ```
+   Status should show `Up (healthy)`
+
+2. Check port 27017 is not in use:
+   ```bash
+   lsof -i :27017
+   ```
+
+3. Verify `.env` file exists in backend directory:
+   ```bash
+   cd backend
+   cat .env
+   ```
+
+4. Check MongoDB logs:
+   ```bash
+   docker-compose logs mongodb
+   ```
+
+#### Frontend can't connect to backend
+
+**Symptom**: Browser console shows "Failed to fetch" or network errors
+
+**Solutions**:
+1. Verify backend is running:
+   ```bash
+   curl http://localhost:3000/api/hello
+   ```
+
+2. Check Vite proxy configuration in `frontend/vite.config.js`:
+   ```javascript
+   proxy: {
+     '/api': {
+       target: 'http://localhost:3000',
+       changeOrigin: true,
+     },
+   }
+   ```
+
+3. Try accessing backend directly: http://localhost:3000/api/hello
+
+4. Check browser DevTools Network tab for failed requests
+
+#### Port already in use errors
+
+**Symptom**: Backend or frontend fails to start with "EADDRINUSE" error
+
+**Solutions**:
+1. Find process using the port:
+   ```bash
+   # macOS/Linux
+   lsof -i :3000  # backend port
+   lsof -i :5173  # frontend port
+
+   # Or use kill:
+   pkill -f "node server.js"
+   pkill -f "vite"
+   ```
+
+2. Change port in `.env` file (backend) or Vite config (frontend)
+
+#### Docker Compose issues
+
+**Symptom**: `docker-compose up` fails with "database is locked" or other errors
+
+**Solutions**:
+1. Stop and remove containers:
+   ```bash
+   docker-compose down
+   ```
+
+2. Remove Docker volumes (deletes all MongoDB data):
+   ```bash
+   docker-compose down -v
+   ```
+
+3. Rebuild containers:
+   ```bash
+   docker-compose up -d --build
+   ```
+
+4. Check Docker Desktop is running and has sufficient resources
+
+#### Module not found errors
+
+**Symptom**: `npm start` fails with "Cannot find module" error
+
+**Solutions**:
+1. Install dependencies:
+   ```bash
+   cd backend  # or frontend
+   npm install
+   ```
+
+2. Clear npm cache and reinstall:
+   ```bash
+   rm -rf node_modules package-lock.json
+   npm install
+   ```
+
+### Getting Help
+
+1. Check [DOCKER.md](DOCKER.md) for detailed Docker setup
+2. Review [dev-agent-record.md](dev-agent-record.md) for implementation notes
+3. Check browser console and terminal logs for error details
+4. Verify all prerequisites are installed (Node.js, Docker)
 
 ## Status
 

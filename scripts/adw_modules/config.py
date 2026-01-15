@@ -14,23 +14,44 @@ class ADWConfig:
     def _load(self):
         # Start from CWD and look up
         cwd = Path.cwd()
-        candidates = [".adw.yaml", ".adw.yml", ".adw_config.yaml", ".adw_config.yml"]
+        adws_config_path = cwd / "ADWS" / "config.yaml"
 
+        # PRIORITY 1: Check for ADWS/config.yaml in CWD
+        if adws_config_path.exists() and adws_config_path.is_file():
+            self._config_path = adws_config_path
+            self._load_config_from_file(adws_config_path)
+            return
+
+        # PRIORITY 2: Walk up directory tree to find ADWS/config.yaml
+        current = cwd
+        while current.parent != current:
+            adws_path = current / "ADWS" / "config.yaml"
+            if adws_path.exists() and adws_path.is_file():
+                self._config_path = adws_path
+                self._load_config_from_file(adws_path)
+                return
+            current = current.parent
+
+        # PRIORITY 3: Fallback to legacy .adw.yaml with deprecation warning
+        legacy_candidates = [
+            ".adw.yaml",
+            ".adw.yml",
+            ".adw_config.yaml",
+            ".adw_config.yml",
+        ]
         current = cwd
         while True:
-            for cand in candidates:
+            for cand in legacy_candidates:
                 p = current / cand
                 if p.exists() and p.is_file():
                     self._config_path = p
-                    try:
-                        with open(p, "r", encoding="utf-8") as f:
-                            self._data = yaml.safe_load(f) or {}
-                        return
-                    except Exception as e:
-                        print(
-                            f"Warning: Failed to load config from {p}: {e}",
-                            file=sys.stderr,
-                        )
+                    print(
+                        f"Deprecation warning: Using legacy config file {p}. "
+                        f"Please migrate to ADWS/config.yaml. Legacy config support will be removed in a future version.",
+                        file=sys.stderr,
+                    )
+                    self._load_config_from_file(p)
+                    return
 
             if current.parent == current:
                 break
@@ -39,9 +60,24 @@ class ADWConfig:
         # If no config found, use defaults based on CWD
         self._data = {}
 
+    def _load_config_from_file(self, path: Path):
+        """Load configuration from a specific file path."""
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                self._data = yaml.safe_load(f) or {}
+        except Exception as e:
+            print(
+                f"Warning: Failed to load config from {path}: {e}",
+                file=sys.stderr,
+            )
+            self._data = {}
+
     @property
     def project_root(self) -> Path:
         if self._config_path:
+            # If config is in ADWS/config.yaml, project_root is the parent of ADWS folder
+            if "ADWS" in self._config_path.parts:
+                return self._config_path.parent.parent
             return self._config_path.parent
         return Path.cwd()
 

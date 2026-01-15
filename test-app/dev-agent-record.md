@@ -452,3 +452,152 @@ Story A3 is complete. The following story is pending:
 - Vite proxy configuration works only in development mode (npm run dev)
 - Production deployment would require CORS configuration or proper reverse proxy setup
 - Frontend currently only implements /api/hello - /api/messages could be added in future enhancement
+
+---
+
+## Story A4 — Documentation, verification steps, and Jira ticket
+
+**Status**: ✅ Completed
+**Date**: 2026-01-15
+**Epic**: Test App Skeleton — ADWS Portable Validation
+
+---
+
+### Implementation Summary
+
+Added comprehensive troubleshooting documentation and created a Jira ticket template for ADWS-driven tasks. Updated README with detailed error resolution steps and verification processes.
+
+---
+
+### Files Created
+
+#### Documentation Files
+- `test-app/JIRA_TICKET_TEMPLATE.md` - Complete Jira ticket template with examples, labels, and verification checklists
+
+---
+
+### Files Modified
+
+#### Documentation Files
+- `test-app/README.md` - Added comprehensive troubleshooting section with common issues and solutions
+
+---
+
+### Acceptance Criteria Verification
+
+✅ **AC 1**: README includes: prerequisites, local start steps for frontend & backend, MongoDB configuration, example requests, and troubleshooting notes
+   - Verified: Prerequisites section includes Node.js and Docker requirements
+   - Verified: Local start steps for both Docker and local MongoDB options
+   - Verified: MongoDB configuration explained with .env setup and DOCKER.md link
+   - Verified: Example requests documented in API Endpoints section
+   - Verified: Troubleshooting section added with 5 common issues and solutions
+
+✅ **AC 2**: A verification checklist exists with steps to confirm frontend, backend, and DB connectivity
+   - Verified: Verification Checklist section created with 3 subsections
+   - Verified: Backend Verification includes 4 checkpoints
+   - Verified: Frontend Verification includes 4 checkpoints
+   - Verified: Integration Verification includes 4 checkpoints
+
+✅ **AC 3**: A Jira ticket template is added to track ADWS test tasks (e.g., "Run ADWS analyze on test app")
+   - Verified: JIRA_TICKET_TEMPLATE.md created with full template
+   - Verified: Template includes basic fields, examples, ADWS workflow integration, labels, and verification checklists
+
+---
+
+### Implementation Details
+
+#### Troubleshooting Documentation
+
+**Sections Added**:
+- MongoDB connection errors - 4 solutions for connection failures
+- Frontend can't connect to backend - 4 solutions for proxy/CORS issues
+- Port already in use errors - 2 solutions for port conflicts
+- Docker Compose issues - 4 solutions for container problems
+- Module not found errors - 2 solutions for dependency issues
+- Getting Help - 4 additional resources
+
+**Each Section Includes**:
+- Symptoms identification
+- Multiple solution options
+- Command-line examples
+- Reference to related documentation (DOCKER.md, dev-agent-record.md)
+
+#### Jira Ticket Template
+
+**Template Components**:
+- Basic Fields: Summary, Description, Acceptance Criteria, Definition of Done
+- Example Tickets: Add New API Endpoint, Add Messages List to Frontend
+- ADWS Workflow Integration: Plan, Build, Test, Review workflows
+- Labels and Components: Standardized tagging system
+- Verification Checklists: Backend, Frontend, Integration checklists
+
+**Template Features**:
+- Fill-in-the-blank format for quick ticket creation
+- Multiple example tickets demonstrating different task types
+- ADWS-specific workflow guidance
+- Definition of Done with comprehensive checklist
+- Labels for categorization (frontend, backend, adw-task, etc.)
+
+#### README Updates
+
+**Documentation Sections**:
+1. Prerequisites - Node.js and Docker requirements
+2. Quick Start - Docker and local MongoDB options
+3. Development - Backend and frontend dev commands
+4. Running Both Services - Dual-terminal setup
+5. API Endpoints - Complete endpoint documentation
+6. Verification Checklist - 12 verification steps
+7. Troubleshooting - 6 problem categories with solutions
+
+---
+
+### Verification Steps Performed
+
+1. ✅ Reviewed README for completeness (prerequisites, start steps, MongoDB config, API docs)
+2. ✅ Verified verification checklist covers all components (backend, frontend, integration)
+3. ✅ Created JIRA_TICKET_TEMPLATE.md with comprehensive template
+4. ✅ Added troubleshooting section covering common issues
+5. ✅ Tested Jira template examples for clarity and completeness
+6. ✅ Verified all links in documentation are correct
+7. ✅ Confirmed README structure follows logical flow
+
+---
+
+### Test Results
+
+**Documentation Review**:
+- ✅ README includes all required sections (prerequisites, setup, API docs, verification, troubleshooting)
+- ✅ Jira ticket template is comprehensive and reusable
+- ✅ Troubleshooting guide provides actionable solutions
+- ✅ Verification checklists are specific and testable
+
+---
+
+### Decisions Made
+
+1. **Comprehensive troubleshooting**: Created detailed troubleshooting section with 6 categories instead of minimal notes - reduces support burden
+2. **Example-based template**: Used example tickets in Jira template instead of just fields - shows proper usage patterns
+3. **ADWS-specific workflow**: Added dedicated ADWS workflow integration in template - supports ADWS-driven development
+4. **Label standardization**: Defined consistent label system in Jira template - improves tracking and reporting
+5. **Dual-verification approach**: Created both verification checklist and Definition of Done - ensures quality at multiple levels
+
+---
+
+### Next Steps
+
+Story A4 is complete. All stories in the epic are finished:
+- ✅ **A1**: Create project scaffold and directory layout
+- ✅ **A2**: Implement Express API endpoint and MongoDB schema
+- ✅ **A3**: Implement frontend UI and API integration
+- ✅ **A4**: Documentation, verification steps, and Jira ticket
+
+**Epic Status: 100% Complete**
+
+---
+
+### Notes
+
+- Documentation is now comprehensive enough for external contributors to onboard and use the test app
+- Jira ticket template supports both manual and ADWS-driven tasks
+- Troubleshooting guide covers the most common issues based on development experience
+- Epic is complete and ready for demonstration/validation

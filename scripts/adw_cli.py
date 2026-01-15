@@ -32,12 +32,15 @@ def cli():
 
     Commands:
       plan        Generate implementation plan from Jira issue
-      build       Implement the plan
+      build       Implement plan
       test        Run tests and auto-resolve failures
       review      Review implementation against criteria
       healthcheck Run system health check (OpenCode, Jira, Git, env vars)
+      init        Initialize ADWS folder in current project
 
     Examples:
+      adw init
+      adw init --force
       adw plan PROJ-123
       adw build a1b2c3d4 PROJ-123
       adw test a1b2c3d4 PROJ-123
@@ -188,6 +191,47 @@ def healthcheck() -> None:
 
     try:
         health_main()
+    except SystemExit as e:
+        if e.code != 0:
+            raise
+
+
+@cli.command()
+@click.option(
+    "--force",
+    "-f",
+    is_flag=True,
+    help="Force overwrite existing ADWS/ folder (requires confirmation)",
+)
+def init(force: bool) -> None:
+    """
+    Initialize ADWS folder in current project.
+
+    Creates an ADWS/ directory with default configuration,
+    enabling portable ADWS deployment without project pollution.
+
+    This command:
+    1. Creates ADWS/ folder in current working directory
+    2. Copies default config.yaml with sensible defaults
+    3. Creates logs/ directory for ADWS execution logs
+    4. Does not overwrite existing files unless --force is provided
+
+    Returns:
+        Exit code 0 on success, 1 on error
+
+    Next steps after init:
+    1. Review ADWS/config.yaml for your project settings
+    2. Run 'adw healthcheck' to verify environment
+    3. Run 'adw plan <issue-key>' to start working
+    """
+    from scripts.adw_init import main as init_main
+
+    # Pass force flag via sys.argv
+    if force:
+        sys.argv.append("--force")
+
+    try:
+        init_main()
     except SystemExit as e:
         if e.code != 0:
             raise
