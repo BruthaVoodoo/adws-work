@@ -1,34 +1,66 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [helloResponse, setHelloResponse] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  const callHelloApi = async () => {
+    setLoading(true)
+    setError(null)
+    setHelloResponse(null)
+
+    try {
+      const response = await fetch('/api/hello')
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+      setHelloResponse(data)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div className="app">
+      <h1>ADWS Test App - Frontend</h1>
+
+      <div className="api-section">
+        <h2>Backend API Test</h2>
+        <button 
+          onClick={callHelloApi} 
+          disabled={loading}
+          className="api-button"
+        >
+          {loading ? 'Loading...' : 'Call /api/hello'}
         </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
+
+        {error && (
+          <div className="error-message">
+            <strong>Error:</strong> {error}
+          </div>
+        )}
+
+        {helloResponse && (
+          <div className="success-message">
+            <strong>Response:</strong>
+            <pre>{JSON.stringify(helloResponse, null, 2)}</pre>
+          </div>
+        )}
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+
+      <div className="info-section">
+        <h2>Endpoints</h2>
+        <ul>
+          <li><code>GET /api/hello</code> - Returns <code>{"{ \"hello\": \"world\" }"}</code></li>
+          <li><code>GET /api/messages</code> - Returns list of messages from MongoDB</li>
+        </ul>
+      </div>
+    </div>
   )
 }
 

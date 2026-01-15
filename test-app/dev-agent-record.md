@@ -290,3 +290,165 @@ Story A2 is complete. The following stories are pending:
 - MongoDB instance must be running locally or cloud connection configured in .env for full functionality
 - Tests pass without MongoDB by using timeout-based validation
 - Frontend will consume /api/hello and /api/messages endpoints in Story A3
+
+---
+
+## Story A3 — Implement frontend UI and API integration
+
+**Status**: ✅ Completed
+**Date**: 2026-01-15
+**Epic**: Test App Skeleton — ADWS Portable Validation
+
+---
+
+### Implementation Summary
+
+Created a minimal React UI that calls the backend API endpoints and displays responses. Implemented Vite proxy configuration for seamless backend communication during development.
+
+---
+
+### Files Created
+
+None (all work was modifying existing frontend files from Story A1)
+
+---
+
+### Files Modified
+
+#### Frontend Files
+- `test-app/frontend/src/App.jsx` - Replaced default Vite template with API test UI
+- `test-app/frontend/src/App.css` - Replaced default styles with custom UI styles
+- `test-app/frontend/src/index.css` - Simplified global styles for cleaner look
+- `test-app/frontend/vite.config.js` - Added proxy configuration for /api routes
+
+#### Documentation Files
+- `test-app/README.md` - Updated with frontend-backend integration instructions, verification checklists, and API documentation
+
+---
+
+### Acceptance Criteria Verification
+
+✅ **AC 1**: frontend/ has a page that calls /api/hello on load or via button and displays the returned text
+   - Verified: `test-app/frontend/src/App.jsx` includes "Call /api/hello" button
+   - Verified: Button triggers fetch to `/api/hello` endpoint
+   - Verified: Response displayed in success message with formatted JSON
+   - Verified: Loading state and error handling implemented
+
+✅ **AC 2**: CORS or proxy config added so frontend can call backend in local dev
+   - Verified: `test-app/frontend/vite.config.js` includes server proxy configuration
+   - Verified: Proxy forwards `/api` requests to `http://localhost:3000`
+   - Verified: Proxy tested successfully with curl: `curl http://localhost:5173/api/hello` returned `{"hello":"world"}`
+
+✅ **AC 3**: Frontend start script runs and connects to backend when both services are started as documented
+   - Verified: Frontend runs on `http://localhost:5173` with `npm run dev`
+   - Verified: Backend runs on `http://localhost:3000` with `npm start`
+   - Verified: Frontend successfully proxies API calls to backend
+   - Verified: README includes dual-terminal startup instructions
+   - Verified: README includes verification checklist
+
+---
+
+### Implementation Details
+
+#### React Component Features
+
+**App Component** (`src/App.jsx`)
+- State management for: `helloResponse`, `loading`, `error`
+- API call function: `callHelloApi()` with async/await
+- Fetch endpoint: `/api/hello` (proxied to backend)
+- Loading state: Button disabled and shows "Loading..." during fetch
+- Error handling: Displays error messages with yellow background
+- Response display: Formatted JSON in white box with syntax highlighting
+
+**UI Layout**
+- Header: "ADWS Test App - Frontend"
+- API Test Section: Button and response display area
+- Info Section: List of available API endpoints
+
+#### Vite Proxy Configuration
+
+**Proxy Settings** (`vite.config.js`)
+```javascript
+server: {
+  proxy: {
+    '/api': {
+      target: 'http://localhost:3000',
+      changeOrigin: true,
+      secure: false,
+    },
+  },
+}
+```
+
+**How it works**:
+- Frontend runs on port 5173
+- All `/api/*` requests are forwarded to backend at port 3000
+- No CORS configuration needed (proxy handles it)
+- React code uses relative paths (e.g., `/api/hello`)
+
+#### Styling
+
+**Color Scheme** (GitHub-inspired)
+- Success: Green background (`#dafbe1`) with green border
+- Error: Yellow background (`#fff8c5`) with orange border
+- Info: Light gray background (`#f6f8fa`) with gray border
+- Primary button: GitHub blue (`#2da44e`)
+
+**Components**
+- API Button: Rounded corners, hover effect, disabled state
+- Response Display: Pre-formatted JSON with white background
+- Code Blocks: Inline code with blue background and gray text
+
+---
+
+### Verification Steps Performed
+
+1. ✅ Created React UI component with button to call /api/hello
+2. ✅ Added state management for API response, loading, and error
+3. ✅ Styled UI with custom CSS for better UX
+4. ✅ Added Vite proxy configuration in vite.config.js
+5. ✅ Started backend server on port 3000
+6. ✅ Started frontend dev server on port 5173
+7. ✅ Verified frontend accessible at http://localhost:5173
+8. ✅ Tested proxy: `curl http://localhost:5173/api/hello` returned correct JSON
+9. ✅ Updated README with dual-terminal startup instructions
+10. ✅ Added verification checklist for backend, frontend, and integration
+11. ✅ Added API documentation section with endpoint table
+12. ✅ Stopped both servers after successful testing
+
+---
+
+### Test Results
+
+**Manual Integration Test**
+- ✅ Backend responds: `http://localhost:3000/api/hello` → `{"hello":"world"}`
+- ✅ Frontend accessible: `http://localhost:5173`
+- ✅ Proxy working: `http://localhost:5173/api/hello` → `{"hello":"world"}`
+- ✅ Both services can run simultaneously in separate terminals
+
+---
+
+### Decisions Made
+
+1. **Button-triggered API call**: User clicks button to call API (instead of automatic on page load) - provides better control and clear user action
+2. **Vite proxy over CORS**: Used Vite's built-in proxy feature instead of manual CORS configuration - simpler and more robust for local development
+3. **Formatted JSON response**: Displayed JSON with pretty-printing (`JSON.stringify(data, null, 2)`) for better readability
+4. **Loading and error states**: Added visual feedback for async operations - better UX with disabled button and clear error messages
+5. **Clean CSS design**: Replaced default Vite styles with custom GitHub-inspired design - more professional appearance
+6. **Documentation-first approach**: Added comprehensive README updates before integration testing - ensures accurate setup instructions
+
+---
+
+### Next Steps
+
+Story A3 is complete. The following story is pending:
+- **A4**: Documentation, verification steps, and Jira ticket
+
+---
+
+### Notes
+
+- Frontend-backend communication requires both services running simultaneously
+- Vite proxy configuration works only in development mode (npm run dev)
+- Production deployment would require CORS configuration or proper reverse proxy setup
+- Frontend currently only implements /api/hello - /api/messages could be added in future enhancement

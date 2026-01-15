@@ -25,8 +25,8 @@ Acceptance Criteria (Epic-level)
 
 User Stories
   - A1: Create project scaffold and directory layout. ✅ COMPLETE
-  - A2: Implement Express API endpoint and MongoDB schema.
-  - A3: Implement frontend UI and API integration.
+  - A2: Implement Express API endpoint and MongoDB schema. ✅ COMPLETE
+  - A3: Implement frontend UI and API integration. ✅ COMPLETE
   - A4: Documentation, verification steps, and Jira ticket.
 
 Dependencies
@@ -77,7 +77,7 @@ Completion Status: ✅ COMPLETE (2025-01-15)
 
 ---
 
-## Story A2 — Implement Express API endpoint and MongoDB schema
+## Story A2 — Implement Express API endpoint and MongoDB schema ✅ COMPLETE
 
 ##Summary
 Add a simple Express API with GET /api/hello and a basic MongoDB collection & query.
@@ -101,9 +101,21 @@ Critical Dependency
 
 Estimate: 2–4 hours
 
+Completion Status: ✅ COMPLETE (2026-01-15)
+- All acceptance criteria verified
+- 3 files created (server.js updated, db/connection.js, models/Message.js)
+- 4 test files created (jest.config.js, api.test.js, connection.test.js, messages.test.js)
+- Test suite: 9/9 tests passing
+- Docker Compose setup added for MongoDB
+- Documentation: DOCKER.md, updated README.md with Docker instructions
+- All endpoints functional and verified via health check:
+  - GET / → {"message": "ADWS Test App Backend - Server running"}
+  - GET /api/hello → {"hello": "world"}
+  - GET /api/messages → {"messages":[]}
+
 ---
 
-## Story A3 — Implement frontend UI and API integration
+## Story A3 — Implement frontend UI and API integration ✅ COMPLETE
 
 ##Summary
 Create a minimal React UI that calls GET /api/hello and displays the response.
@@ -126,6 +138,18 @@ Critical Dependency
   - Backend server running and reachable from frontend (CORS/proxy configured).
 
 Estimate: 2–4 hours
+
+Completion Status: ✅ COMPLETE (2026-01-15)
+- All acceptance criteria verified
+- 4 files modified (App.jsx, App.css, index.css, vite.config.js)
+- Documentation: README.md updated with integration instructions, verification checklists, API docs
+- Dev Agent Record updated with Story A3 implementation details
+- Frontend-backend integration tested and verified:
+  - Frontend runs on http://localhost:5173
+  - Backend runs on http://localhost:3000
+  - Vite proxy forwards /api requests to backend
+  - Button triggers API call and displays JSON response
+  - Loading and error states implemented
 
 ---
 

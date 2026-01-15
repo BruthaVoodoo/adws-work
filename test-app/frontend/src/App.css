@@ -1,42 +1,100 @@
-#root {
-  max-width: 1280px;
+.app {
+  max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
+}
+
+h1 {
+  color: #24292e;
   text-align: center;
+  margin-bottom: 2rem;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+h2 {
+  color: #24292e;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.api-section {
+  background: #f6f8fa;
+  border-radius: 8px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border: 1px solid #d0d7de;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.api-button {
+  background: #2da44e;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  transition: background 0.2s;
 }
 
-.card {
-  padding: 2em;
+.api-button:hover:not(:disabled) {
+  background: #2c974b;
 }
 
-.read-the-docs {
-  color: #888;
+.api-button:disabled {
+  background: #8c959f;
+  cursor: not-allowed;
+}
+
+.success-message {
+  background: #dafbe1;
+  border: 1px solid #2da44e;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.error-message {
+  background: #fff8c5;
+  border: 1px solid #d4a72c;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-top: 1rem;
+  color: #9a6700;
+}
+
+.success-message pre,
+.error-message strong {
+  display: block;
+  margin-top: 0.5rem;
+}
+
+.success-message pre {
+  background: white;
+  padding: 1rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 0.9rem;
+  color: #24292e;
+}
+
+.info-section {
+  background: #f6f8fa;
+  border-radius: 8px;
+  padding: 2rem;
+  border: 1px solid #d0d7de;
+}
+
+.info-section ul {
+  text-align: left;
+  list-style-position: inside;
+}
+
+.info-section code {
+  background: #f0f6fc;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  color: #0969da;
 }
