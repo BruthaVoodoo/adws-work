@@ -35,7 +35,7 @@ def cli():
       build       Implement plan
       test        Run tests and auto-resolve failures
       review      Review implementation against criteria
-      healthcheck Run system health check (OpenCode, Jira, Git, env vars)
+      setup       Configure ADWS and validate environment (combined setup + healthcheck)
       init        Initialize ADWS folder in current project
 
     Examples:
@@ -45,7 +45,7 @@ def cli():
       adw build a1b2c3d4 PROJ-123
       adw test a1b2c3d4 PROJ-123
       adw review a1b2c3d4 PROJ-123
-      adw healthcheck
+      adw setup
     """
     pass
 
@@ -173,16 +173,38 @@ def review(adw_id: str, issue_key: str) -> None:
 
 
 @cli.command()
+def setup() -> None:
+    """
+    Configure ADWS and validate environment.
+
+    This command combines configuration and validation:
+    1. Verifies ADWS folder and config.yaml exist
+    2. Checks all required environment variables
+    3. Validates OpenCode HTTP server is running
+    4. Tests Jira API connectivity
+    5. Tests Bitbucket API connectivity (if configured)
+    6. Verifies GitHub CLI is installed and authenticated
+    7. Writes setup log to ADWS/logs/
+
+    Returns:
+        Exit code 0 on success, 1 on failure with actionable messages
+    """
+    from scripts.adw_setup import main as setup_main
+
+    try:
+        setup_main()
+    except SystemExit as e:
+        if e.code != 0:
+            raise
+
+
+@cli.command()
 def healthcheck() -> None:
     """
-    Run comprehensive system health check.
+    Run comprehensive system health check (deprecated: use 'adw setup').
 
-    This command verifies:
-    1. All required environment variables are set
-    2. OpenCode HTTP server is running and accessible
-    3. Jira API connectivity is working
-    4. Bitbucket API connectivity is working (if configured)
-    5. GitHub CLI is installed and authenticated
+    This command is maintained for backward compatibility.
+    New users should use 'adw setup' which combines configuration and validation.
 
     Returns:
         Exit code 0 if all checks pass, 1 otherwise
@@ -221,7 +243,7 @@ def init(force: bool) -> None:
 
     Next steps after init:
     1. Review ADWS/config.yaml for your project settings
-    2. Run 'adw healthcheck' to verify environment
+    2. Run 'adw setup' to verify your environment
     3. Run 'adw plan <issue-key>' to start working
     """
     from scripts.adw_init import main as init_main

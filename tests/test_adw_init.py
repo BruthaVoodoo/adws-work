@@ -247,7 +247,7 @@ class TestAdwInit:
             assert "Location:" in captured.out
             assert "Config:" in captured.out
             assert "Next steps:" in captured.out
-            assert "adw healthcheck" in captured.out
+            assert "adw setup" in captured.out
             assert "adw plan" in captured.out
 
         finally:

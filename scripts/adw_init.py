@@ -76,7 +76,7 @@ def copy_template_with_safety(
         print()
         print("Next steps:")
         print("  1. Review ADWS/config.yaml for your project")
-        print("  2. Run 'adw healthcheck' to verify setup")
+        print("  2. Run 'adw setup' to verify your environment")
         print("  3. Run 'adw plan <issue-key>' to start working")
 
     except Exception as e:

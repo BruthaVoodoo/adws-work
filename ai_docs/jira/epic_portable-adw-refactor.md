@@ -126,6 +126,8 @@ Estimate: 4–8 hours
 
 ## Story B3 — Combine `adw setup` + healthcheck into single flow
 
+**Status: ✅ Complete**
+
 ##Summary
 Merge setup and healthcheck commands into a single setup flow that configures required dependencies and validates environment with clear error messages.
 
@@ -133,14 +135,34 @@ Merge setup and healthcheck commands into a single setup flow that configures re
 As a user, I want a single command that both configures ADWS and verifies dependencies so that setup is straightforward and failure cases are obvious.
 
 Acceptance Criteria
-  - `adw setup` runs configuration steps and then executes validations; returns non-zero exit code on failure with actionable messages.
-  - Command prints a single success message on completion and writes a setup log to ADWS/logs/.
-  - Integration tests verify behavior in success and failure modes.
+  - [x] `adw setup` runs configuration steps and then executes validations; returns non-zero exit code on failure with actionable messages.
+  - [x] Command prints a single success message on completion and writes a setup log to ADWS/logs/.
+  - [x] Integration tests verify behavior in success and failure modes.
 
 Traceability To Epic
   - Epic: Portable ADWS Refactor — Folder-based Zero-Pollution Deployment
 
 Estimate: 4–8 hours
+
+**Completed:** January 15, 2026
+
+**Implementation Details:**
+- Created `scripts/adw_setup.py` with:
+  - Configuration validation (ADWS folder and config.yaml existence)
+  - Comprehensive health checks (environment, Jira, Bitbucket, GitHub CLI, OpenCode)
+  - Setup log writing to ADWS/logs/ with timestamped files
+  - Clear success/failure messages with actionable suggestions
+- Added `setup` command to `scripts/adw_cli.py` CLI
+- Kept `healthcheck` command for backward compatibility (deprecated)
+- Updated `scripts/adw_init.py` to reference `adw setup` instead of `adw healthcheck`
+- Created comprehensive integration test suite with 9 tests
+
+**Files Changed:**
+- `scripts/adw_setup.py` (new)
+- `scripts/adw_cli.py` (updated - added setup command, deprecated healthcheck)
+- `scripts/adw_init.py` (updated - changed healthcheck references to setup)
+- `tests/test_adw_init.py` (updated - test expectations)
+- `tests/test_adw_setup.py` (new)
 
 ---
 

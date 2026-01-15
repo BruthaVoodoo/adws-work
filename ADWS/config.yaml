@@ -1,0 +1,44 @@
+# ADWS Configuration
+#
+# This file contains project-specific configuration for ADWS (AI Developer Workflow System).
+# Place this file in the ADWS/ directory at your project root.
+#
+# Documentation: https://github.com/your-org/adws/docs/configuration
+
+# Project Structure
+source_dir: src          # Directory containing application source code
+test_dir: tests          # Directory containing test files
+docs_dir: docs          # Directory for generated documentation
+
+# Language and Build
+language: python           # Programming language (python, javascript, go, etc.)
+test_command: uv run pytest  # Command to run tests
+
+# OpenCode HTTP API Configuration
+# OpenCode provides LLM access via GitHub Copilot models
+opencode:
+  # HTTP server endpoint (default: localhost:4096)
+  server_url: "http://localhost:4096"
+
+  # Model selection per task type
+  models:
+    # Heavy lifting: code implementation, test fixing, reviews
+    heavy_lifting: "github-copilot/claude-sonnet-4"
+
+    # Lightweight: planning, classification, document generation
+    lightweight: "github-copilot/claude-haiku-4.5"
+
+  # Timeouts (seconds)
+  timeout: 600                # Timeout for heavy code operations (10 min)
+  lightweight_timeout: 60       # Timeout for planning/classification (1 min)
+
+  # Retry configuration
+  max_retries: 3              # Number of retries on transient failures
+  retry_backoff: 1.5          # Exponential backoff multiplier
+
+  # Session management
+  reuse_sessions: false         # Reuse sessions across operations (experimental)
+
+  # Connection settings
+  connection_timeout: 30        # Seconds to wait for initial connection
+  read_timeout: 600            # Seconds to wait for response completion
