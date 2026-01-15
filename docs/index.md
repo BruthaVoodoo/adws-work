@@ -8,6 +8,7 @@ Welcome to the comprehensive documentation for ADWS (AI Developer Workflow Syste
 - **[README](../README.md)** - Project overview and basic usage
 - **[AGENTS.md](../AGENTS.md)** - Development guidelines for agent coding
 - **[Technology Stack](technology-stack.md)** - Technologies, libraries, and integration points
+- **[Portable ADWS Migration Guide](PORTABLE_ADWS_MIGRATION.md)** - Migrating from legacy `.adw.yaml` to portable architecture
 
 ### Understanding the System
 
@@ -123,14 +124,28 @@ All LLM prompts are saved to `ai_docs/logs/{adw_id}/{agent_name}/prompts/` for d
 
 ## Configuration Files
 
-### .adw.yaml (Project Configuration)
+### ADWS/config.yaml (Project Configuration)
 ```yaml
-project_root: "."           # Project root directory
 source_dir: "src"           # Source code directory
 test_dir: "tests"           # Test directory
 test_command: "uv run pytest"  # Command to run tests
 docs_dir: "ai_docs"         # Logs and documentation directory
 language: "python"          # Project language
+opencode:                   # OpenCode HTTP server configuration
+  server_url: "http://localhost:4096"
+  models:
+    heavy_lifting: "github-copilot/claude-sonnet-4"
+    lightweight: "github-copilot/claude-haiku-4.5"
+```
+
+**Portable Architecture:** Configuration lives in `ADWS/config.yaml`, not in project root. The legacy `.adw.yaml` in project root is still supported but deprecated. See [Portable ADWS Migration Guide](PORTABLE_ADWS_MIGRATION.md) for migration details.
+
+### ADWS Folder Structure
+```
+ADWS/
+├── config.yaml    # Project configuration
+├── logs/          # Setup and execution logs
+└── README.md      # ADWS folder documentation
 ```
 
 ### .env (Environment Variables)
@@ -138,9 +153,21 @@ Required:
 - `JIRA_SERVER`, `JIRA_USERNAME`, `JIRA_API_TOKEN` (Jira)
 - `BITBUCKET_WORKSPACE`, `BITBUCKET_REPO_NAME`, `BITBUCKET_API_TOKEN` (optional)
 
-**Note:** OpenCode HTTP API is used for LLM operations. Configure via `.adw.yaml` (opencode section).
+**Note:** OpenCode HTTP API is used for LLM operations. Configure via `ADWS/config.yaml` (opencode section).
 
 ## Common Tasks
+
+### Initialize ADWS in a Project
+```bash
+# Navigate to your project directory
+cd /path/to/your/project
+
+# Initialize ADWS
+adw init
+
+# Configure and validate environment
+adw setup
+```
 
 ### Run Single Phase
 ```bash
@@ -195,10 +222,10 @@ git branch -a       # List all branches
 ### Test Execution Fails
 ```bash
 # Verify test command works
-eval $(grep test_command .adw.yaml | sed 's/test_command: //')
+eval $(grep test_command ADWS/config.yaml | sed 's/test_command: //')
 
 # Check test directory exists
-ls -la $(grep test_dir .adw.yaml | sed 's/test_dir: //')
+ls -la $(grep test_dir ADWS/config.yaml | sed 's/test_dir: //')
 ```
 
 ### Copilot CLI Not Found
@@ -272,8 +299,8 @@ For issues, questions, or contributions:
 ## Document Maintenance
 
 These documents are maintained alongside the codebase:
-- **Last Updated**: January 7, 2026
-- **Version**: 1.0 (Initial comprehensive documentation)
+- **Last Updated**: January 15, 2026
+- **Version**: 1.1 (Added portable architecture documentation)
 
 Updates should be made when:
 - New modules are added

@@ -71,14 +71,52 @@ adw --version
 adw --help
 ```
 
+### Initialize ADWS in Your Project
+
+ADWS uses a portable, folder-based architecture that doesn't pollute your project root.
+
+```bash
+# Initialize ADWS in your project directory
+adw init
+
+# This creates an ADWS/ folder with:
+# - ADWS/config.yaml  (configuration file)
+# - ADWS/logs/        (log files directory)
+# - ADWS/README.md    (ADWS folder documentation)
+```
+
+The `adw init` command:
+- Creates an `ADWS/` folder in your project root
+- Copies default configuration to `ADWS/config.yaml`
+- Sets up logging directory structure
+- **Does not** modify any existing project files
+- Can be run with `--force` to overwrite (with confirmation)
+
+### Configure and Validate Your Environment
+
+After initialization, run setup to configure external dependencies and validate your environment:
+
+```bash
+# Configure and validate everything in one command
+adw setup
+```
+
+The `adw setup` command:
+- Validates ADWS folder and configuration
+- Checks required environment variables
+- Tests Jira API connectivity
+- Tests OpenCode server availability
+- Tests optional integrations (Bitbucket, GitHub CLI)
+- Writes setup log to `ADWS/logs/setup_*.txt`
+- Returns clear, actionable error messages if anything fails
+
+**Note:** The legacy `adw healthcheck` command is still available but deprecated. Use `adw setup` instead.
+
 ## Configuration
 
-Create a `.adw.yaml` file in your project root (or it will use defaults):
+ADWS configuration lives in `ADWS/config.yaml` (created by `adw init`). You can customize it for your project:
 
 ```yaml
-# Project root directory (default: ".")
-project_root: "."
-
 # Source code directory (default: "src")
 source_dir: "src"
 
@@ -94,7 +132,7 @@ docs_dir: "ai_docs"
 # Project language (default: "python")
 language: "python"
 
-# OpenCode configuration (example)
+# OpenCode configuration
 opencode:
   server_url: "http://localhost:4096"
   models:
@@ -108,6 +146,8 @@ opencode:
   connection_timeout: 30
   read_timeout: 600
 ```
+
+**Portable Architecture Note:** ADWS configuration is now self-contained in the `ADWS/` folder. There's no need for `.adw.yaml` in your project root (though it's still supported with a deprecation warning for legacy users).
 
 ### Environment Variables
 
@@ -145,13 +185,38 @@ opencode auth login
 
 ## Quick Start
 
+### Complete Setup Flow
+
+```bash
+# 1. Install ADWS (if not already installed)
+pip install -e /path/to/ADWS
+
+# 2. Navigate to your project directory
+cd /path/to/your/project
+
+# 3. Initialize ADWS in your project
+adw init
+
+# 4. Configure and validate your environment
+adw setup
+
+# 5. Start OpenCode server (in a separate terminal)
+opencode serve --port 4096
+
+# 6. Authenticate OpenCode (if not already done)
+opencode auth login
+
+# 7. Run your first workflow
+adw plan PROJ-123
+```
+
 ### Prerequisites Check
 
 Before starting a workflow, verify your system is configured correctly:
 
 ```bash
-# Run comprehensive health check
-adw healthcheck
+# Run comprehensive setup and validation
+adw setup
 ```
 
 This will verify OpenCode server, environment variables, Jira, Bitbucket, and GitHub CLI are properly configured.
@@ -238,6 +303,25 @@ adw review a1b2c3d4 PROJ-123
 
 ## Commands Reference
 
+### Init
+```bash
+adw init [--force]
+
+Arguments:
+  --force            Force overwrite existing ADWS folder (with confirmation)
+```
+
+Initialize ADWS in your current project directory. Creates an `ADWS/` folder with default configuration.
+
+### Setup
+```bash
+adw setup
+
+Arguments: (none)
+```
+
+Configure and validate your ADWS environment. Checks configuration, environment variables, OpenCode server, Jira, and optional integrations.
+
 ### Plan
 ```bash
 adw plan <ISSUE_KEY> [--adw-id ID]
@@ -274,9 +358,27 @@ Arguments:
   ISSUE_KEY          Jira issue key (e.g., PROJ-123)
 ```
 
-### Healthcheck
+### Analyze
+```bash
+adw analyze
+
+Arguments: (none)
+```
+
+Analyze your project structure to identify directories, package managers, frameworks, and key files. Helps ADWS understand your project for better planning and implementation.
+
+**Output:**
+- Project name and root directory
+- Detected directories (frontend, backend, src, tests, etc.)
+- Package managers (npm, pip, cargo, etc.)
+- Frameworks (React, Express, Django, etc.)
+- Key files (Docker, README, Git, etc.)
+
+### Healthcheck (Deprecated)
 ```bash
 adw healthcheck
+
+⚠️ **Deprecated:** Use `adw setup` instead. This command is maintained for backward compatibility only.
 
 This command performs comprehensive system health checks:
 - Validates all required environment variables
@@ -293,11 +395,13 @@ Returns:
 ```bash
 adw --help              # Show general help
 adw --version           # Show version
+adw init --help         # Show init-specific help
+adw setup --help        # Show setup-specific help
+adw analyze --help      # Show analyze-specific help
 adw plan --help         # Show plan-specific help
 adw build --help        # Show build-specific help
 adw test --help         # Show test-specific help
 adw review --help       # Show review-specific help
-adw healthcheck --help  # Show healthcheck-specific help
 ```
 
 ## State Management
@@ -346,8 +450,8 @@ echo $JIRA_SERVER $JIRA_USERNAME $JIRA_API_TOKEN
 If ADWS fails to contact the local OpenCode HTTP server or model calls fail:
 
 ```bash
-# Run comprehensive health check (recommended)
-adw healthcheck
+# Run comprehensive setup and validation (recommended)
+adw setup
 
 # Or verify OpenCode server directly
 curl http://localhost:4096/health
@@ -356,20 +460,20 @@ curl http://localhost:4096/health
 Common fixes:
 - Start the OpenCode server: `opencode serve --port 4096`
 - Authenticate OpenCode: `opencode auth login` (if you see authentication errors)
-- Update `.adw.yaml` or `OPENCODE_URL` environment variable if your server uses a custom URL/port
+- Update `ADWS/config.yaml` or `OPENCODE_URL` environment variable if your server uses a custom URL/port
 
 ### Tests fail to run
 Ensure test command is correctly configured:
 
 ```yaml
-# In .adw.yaml
+# In ADWS/config.yaml
 test_command: "pytest"      # or "uv run pytest" or "python -m pytest"
 ```
 
 Verify tests work manually:
 
 ```bash
-eval $(grep test_command .adw.yaml | sed 's/test_command: //')
+eval $(grep test_command ADWS/config.yaml | sed 's/test_command: //')
 ```
 
 ### Git operations fail
@@ -482,6 +586,7 @@ For issues or questions:
 1. Check this README
 2. Run `adw --help` for command help
 3. Review logs in `ai_docs/logs/{adw_id}/`
-4. Check `.adw.yaml` configuration
+4. Check `ADWS/config.yaml` configuration
+5. Review [Migration Guide](docs/PORTABLE_ADWS_MIGRATION.md) for upgrading from legacy `.adw.yaml`
 
-Last updated: January 14, 2026
+Last updated: January 15, 2026
