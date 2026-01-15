@@ -168,6 +168,8 @@ Estimate: 4–8 hours
 
 ## Story B4 — Update `adw analyze` to discover project structure
 
+**Status: ✅ Complete**
+
 ##Summary
 Enhance `adw analyze` so it can operate within a repository containing ADWS/ folder and accurately discover the target project's structure.
 
@@ -175,13 +177,30 @@ Enhance `adw analyze` so it can operate within a repository containing ADWS/ fol
 As an ADWS operator, I want analyze to discover project files and suggest actions based on the test app structure so that ADWS can operate without project-root config.
 
 Acceptance Criteria
-  - `adw analyze` inspects the parent repository and returns a structured report indicating frontend/backend directories, package managers, and key files.
-  - Tests confirm analyze works in test-app scaffold and in an example repo.
+  - [x] `adw analyze` inspects the parent repository and returns a structured report indicating frontend/backend directories, package managers, and key files.
+  - [x] Tests confirm analyze works in test-app scaffold and in an example repo.
 
 Traceability To Epic
   - Epic: Portable ADWS Refactor — Folder-based Zero-Pollution Deployment
 
 Estimate: 4–8 hours
+
+**Completed:** January 15, 2026
+
+**Implementation Details:**
+- Created `scripts/adw_analyze.py` with:
+  - `detect_package_managers()` - Detects npm/yarn/pnpm, pip, cargo, go, maven, gradle
+  - `detect_frameworks()` - Detects React, Vue, Angular, Next.js, Express, NestJS, Fastify, Flask, Django, FastAPI
+  - `detect_key_files()` - Identifies Docker files, README, Git, CI/CD configs, environment files, database schemas
+  - `analyze_project()` - Generates comprehensive project structure report
+  - `generate_report()` - Prints formatted console output with emojis
+- Added `analyze` command to `scripts/adw_cli.py` CLI
+- Created comprehensive integration test suite with 16 tests
+
+**Files Changed:**
+- `scripts/adw_analyze.py` (new)
+- `scripts/adw_cli.py` (updated - added analyze command)
+- `tests/test_adw_analyze.py` (new)
 
 ---
 

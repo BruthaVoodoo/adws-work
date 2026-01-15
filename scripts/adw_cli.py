@@ -35,12 +35,14 @@ def cli():
       build       Implement plan
       test        Run tests and auto-resolve failures
       review      Review implementation against criteria
+      analyze     Analyze project structure and generate report
       setup       Configure ADWS and validate environment (combined setup + healthcheck)
       init        Initialize ADWS folder in current project
 
     Examples:
       adw init
       adw init --force
+      adw analyze
       adw plan PROJ-123
       adw build a1b2c3d4 PROJ-123
       adw test a1b2c3d4 PROJ-123
@@ -254,6 +256,45 @@ def init(force: bool) -> None:
 
     try:
         init_main()
+    except SystemExit as e:
+        if e.code != 0:
+            raise
+
+
+@cli.command()
+def analyze() -> None:
+    """
+    Analyze project structure and generate report.
+
+    Inspects the parent repository and returns a structured report
+    indicating frontend/backend directories, package managers,
+    frameworks, and key files.
+
+    This command:
+    1. Scans project directories for frontend/backend structure
+    2. Identifies package managers (npm, pip, cargo, etc.)
+    3. Detects frameworks (React, Express, Flask, etc.)
+    4. Identifies key files (docker-compose.yml, README.md, etc.)
+    5. Prints a formatted analysis report
+
+    Returns:
+        Exit code 0 on success, 1 on error
+
+    Example output:
+      📊 Project Analysis: test-project
+      📁 Directories:
+        [FRONTEND] frontend (React)
+        [BACKEND] backend (Express)
+      📦 Package Managers:
+        npm: Found in frontend, backend
+      ⚙️  Frameworks:
+        react (frontend)
+        express (backend)
+    """
+    from scripts.adw_analyze import main as analyze_main
+
+    try:
+        analyze_main()
     except SystemExit as e:
         if e.code != 0:
             raise
