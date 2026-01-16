@@ -4,7 +4,7 @@
 # ///
 
 """
-ADW Plan - AI Developer Workflow for agentic planning
+ADW Plan - AI Developer Workflow for autonomous planning
 
 Usage:
   uv run adw_plan.py <issue-number> [adw-id]
@@ -156,7 +156,7 @@ def main():
         rich_console.rule("Classifying Issue", style="cyan")
 
     if rich_console:
-        with rich_console.spinner("Analyzing issue type using AI agent..."):
+        with rich_console.spinner("Classifying issue type..."):
             issue_command, error = classify_issue(issue, adw_id, logger)
     else:
         issue_command, error = classify_issue(issue, adw_id, logger)
@@ -247,7 +247,7 @@ def main():
     )
 
     if rich_console:
-        with rich_console.spinner("Generating implementation plan using AI agent..."):
+        with rich_console.spinner("Generating implementation plan..."):
             plan_response = build_plan(issue, issue_command, adw_id, logger)
     else:
         plan_response = build_plan(issue, issue_command, adw_id, logger)

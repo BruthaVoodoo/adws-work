@@ -31,8 +31,8 @@ Your plan should follow this exact structure:
 ## Solution Overview
 [High-level description of the approach to fix the issue]
 
-## Relevance to Agent Framework
-[Explanation of how this patch maintains consistency with ADW patterns]
+## Relevance to Project Architecture
+[Explanation of how this patch maintains consistency with project patterns]
 
 ## Relevant Files
 [List of files that will be modified]
@@ -57,7 +57,8 @@ Execute every command to validate the patch is complete with zero regressions.
 
 - `command 1` - Description of what this validates
 - `command 2` - Description of what this validates
-- `pytest tests/ -v` - Run tests to ensure no regressions
+- `<test_command>` - Run tests to ensure no regressions
+  (Replace `<test_command>` with your project's configured test command from ADWS/config.yaml)
 
 ## Notes
 - [Important implementation notes]
@@ -71,11 +72,11 @@ Your patch plan must:
 1. **Be Specific**: Each step should be actionable and clear
 2. **Be Complete**: Cover all aspects needed to resolve the issue
 3. **Include Validation**: Provide commands to verify the fix works
-4. **Follow Patterns**: Use existing ADW architectural patterns
+4. **Follow Patterns**: Use existing project architectural patterns
 5. **Maintain Quality**: Ensure code quality and test coverage
 
 ## Output Requirements
 
-Generate a complete patch plan in markdown format that can be executed by the GitHub Copilot CLI to resolve the review issue.
+Generate a complete patch plan in markdown format that can be executed by GitHub Copilot CLI to resolve review issue.
 
 Begin creating your patch plan now.

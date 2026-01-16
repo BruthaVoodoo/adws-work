@@ -113,10 +113,10 @@ def format_issue_context(
     Returns:
         Dictionary with formatted issue context:
         {
-            "issue_key": "DAI-4",
-            "issue_title": "Update Dummy Agent to use Strands boilerplate...",
-            "issue_description": "Overview\nWe need to update the Dummy Agent...",
-            "issue_labels": "backend, strands-sdk",
+            "issue_key": "PROJ-123",
+            "issue_title": "Update user authentication module",
+            "issue_description": "Overview\nWe need to update the authentication...",
+            "issue_labels": "backend, authentication",
             "issue_state": "In Progress"
         }
 

@@ -243,50 +243,16 @@ def log_test_results(
 def parse_local_test_output(
     output: str, exit_code: int, test_command: str = ""
 ) -> Tuple[List[TestResult], int, int]:
-    """Parse stdout from local test runner to create TestResults."""
+    """Parse stdout from local test runner to create TestResults.
+
+    Simplified implementation: Uses exit code only (framework-agnostic).
+    Different test runners have different output formats, so we rely on
+    the universal exit code convention: 0 = success, non-zero = failure.
+    """
     results = []
 
-    # Regex for typical pytest output: tests/test_file.py::test_name PASSED/FAILED
-    # Matches: tests/foo.py::test_bar PASSED
-    pytest_pattern = r"^(.+?)::(\S+)\s+(PASSED|FAILED|ERROR|SKIPPED)"
-
-    # Split output into lines
-    lines = output.splitlines()
-
-    for line in lines:
-        match = re.search(pytest_pattern, line)
-        if match:
-            file_path = match.group(1)
-            test_name = match.group(2)
-            status = match.group(3)
-
-            passed = status in ["PASSED", "SKIPPED"]
-
-            # If failed, we might want to capture the error log, but it's hard to associate
-            # lines to tests without structured output. For now, we just mark it failed.
-            results.append(
-                TestResult(
-                    test_name=f"{file_path}::{test_name}",
-                    passed=passed,
-                    execution_command=test_command or "pytest",
-                    test_purpose="Unit/Integration test execution",
-                    error=None if passed else "Test failed (check logs for details)",
-                )
-            )
-
-    # If we couldn't parse any individual tests but exit code was failure,
-    # treat the whole run as a single failed test suite
-    if not results and exit_code != 0:
-        results.append(
-            TestResult(
-                test_name="Test Suite Execution",
-                passed=False,
-                execution_command=test_command or "test suite",
-                test_purpose="Full test suite execution",
-                error=f"Test command failed with exit code {exit_code}",
-            )
-        )
-    elif not results and exit_code == 0:
+    if exit_code == 0:
+        # Tests passed
         results.append(
             TestResult(
                 test_name="Test Suite Execution",
@@ -294,6 +260,17 @@ def parse_local_test_output(
                 execution_command=test_command or "test suite",
                 test_purpose="Full test suite execution",
                 error=None,
+            )
+        )
+    else:
+        # Tests failed
+        results.append(
+            TestResult(
+                test_name="Test Suite Execution",
+                passed=False,
+                execution_command=test_command or "test suite",
+                test_purpose="Full test suite execution",
+                error=f"Test command failed with exit code {exit_code}",
             )
         )
 

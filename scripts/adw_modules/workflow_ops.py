@@ -326,7 +326,7 @@ def build_plan(
         - Extract full issue context using format_issue_context()
         - Replace all placeholders: {issue_number}, {adw_id}, {issue_key},
           {issue_title}, {issue_description}, {issue_labels}, {issue_state}
-        - Pass complete context to LLM agent
+        - Pass complete context to LLM
         - Handle errors with appropriate logging
     """
     prompt_name = command.strip("/")  # /bug -> bug

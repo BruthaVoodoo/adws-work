@@ -1,11 +1,12 @@
 """
-Custom agent module for executing prompts via OpenCode HTTP API.
+OpenCode HTTP client module for LLM execution.
 
-Strategy:
-- OpenCode HTTP API with GitHub Copilot models (primary and only path)
-- GitHub Copilot subscription provides two models:
-  - github-copilot/claude-sonnet-4 (heavy lifting)
-  - github-copilot/claude-haiku-4.5 (lightweight tasks)
+This module provides access to OpenCode HTTP API for executing prompts
+with GitHub Copilot models (Claude Sonnet 4 for heavy lifting tasks,
+Claude Haiku 4.5 for lightweight tasks like planning and classification).
+
+Note: "agent" in variable names (e.g., AGENT_PLANNER, AGENT_IMPLEMENTOR)
+refers to ADWS workflow agents for tracking/logging purposes, not to building AI agents.
 """
 
 import sys

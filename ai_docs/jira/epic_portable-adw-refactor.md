@@ -264,4 +264,12 @@ Estimate: 4–6 hours
 - ✅ 9/9 `test_adw_setup.py` tests passed
 - ✅ 16/16 `test_adw_analyze.py` tests passed
 - ✅ 7/7 `test_config_discovery.py` tests passed
+- ✅ 1/1 `test_portable_architecture.py` tests passed
 - ✅ 499/527 total tests passed (pre-existing failures unrelated to Story B5)
+
+**Additional Validation:**
+- ✅ Verified `adw init` creates ADWS/ folder without ai_docs/
+- ✅ Verified `ai_docs/` is created ON-DEMAND by workflows (plan/build/test/review)
+- ✅ Verified ai_docs/ lives in project root, not in ADWS folder
+- ✅ Verified ADWS can be deleted without losing project artifacts
+- ✅ Tested portable architecture with actual test-app project
