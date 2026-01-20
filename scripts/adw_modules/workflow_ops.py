@@ -1154,3 +1154,136 @@ def find_spec_file(state: ADWState, logger: Optional[logging.Logger]) -> Optiona
     if logger:
         logger.error("No plan file found in state to use as spec")
     return None
+
+
+def generate_e2e_test_scenario(
+    plan_content: str,
+    feature_name: str,
+    adw_id: str,
+    logger: logging.Logger,
+    target_dir: str = ".",
+) -> Optional[str]:
+    """Generate an E2E test scenario file based on the implementation plan.
+
+    Args:
+        plan_content: Content of the implementation plan
+        feature_name: Name of the feature being tested
+        adw_id: ADW workflow ID for tracking
+        logger: Logger instance
+        target_dir: Target directory for the project
+
+    Returns:
+        Path to the generated E2E test file, or None if failed
+    """
+    from .config import config
+    import os
+
+    # Skip if E2E auto-generation is disabled
+    if not config.e2e_tests_auto_generate:
+        logger.debug("E2E test auto-generation disabled in configuration")
+        return None
+
+    # Create E2E tests directory if it doesn't exist
+    e2e_dir = config.project_root / config.e2e_tests_directory
+    os.makedirs(e2e_dir, exist_ok=True)
+
+    # Generate E2E test scenario using OpenCode HTTP API
+    from .agent import execute_opencode_prompt
+
+    prompt_template = """
+I need you to generate an End-to-End (E2E) test scenario file. You must write ONLY the test file content in Markdown format - no explanations or additional text.
+
+Here is the implementation plan:
+---
+{plan_content}
+---
+
+Extract the integration tests, edge cases, and validation commands from this plan. Write ONLY a Markdown test file using this EXACT structure:
+
+# E2E Test: {feature_name}
+
+## Test Objective
+Validate that the {feature_name} works correctly in end-to-end scenarios, including integration testing, edge case handling, and system behavior validation.
+
+## Prerequisites
+- Backend server is available and can be started
+- MongoDB service is available
+- Test environment is properly configured
+- No conflicting services on target ports
+
+## Test Steps
+
+### 1. Server Startup Verification
+- Start the backend server if not running
+- Verify server responds on expected port
+- **Expected Result**: Server starts successfully without errors
+
+### 2. Basic Endpoint Functionality
+- Make GET request to the target endpoint
+- Verify HTTP status code is 200
+- Verify response Content-Type is application/json
+- **Expected Result**: Endpoint responds with valid JSON structure
+
+### 3. Integration with Existing Endpoints
+- Test that existing endpoints still function correctly
+- Verify no regressions were introduced
+- **Expected Result**: All existing endpoints remain functional
+
+### 4. Edge Case Testing
+- Test system behavior under various edge conditions
+- Test error scenarios and boundary conditions
+- **Expected Result**: System handles edge cases gracefully
+
+### 5. Performance Validation
+- Verify response times meet acceptable thresholds
+- Test system behavior under load
+- **Expected Result**: System meets performance requirements
+
+## Acceptance Criteria
+- ✅ Endpoint is reachable and responds quickly (<100ms)
+- ✅ Response structure matches specification
+- ✅ Integration with other system components works correctly
+- ✅ Edge cases are handled properly
+- ✅ No regressions in existing functionality
+- ✅ Performance requirements are met
+
+## Notes
+This test validates end-to-end functionality and system integration. The AI executing this test can use available tools to make HTTP requests, run commands, and validate responses.
+"""
+
+    prompt = prompt_template.format(
+        plan_content=plan_content, feature_name=feature_name
+    )
+
+    logger.info(f"Generating E2E test scenario for feature: {feature_name}")
+
+    try:
+        # Generate the E2E test scenario
+        response = execute_opencode_prompt(
+            prompt=prompt,
+            task_type="plan",  # Use lightweight model for documentation generation
+            adw_id=adw_id,
+            agent_name="e2e_generator",
+        )
+
+        if not response.success or not response.output:
+            logger.error("Failed to generate E2E test scenario")
+            return None
+
+        # Create filename based on feature name and ADW ID
+        safe_feature_name = "".join(
+            c if c.isalnum() or c in "-_" else "-" for c in feature_name.lower()
+        )
+        e2e_filename = f"{safe_feature_name}-e2e-{adw_id}.md"
+        e2e_file_path = e2e_dir / e2e_filename
+
+        # Write the E2E test scenario to file
+        with open(e2e_file_path, "w") as f:
+            f.write(response.output)
+
+        logger.info(f"Generated E2E test scenario: {e2e_file_path}")
+        return str(e2e_file_path)
+
+    except Exception as e:
+        logger.error(f"Error generating E2E test scenario: {e}")
+        return None

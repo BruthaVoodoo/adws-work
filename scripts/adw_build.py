@@ -329,6 +329,37 @@ def main():
     if rich_console:
         rich_console.success("Solution implemented successfully")
 
+    # Generate E2E test scenario if auto-generation is enabled
+    try:
+        with open(plan_file, "r") as f:
+            plan_content = f.read()
+
+        from adw_modules.workflow_ops import generate_e2e_test_scenario
+
+        # Extract feature name from issue title or plan
+        feature_name = (
+            issue.title if hasattr(issue, "title") else f"feature-{issue_number}"
+        )
+
+        e2e_file = generate_e2e_test_scenario(
+            plan_content=plan_content,
+            feature_name=feature_name,
+            adw_id=adw_id,
+            logger=logger,
+            target_dir=target_dir,
+        )
+
+        if e2e_file:
+            logger.info(f"Generated E2E test scenario: {e2e_file}")
+            if rich_console:
+                rich_console.info(f"Generated E2E test scenario: {e2e_file}")
+        else:
+            logger.debug("E2E test scenario generation skipped or failed")
+
+    except Exception as e:
+        logger.warning(f"Failed to generate E2E test scenario: {e}")
+        # Don't fail the build for E2E generation issues
+
     jira_make_issue_comment(
         issue_number,
         format_issue_message(

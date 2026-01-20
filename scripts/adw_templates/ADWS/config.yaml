@@ -14,6 +14,13 @@ docs_dir: docs          # Directory for generated documentation
 language: python           # Programming language (python, javascript, go, etc.)
 test_command: uv run pytest  # Command to run tests
 
+# E2E Testing Configuration
+e2e_tests:
+  enabled: true             # Enable E2E test discovery and execution
+  directory: "tests/scenarios"  # Directory containing E2E test scenario files
+  pattern: "*.md"           # File pattern for E2E test files
+  auto_generate: true       # Auto-generate E2E scenarios during adw_build
+
 # OpenCode HTTP API Configuration
 # OpenCode provides LLM access via GitHub Copilot models
 opencode:

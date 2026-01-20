@@ -569,17 +569,22 @@ def run_e2e_tests(
     logger: logging.Logger,
     attempt: int = 1,
 ) -> List[E2ETestResult]:
-    """Run all E2E tests found in .claude/commands/e2e/*.md sequentially using Copilot."""
+    """Run all E2E tests found in configured directory using OpenCode HTTP API."""
 
-    # Find all E2E test files
-    # Note: Previous code looked in .claude/commands/e2e/*.md
-    # We make this relative to project root
-    e2e_pattern = str(config.project_root / ".claude" / "commands" / "e2e" / "*.md")
+    # Skip E2E tests if not enabled
+    if not config.e2e_tests_enabled:
+        logger.info("E2E tests disabled in configuration")
+        return []
+
+    # Find all E2E test files using configuration
+    e2e_dir = config.project_root / config.e2e_tests_directory
+    e2e_pattern = str(e2e_dir / config.e2e_tests_pattern)
     e2e_test_files = glob.glob(e2e_pattern)
-    logger.info(f"Found {len(e2e_test_files)} E2E test files")
+    logger.info(f"Found {len(e2e_test_files)} E2E test files in {e2e_dir}")
 
     if not e2e_test_files:
         logger.warning(f"No E2E test files found in {e2e_pattern}")
+        logger.info(f"To create E2E tests, add scenario files to: {e2e_dir}")
         return []
 
     results = []

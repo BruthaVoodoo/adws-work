@@ -169,6 +169,27 @@ class ADWConfig:
         """Get OpenCode read timeout (seconds)."""
         return self._data.get("opencode", {}).get("read_timeout", 600)
 
+    # E2E Test Configuration
+    @property
+    def e2e_tests_enabled(self) -> bool:
+        """Get E2E tests enabled setting."""
+        return self._data.get("e2e_tests", {}).get("enabled", False)
+
+    @property
+    def e2e_tests_directory(self) -> str:
+        """Get E2E tests directory."""
+        return self._data.get("e2e_tests", {}).get("directory", "tests/scenarios")
+
+    @property
+    def e2e_tests_pattern(self) -> str:
+        """Get E2E tests file pattern."""
+        return self._data.get("e2e_tests", {}).get("pattern", "*.md")
+
+    @property
+    def e2e_tests_auto_generate(self) -> bool:
+        """Get E2E tests auto-generation setting."""
+        return self._data.get("e2e_tests", {}).get("auto_generate", False)
+
 
 # Singleton instance
 config: ADWConfig = ADWConfig()
