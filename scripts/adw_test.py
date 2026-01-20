@@ -61,7 +61,8 @@ from scripts.adw_modules.workflow_ops import (
     ensure_adw_id,
     classify_issue,
 )
-from scripts.adw_modules.copilot_output_parser import parse_copilot_output
+
+# Removed deprecated copilot_output_parser import - using OpenCode HTTP client now
 from scripts.adw_modules.jira import (
     jira_fetch_issue,
     jira_make_issue_comment,
@@ -473,7 +474,7 @@ Your primary goal is to make the tests pass.
         logger.debug(f"Copilot output: {result.stdout}")
 
         # Parse output just to log what happened
-        parsed = parse_copilot_output(result.stdout)
+        # parsed = parse_copilot_output(result.stdout)  # DEPRECATED: OpenCode HTTP API used instead
 
         jira_make_issue_comment(
             issue_number,
@@ -783,7 +784,7 @@ Report whether the test passed or failed, and provide details.
 
         result = subprocess.run(command, capture_output=True, text=True)
 
-        parsed = parse_copilot_output(result.stdout)
+        # parsed = parse_copilot_output(result.stdout)  # DEPRECATED: OpenCode HTTP API used instead
 
         e2e_result = E2ETestResult(
             test_name=test_name,
