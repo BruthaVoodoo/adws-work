@@ -25,12 +25,12 @@ The description must include:
 
 ## Valid Output Example
 
-{"title": "DAI-4: Implement user authentication module", "description": "Implements user authentication with JWT tokens and secure password hashing.\\n\\nChanges:\\n- Added authentication endpoints to API\\n- Implemented login and registration functionality\\n- Added password hashing with bcrypt\\n- Added JWT token generation and validation\\n- Updated database schema with users table\\n\\nLinks:\\n- JIRA Issue: DAI-4\\n- Implementation Plan: ai_docs/logs/da1b2c3d4/phase_plan/DAI-4-plan.md"}
+{{"title": "DAI-4: Implement user authentication module", "description": "Implements user authentication with JWT tokens and secure password hashing.\\n\\nChanges:\\n- Added authentication endpoints to API\\n- Implemented login and registration functionality\\n- Added password hashing with bcrypt\\n- Added JWT token generation and validation\\n- Updated database schema with users table\\n\\nLinks:\\n- JIRA Issue: DAI-4\\n- Implementation Plan: ai_docs/logs/da1b2c3d4/phase_plan/DAI-4-plan.md"}}
 
 ## Absolute Rules
 
 1. Response MUST be a valid JSON object only - no markdown, no backticks, no explanation text
-2. Start with `{` and end with `}`
+2. Start with `{{` and end with `}}`
 3. Use proper JSON escaping for special characters
 4. Title must be under 80 characters
 5. Description should be useful for code reviewers
