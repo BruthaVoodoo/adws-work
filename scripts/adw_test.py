@@ -61,7 +61,6 @@ from scripts.adw_modules.workflow_ops import (
     ensure_adw_id,
     classify_issue,
 )
-from scripts.adw_modules.copilot_output_parser import parse_copilot_output
 from scripts.adw_modules.jira import (
     jira_fetch_issue,
     jira_make_issue_comment,
@@ -472,15 +471,15 @@ Your primary goal is to make the tests pass.
         logger.info("Copilot CLI finished execution.")
         logger.debug(f"Copilot output: {result.stdout}")
 
-        # Parse output just to log what happened
-        parsed = parse_copilot_output(result.stdout)
+        # Simple success check based on return code
+        success = result.returncode == 0
 
         jira_make_issue_comment(
             issue_number,
             format_issue_message(
                 adw_id,
                 "test_resolver",
-                f"✅ Copilot finished. Files changed: {parsed.files_changed}",
+                f"✅ Copilot finished. Success: {success}",
             ),
         )
 
@@ -783,17 +782,15 @@ Report whether the test passed or failed, and provide details.
 
         result = subprocess.run(command, capture_output=True, text=True)
 
-        parsed = parse_copilot_output(result.stdout)
+        # Simple success check based on return code
+        success = result.returncode == 0
+        error_msg = None if success else result.stderr or "Test failed (unknown reason)"
 
         e2e_result = E2ETestResult(
             test_name=test_name,
-            status="passed" if parsed.success else "failed",
+            status="passed" if success else "failed",
             test_path=test_file,
-            error=None
-            if parsed.success
-            else (
-                parsed.errors[0] if parsed.errors else "Test failed (unknown reason)"
-            ),
+            error=error_msg,
             screenshots=[],  # Screenshots support removed for now as we don't have direct access
         )
 
