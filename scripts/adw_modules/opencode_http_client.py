@@ -967,7 +967,7 @@ def extract_text_response(parts: List[Dict[str, Any]]) -> str:
     text_content = []
     for part in parts:
         if isinstance(part, dict) and part.get("type") == "text":
-            content = part.get("content", "")
+            content = part.get("text", "")
             if content and isinstance(content, str):
                 text_content.append(content.strip())
 
