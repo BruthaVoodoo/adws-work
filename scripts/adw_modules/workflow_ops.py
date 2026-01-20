@@ -29,7 +29,6 @@ from scripts.adw_modules.bitbucket_ops import (
 from scripts.adw_modules.state import ADWState
 from scripts.adw_modules.utils import parse_json, load_prompt
 from scripts.adw_modules.issue_formatter import format_issue_context
-from scripts.adw_modules.copilot_output_parser import parse_copilot_output
 from scripts.adw_modules.git_verification import verify_git_changes, get_file_changes
 from scripts.adw_modules.plan_validator import cross_reference_plan_output
 from scripts.adw_modules.config import config
