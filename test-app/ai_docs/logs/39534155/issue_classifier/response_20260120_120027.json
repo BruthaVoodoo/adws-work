@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-01-20T12:00:27.761488",
+  "adw_id": "39534155",
+  "agent_name": "issue_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "# Github Issue Command Selection\nBased on the `Jira Issue` below, follow the `Instructions` to select the appropriate command to execute based on the `Command Mapping`.\n\n## Instructions\n- Based on the",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_bdc59b72d001PjwbeGn16waaBg",
+      "sessionID": "ses_423a648eaffeiZC07IMb9I5zaV",
+      "role": "assistant",
+      "time": {
+        "created": 1768928425773,
+        "completed": 1768928427753
+      },
+      "parentID": "msg_bdc59b71d001uNwL9rH2Vu4MBC",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/ADWS/test-app",
+        "root": "/Users/t449579/Desktop/DEV/ADWS"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 926,
+        "output": 5,
+        "reasoning": 0,
+        "cache": {
+          "read": 15738,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_bdc59beac0013LJ5QZTL5AWw8W",
+        "sessionID": "ses_423a648eaffeiZC07IMb9I5zaV",
+        "messageID": "msg_bdc59b72d001PjwbeGn16waaBg",
+        "type": "step-start",
+        "snapshot": "04bde52a6a3290b1f31abc88251ef442e35bc3ef"
+      },
+      {
+        "id": "prt_bdc59bead001PvplVJHgE7ywsC",
+        "sessionID": "ses_423a648eaffeiZC07IMb9I5zaV",
+        "messageID": "msg_bdc59b72d001PjwbeGn16waaBg",
+        "type": "text",
+        "text": "/feature",
+        "time": {
+          "start": 1768928427699,
+          "end": 1768928427699
+        }
+      },
+      {
+        "id": "prt_bdc59beb9001wdXoQoHV86RzXS",
+        "sessionID": "ses_423a648eaffeiZC07IMb9I5zaV",
+        "messageID": "msg_bdc59b72d001PjwbeGn16waaBg",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "04bde52a6a3290b1f31abc88251ef442e35bc3ef",
+        "cost": 0,
+        "tokens": {
+          "input": 926,
+          "output": 5,
+          "reasoning": 0,
+          "cache": {
+            "read": 15738,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_423a648eaffeiZC07IMb9I5zaV",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/test-app/ai_docs/logs/39534155/issue_classifier/response_20260120_120027.json",
+    "created_at": "2026-01-20T12:00:27.761500",
+    "log_type": "response"
+  }
+}
