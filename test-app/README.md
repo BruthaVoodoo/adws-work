@@ -128,6 +128,7 @@ npm run dev
 |----------|--------|----------|
 | `/` | GET | `{"message": "ADWS Test App Backend - Server running"}` |
 | `/api/hello` | GET | `{"hello": "world"}` |
+| `/api/status` | GET | `{"status": "ok", "uptime": <seconds>, "mongodb": "connected|disconnected", "timestamp": <iso-string>}` |
 | `/api/messages` | GET | `{"messages": [...]}` |
 
 ### Frontend (http://localhost:5173)

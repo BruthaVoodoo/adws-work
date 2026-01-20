@@ -49,10 +49,19 @@ def parse_opencode_implementation_output(output: str):
     Story 3.1: OpenCode-specific parser for implementation output.
     Extracts metrics from tool execution results and text content.
     """
-    from scripts.adw_modules.copilot_output_parser import ParsedCopilotOutput
+    from dataclasses import dataclass
+
+    @dataclass
+    class ParsedOutput:
+        success: bool = False
+        files_changed: int = 0
+        lines_added: int = 0
+        lines_removed: int = 0
+        validation_status: str = "unknown"
+        raw_output: str = ""
 
     # Initialize with default values
-    result = ParsedCopilotOutput(
+    result = ParsedOutput(
         success=False,
         files_changed=0,
         lines_added=0,
