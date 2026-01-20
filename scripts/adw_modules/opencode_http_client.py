@@ -153,8 +153,8 @@ class OpenCodeHTTPClient:
             else self.DEFAULT_LIGHTWEIGHT_TIMEOUT
         )
 
-        # Create unique session ID
-        self.session_id: Optional[str] = str(uuid.uuid4())
+        # Create unique session ID (will be replaced when session is created)
+        self.session_id: Optional[str] = None
 
         # Store session-related attributes
         self._session: Optional[requests.Session] = None
@@ -224,8 +224,8 @@ class OpenCodeHTTPClient:
             if self.api_key:
                 headers["Authorization"] = f"Bearer {self.api_key}"
 
-            # Health check endpoint (common OpenCode pattern)
-            health_url = f"{self.server_url.rstrip('/')}/health"
+            # Health check endpoint (OpenCode v1.1+)
+            health_url = f"{self.server_url.rstrip('/')}/global/health"
 
             response = self._session.get(
                 health_url, headers=headers, timeout=self.timeout
@@ -499,24 +499,42 @@ class OpenCodeHTTPClient:
             if self.api_key:
                 headers["Authorization"] = f"Bearer {self.api_key}"
 
-            # Add session ID to headers if available
-            if self.session_id:
-                headers["X-Session-ID"] = self.session_id
+            # Create OpenCode session first (if not exists)
+            if not self.session_id:
+                session_response = self._session.post(
+                    f"{self.server_url.rstrip('/')}/session",
+                    headers=headers,
+                    json={},  # Empty body creates new session
+                    timeout=timeout,
+                )
+                if session_response.status_code in (200, 201):
+                    session_data = session_response.json()
+                    self.session_id = session_data.get("id")
+                else:
+                    raise OpenCodeHTTPClientError(
+                        f"Failed to create session: {session_response.status_code}"
+                    )
 
-            # Prepare request body
-            request_body = {
-                "prompt": prompt,
-                "model_id": model_id,
-                "session_id": self.session_id,
+            # Prepare message body according to OpenCode API
+            message_body = {
+                "parts": [{"type": "text", "text": prompt}],
+                "model": {
+                    "providerID": model_id.split("/")[0]
+                    if "/" in model_id
+                    else "github-copilot",
+                    "modelID": model_id.split("/")[1] if "/" in model_id else model_id,
+                },
             }
 
-            # Construct endpoint
-            endpoint = f"{self.server_url.rstrip('/')}/api/v1/prompt"
+            # Send message to session
+            endpoint = (
+                f"{self.server_url.rstrip('/')}/session/{self.session_id}/message"
+            )
 
-            # Make request
+            # Make request using OpenCode session message API
             response = self._session.post(
                 endpoint,
-                json=request_body,
+                json=message_body,
                 headers=headers,
                 timeout=timeout,
             )
@@ -682,6 +700,19 @@ class OpenCodeHTTPClient:
 
             # Success - parse response and optionally log successful response
             response_data = response.json()
+
+            # Transform OpenCode response to expected ADWS format
+            # OpenCode returns: {"info": {...}, "parts": [...]}
+            # ADWS expects: {"message": {...}, "parts": [...]}
+            if "info" in response_data:
+                # Map OpenCode structure to ADWS expected structure
+                transformed_response = {
+                    "message": response_data.get("info", {}),
+                    "parts": response_data.get("parts", []),
+                    "session_id": self.session_id,
+                    "success": True,
+                }
+                response_data = transformed_response
 
             # Log successful response if context provided
             if adw_id and agent_name:
@@ -1190,9 +1221,9 @@ def check_opencode_server_available(
     if not server_url:
         return False
 
-    # Clean URL and construct health check endpoint
+    # Clean URL and construct health check endpoint (OpenCode v1.1+)
     server_url = server_url.rstrip("/")
-    health_url = f"{server_url}/health"
+    health_url = f"{server_url}/global/health"
 
     try:
         # Make a quick GET request to health endpoint

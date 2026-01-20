@@ -45,10 +45,27 @@ from adw_modules.workflow_ops import (
 from adw_modules.utils import setup_logger, get_rich_console_instance
 from adw_modules.data_types import IssueClassSlashCommand, JiraIssue
 from adw_modules.config import config
+from adw_modules.opencode_http_client import check_opencode_server_available
 
 
 def check_env_vars(logger: Optional[logging.Logger] = None) -> None:
-    """Check that all required environment variables are set."""
+    """Check that all required environment variables are set and OpenCode server is available."""
+    # Check OpenCode server availability first
+    if not check_opencode_server_available():
+        error_msg = (
+            "❌ OpenCode server is not available or not responding.\n"
+            "Please ensure OpenCode is running:\n"
+            "  1. Start server: opencode serve --port 4096\n"
+            "  2. Authenticate: opencode auth login\n"
+            "  3. Verify: curl http://localhost:4096/health\n"
+            "  4. Run 'adw setup' to verify your full environment"
+        )
+        if logger:
+            logger.error(error_msg)
+        else:
+            print(error_msg, file=sys.stderr)
+        sys.exit(1)
+
     # TODO: Enable checks once user provides credentials for the new stack
     required_vars = [
         # "AWS_ACCESS_KEY_ID",

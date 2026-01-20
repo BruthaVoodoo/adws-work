@@ -221,6 +221,8 @@ adw setup
 
 This will verify OpenCode server, environment variables, Jira, Bitbucket, and GitHub CLI are properly configured.
 
+**Note:** Each workflow command (`plan`, `build`, `test`, `review`) also performs an upfront OpenCode server check before starting any work, providing immediate feedback if the server isn't available.
+
 ### Phase 1: Plan
 Generate an implementation plan from a Jira issue:
 

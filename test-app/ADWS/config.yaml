@@ -31,8 +31,8 @@ opencode:
     lightweight: "github-copilot/claude-haiku-4.5"
 
   # Timeouts (seconds)
-  timeout: 600                # Timeout for heavy code operations (10 min)
-  lightweight_timeout: 60       # Timeout for planning/classification (1 min)
+  timeout: 1800                # Timeout for heavy code operations (30 min)
+  lightweight_timeout: 600       # Timeout for planning/classification (1 min)
 
   # Retry configuration
   max_retries: 3              # Number of retries on transient failures
