@@ -14,22 +14,22 @@ function MessageList({ messages = [] }) {
   // Handle empty state
   if (messages.length === 0) {
     return (
-      <div className="message-list-empty">
+      <div className="message-list-empty" role="status" aria-label="No messages available">
         <p>No messages found</p>
       </div>
     )
   }
 
   return (
-    <div className="message-list">
+    <div className="message-list" role="region" aria-label="Messages from database">
       <h3>Messages ({messages.length})</h3>
-      <div className="message-list-container">
+      <div className="message-list-container" role="list">
         {messages.map((message, index) => (
-          <div key={index} className="message-item">
+          <div key={index} className="message-item" role="listitem">
             <div className="message-text">
               {message.text}
             </div>
-            <div className="message-timestamp">
+            <div className="message-timestamp" aria-label={`Created at ${formatTimestamp(message.createdAt)}`}>
               {formatTimestamp(message.createdAt)}
             </div>
           </div>
