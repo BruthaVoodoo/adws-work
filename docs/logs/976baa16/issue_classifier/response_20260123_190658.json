@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-01-23T19:06:58.418446",
+  "adw_id": "976baa16",
+  "agent_name": "issue_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "# Github Issue Command Selection\nBased on the `Jira Issue` below, follow the `Instructions` to select the appropriate command to execute based on the `Command Mapping`.\n\n## Instructions\n- Based on the",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_bed5347bb0016at2qKHS6RJFtK",
+      "sessionID": "ses_412acb873ffetXDJaFtBlqJoTv",
+      "role": "assistant",
+      "time": {
+        "created": 1769213216699,
+        "completed": 1769213218411
+      },
+      "parentID": "msg_bed5347a1001wSQ9BghEJpfs8W",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/ADWS",
+        "root": "/Users/t449579/Desktop/DEV/ADWS"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16635,
+        "output": 5,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_bed534e2d001XuXruWOve3A3Mm",
+        "sessionID": "ses_412acb873ffetXDJaFtBlqJoTv",
+        "messageID": "msg_bed5347bb0016at2qKHS6RJFtK",
+        "type": "step-start",
+        "snapshot": "c7e657f267b74166a88bba1475bf53fd6d756c47"
+      },
+      {
+        "id": "prt_bed534e2e001e75cw3KpLRql6q",
+        "sessionID": "ses_412acb873ffetXDJaFtBlqJoTv",
+        "messageID": "msg_bed5347bb0016at2qKHS6RJFtK",
+        "type": "text",
+        "text": "/feature",
+        "time": {
+          "start": 1769213218352,
+          "end": 1769213218352
+        }
+      },
+      {
+        "id": "prt_bed534e31001uoK1qa3ey1sPqN",
+        "sessionID": "ses_412acb873ffetXDJaFtBlqJoTv",
+        "messageID": "msg_bed5347bb0016at2qKHS6RJFtK",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "c7e657f267b74166a88bba1475bf53fd6d756c47",
+        "cost": 0,
+        "tokens": {
+          "input": 16635,
+          "output": 5,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_412acb873ffetXDJaFtBlqJoTv",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/976baa16/issue_classifier/response_20260123_190658.json",
+    "created_at": "2026-01-23T19:06:58.418467",
+    "log_type": "response"
+  }
+}
