@@ -1,1 +1,0 @@
-'ParsedOutput' object has no attribute 'test_results'
