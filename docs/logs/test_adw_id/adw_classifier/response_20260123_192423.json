@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-01-23T19:24:23.458419",
+  "adw_id": "test_adw_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_bed6335b0001pTyRAjaKOQBsBL",
+      "sessionID": "ses_4129cca59ffeO8P02caJO2kyO5",
+      "role": "assistant",
+      "time": {
+        "created": 1769214260656,
+        "completed": 1769214263454
+      },
+      "parentID": "msg_bed6335ad001Gg1CDB3DDMjKr5",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/ADWS",
+        "root": "/Users/t449579/Desktop/DEV/ADWS"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16067,
+        "output": 118,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_bed633cc9001rI0CDtAthu0mwd",
+        "sessionID": "ses_4129cca59ffeO8P02caJO2kyO5",
+        "messageID": "msg_bed6335b0001pTyRAjaKOQBsBL",
+        "type": "step-start",
+        "snapshot": "f0fda7c3bc46cfb03c354988bd4a21abf9339019"
+      },
+      {
+        "id": "prt_bed633cca001A6v15zalBRSukI",
+        "sessionID": "ses_4129cca59ffeO8P02caJO2kyO5",
+        "messageID": "msg_bed6335b0001pTyRAjaKOQBsBL",
+        "type": "text",
+        "text": "I see you've sent a test prompt. How can I help you with your ADWS project? Here are some things I can assist with:\n\n- **Code development**: Writing, refactoring, or debugging code\n- **Testing**: Running tests, fixing failures, and improving test coverage\n- **Git operations**: Managing branches, commits, and pull requests\n- **Jira integration**: Creating issues, updating stories, managing workflows\n- **Project navigation**: Understanding the codebase structure and finding specific files\n\nWhat would you like to work on?",
+        "time": {
+          "start": 1769214263380,
+          "end": 1769214263380
+        }
+      },
+      {
+        "id": "prt_bed634055001NDDwxH8drg2WOO",
+        "sessionID": "ses_4129cca59ffeO8P02caJO2kyO5",
+        "messageID": "msg_bed6335b0001pTyRAjaKOQBsBL",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "f0fda7c3bc46cfb03c354988bd4a21abf9339019",
+        "cost": 0,
+        "tokens": {
+          "input": 16067,
+          "output": 118,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_4129cca59ffeO8P02caJO2kyO5",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_adw_id/adw_classifier/response_20260123_192423.json",
+    "created_at": "2026-01-23T19:24:23.458432",
+    "log_type": "response"
+  }
+}

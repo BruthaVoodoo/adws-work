@@ -1,10 +1,16 @@
 import { useState } from 'react'
 import './App.css'
+import MessageList from './MessageList'
 
 function App() {
   const [helloResponse, setHelloResponse] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  
+  // Message-related state
+  const [messages, setMessages] = useState(null)
+  const [messagesLoading, setMessagesLoading] = useState(false)
+  const [messagesError, setMessagesError] = useState(null)
 
   const callHelloApi = async () => {
     setLoading(true)
@@ -22,6 +28,31 @@ function App() {
       setError(err.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const callMessagesApi = async () => {
+    setMessagesLoading(true)
+    setMessagesError(null)
+    setMessages(null)
+
+    try {
+      const response = await fetch('/api/messages')
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+      
+      // Validate response structure
+      if (!data || !Array.isArray(data.messages)) {
+        throw new Error('Invalid response format: expected messages array')
+      }
+      
+      setMessages(data.messages)
+    } catch (err) {
+      setMessagesError(err.message)
+    } finally {
+      setMessagesLoading(false)
     }
   }
 
@@ -51,6 +82,25 @@ function App() {
             <pre>{JSON.stringify(helloResponse, null, 2)}</pre>
           </div>
         )}
+      </div>
+
+      <div className="api-section">
+        <h2>Messages from MongoDB</h2>
+        <button 
+          onClick={callMessagesApi} 
+          disabled={messagesLoading}
+          className="api-button"
+        >
+          {messagesLoading ? 'Loading...' : 'Load Messages'}
+        </button>
+
+        {messagesError && (
+          <div className="error-message">
+            <strong>Error:</strong> {messagesError}
+          </div>
+        )}
+
+        {messages && <MessageList messages={messages} />}
       </div>
 
       <div className="info-section">

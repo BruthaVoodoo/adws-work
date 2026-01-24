@@ -81,14 +81,12 @@ ADWS/
 │       ├── bitbucket_ops.py       # Bitbucket operations
 │       ├── issue_formatter.py     # Issue formatting utilities
 │       ├── plan_validator.py      # Plan validation
-│       ├── copilot_output_parser.py # AI output parsing
 │       ├── state.py               # State management
 │       ├── utils.py               # Utility functions
 │       ├── rich_console.py        # Console output styling
 │       └── workflow_ops.py        # Core workflow operations
 ├── tests/                         # Test suite
-│   ├── test_console_consistency.py
-│   └── test_parsing_functions.py
+│   └── test_console_consistency.py
 ├── scripts/adw_tests/             # Additional integration tests
 │   ├── fixtures.py
 │   ├── health_check.py

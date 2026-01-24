@@ -122,16 +122,16 @@ uv run scripts/adw_test.py PROJ-123 a1b2c3d4
 ```
 
 **Prerequisites**:
-- Copilot CLI must be installed and available in PATH
+- OpenCode HTTP server must be running
 - Test command configured in .adw.yaml (default: `uv run pytest`)
 
 **What It Does**:
 - Runs test suite using configured test command
 - Parses test results and failures
 - For each failed test:
-  - Uses Copilot CLI to analyze failure
-  - Attempts auto-resolution
-  - Re-runs tests (up to 4 times)
+   - Uses OpenCode HTTP API to analyze failure
+   - Attempts auto-resolution
+   - Re-runs tests (up to 4 times)
 - Commits test fixes
 - Posts test summary to Jira
 
@@ -154,7 +154,7 @@ uv run scripts/adw_review.py PROJ-123 a1b2c3d4
 ```
 
 **Prerequisites**:
-- Copilot CLI must be installed and available in PATH
+- OpenCode HTTP server must be running
 - Spec file must be on feature branch
 
 **What It Does**:
@@ -295,15 +295,12 @@ uv run pytest --cov=scripts/adw_modules tests/
 ```
 tests/
 ├── test_console_consistency.py       # Console output format tests
-└── test_parsing_functions.py         # Data parsing tests
 
 scripts/adw_tests/
 ├── fixtures.py                       # Test fixtures and data
 ├── health_check.py                   # System health checks
-├── test_copilot_output_parser.py    # Parser tests
 ├── test_datatypes.py                # Model validation tests
 ├── test_git_verification.py         # Git operation tests
-├── test_integration_workflow.py      # End-to-end workflow tests
 ├── test_plan_validator.py           # Plan validation tests
 ├── test_review_workflow.py          # Review workflow tests
 ├── test_rich_console.py             # Console output tests
