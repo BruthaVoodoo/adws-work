@@ -12,10 +12,8 @@ tests/                              # Main test suite
 scripts/adw_tests/                  # Integration and unit tests
 ├── fixtures.py                      # Test data and fixtures
 ├── health_check.py                  # System health verification
-├── test_copilot_output_parser.py   # Copilot output parser tests
 ├── test_datatypes.py               # Pydantic model tests
 ├── test_git_verification.py        # Git operation tests
-├── test_integration_workflow.py     # End-to-end workflow tests
 ├── test_plan_validator.py          # Plan validation tests
 ├── test_review_workflow.py         # Review workflow tests
 ├── test_rich_console.py            # Console output tests
@@ -202,25 +200,7 @@ def test_rich_console_info_message(capsys):
     assert "Test message" in captured.out
 ```
 
-### 4. Parser Tests
-
-#### test_copilot_output_parser.py
-Tests parsing of Copilot CLI output:
-- Test result parsing
-- Error message extraction
-- Resolution suggestion parsing
-- JSON output handling
-
-**Example**:
-```python
-def test_parse_test_output():
-    output = "test_feature: PASSED\ntest_bug: FAILED - assertion error"
-    results = parse_copilot_output(output)
-    
-    assert len(results) == 2
-    assert results[0].test_name == "test_feature"
-    assert results[0].passed is True
-```
+### 4. Validation Tests
 
 #### test_plan_validator.py
 Tests plan validation:

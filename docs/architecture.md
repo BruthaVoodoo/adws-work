@@ -91,7 +91,7 @@ ADWS (AI Developer Workflow System) implements a 4-phase autonomous workflow for
 2. Run application test suite
 3. Report test results to Jira
 4. If failed tests exist:
-   - Parse failures using Copilot CLI
+   - Use OpenCode HTTP API to analyze failures
    - Attempt auto-resolution up to MAX_TEST_RETRY_ATTEMPTS
    - Re-run tests
 5. Commit test results
@@ -109,12 +109,12 @@ ADWS (AI Developer Workflow System) implements a 4-phase autonomous workflow for
 - Fixed code if auto-resolution successful
 
 **Special Requirements**:
-- Copilot CLI must be installed and available in PATH
+- OpenCode HTTP server running
 - Test command configured in .adw.yaml
 
 **Key Modules Used**:
 - `state.ADWState.load()`
-- `copilot_output_parser.parse_copilot_output()`
+- `workflow_ops.resolve_failed_tests()`
 - `git_ops.commit_changes()`
 - `git_ops.finalize_git_operations()`
 
@@ -144,7 +144,7 @@ ADWS (AI Developer Workflow System) implements a 4-phase autonomous workflow for
 - Patch implementations if needed
 
 **Special Requirements**:
-- Copilot CLI must be installed
+- OpenCode HTTP server running
 
 **Key Modules Used**:
 - `workflow_ops.find_spec_file()`

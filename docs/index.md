@@ -228,12 +228,6 @@ eval $(grep test_command ADWS/config.yaml | sed 's/test_command: //')
 ls -la $(grep test_dir ADWS/config.yaml | sed 's/test_dir: //')
 ```
 
-### Copilot CLI Not Found
-```bash
-which copilot        # Verify installation
-copilot --version    # Check version
-```
-
 ## File Locations
 
 ### Source Code

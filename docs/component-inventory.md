@@ -358,17 +358,6 @@ All modules are located in `scripts/adw_modules/` unless otherwise noted.
 
 ---
 
-### copilot_output_parser.py
-**Purpose**: Parse Copilot CLI output
-
-**Key Functions**:
-- `parse_copilot_output()`: Parse structured output from Copilot
-- Extract test results, fixes, and metadata from Copilot responses
-
-**Used By**: adw_test.py, adw_review.py for result parsing
-
----
-
 ### issue_formatter.py
 **Purpose**: Format issues for agent consumption
 
@@ -426,7 +415,7 @@ Located in `scripts/`:
 6. Push and update PR
 7. Post Jira comment
 
-**Requires**: Copilot CLI, test command configured
+**Requires**: OpenCode HTTP server, test command configured
 
 ---
 
@@ -442,7 +431,7 @@ Located in `scripts/`:
 6. Push and update PR
 7. Post Jira comment
 
-**Requires**: Copilot CLI, spec file on branch
+**Requires**: OpenCode HTTP server, spec file on branch
 
 ---
 
@@ -452,11 +441,8 @@ Located in `tests/` and `scripts/adw_tests/`:
 
 ### Test Files
 - `test_console_consistency.py`: Console output format validation
-- `test_parsing_functions.py`: Data parsing tests
-- `test_copilot_output_parser.py`: Copilot output parsing tests
 - `test_datatypes.py`: Pydantic model validation tests
 - `test_git_verification.py`: Git operation tests
-- `test_integration_workflow.py`: End-to-end workflow tests
 - `test_plan_validator.py`: Plan validation tests
 - `test_review_workflow.py`: Review workflow tests
 - `test_rich_console.py`: Console output tests
@@ -492,15 +478,14 @@ Phase Scripts (adw_*.py)
     ↓
 workflow_ops.py (core business logic)
     ├─→ agent.py or bedrock_agent.py (LLM execution)
-    ├─→ git_ops.py (git operations)
-    ├─→ bitbucket_ops.py (PR management)
-    ├─→ jira.py (issue tracking)
-    ├─→ state.py (state management)
-    ├─→ utils.py (utilities)
-    ├─→ git_verification.py (git analysis)
-    ├─→ issue_formatter.py (issue formatting)
-    ├─→ plan_validator.py (plan validation)
-    └─→ copilot_output_parser.py (output parsing)
+     ├─→ git_ops.py (git operations)
+     ├─→ bitbucket_ops.py (PR management)
+     ├─→ jira.py (issue tracking)
+     ├─→ state.py (state management)
+     ├─→ utils.py (utilities)
+     ├─→ git_verification.py (git analysis)
+     ├─→ issue_formatter.py (issue formatting)
+     └─→ plan_validator.py (plan validation)
 
 config.py (singleton configuration)
     ↓
