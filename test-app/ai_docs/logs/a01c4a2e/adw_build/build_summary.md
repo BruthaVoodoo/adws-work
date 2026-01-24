@@ -1,0 +1,15 @@
+# Build Summary - a01c4a2e
+
+## Final State
+
+```json
+{
+  "adw_id": "a01c4a2e",
+  "issue_number": "DAI-152",
+  "branch_name": "feature-issue-152-adw-a01c4a2e-display-messages-list-ui",
+  "plan_file": "/Users/t449579/Desktop/DEV/ADWS/test-app/ai_docs/specs/feature/DAI-152-a01c4a2e-plan.md",
+  "issue_class": "/feature",
+  "domain": "ADW_Core",
+  "agent_name": null
+}
+```
