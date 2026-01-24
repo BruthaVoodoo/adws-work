@@ -190,6 +190,17 @@ class ADWConfig:
         """Get E2E tests auto-generation setting."""
         return self._data.get("e2e_tests", {}).get("auto_generate", False)
 
+    @property
+    def e2e_temp_scripts_dir(self) -> Path:
+        """Get the temporary directory for E2E test scripts.
+
+        This folder stores any generated/executed shell scripts during E2E testing
+        to avoid cluttering the project root.
+
+        Default: ai_docs/logs/{adw_id}/e2e_generator/scripts
+        """
+        return self.logs_dir / "e2e_temp_scripts"
+
 
 # Singleton instance
 config: ADWConfig = ADWConfig()

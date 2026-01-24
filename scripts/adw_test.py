@@ -28,6 +28,7 @@ import os
 import logging
 import re
 import glob
+from datetime import datetime
 from typing import Tuple, Optional, List
 from dotenv import load_dotenv
 from scripts.adw_modules.data_types import (
@@ -224,11 +225,36 @@ def log_test_results(
         log_dir = config.logs_dir / adw_id
         os.makedirs(log_dir, exist_ok=True)
 
+        # Save main test summary
         summary_file_path = log_dir / f"test_results_{adw_id}.md"
         with open(summary_file_path, "w") as f:
             f.write(summary)
 
         logger.info(f"Saved test summary to {summary_file_path}")
+
+        # If E2E tests were run, save detailed E2E results to e2e_generator folder
+        if e2e_results:
+            e2e_generator_dir = log_dir / "e2e_generator"
+            os.makedirs(e2e_generator_dir, exist_ok=True)
+
+            # Save detailed E2E test results
+            e2e_results_file = e2e_generator_dir / f"e2e_test_results_{adw_id}.md"
+            e2e_summary = "# E2E Test Results\n\n"
+            e2e_summary += f"Generated: {datetime.now().isoformat()}\n"
+            e2e_summary += f"ADW ID: {adw_id}\n\n"
+
+            for i, result in enumerate(e2e_results):
+                status = "✅ PASSED" if result.passed else "❌ FAILED"
+                e2e_summary += f"## Test {i + 1}: {result.test_name}\n"
+                e2e_summary += f"**Status:** {status}\n"
+                if result.error:
+                    e2e_summary += f"**Error:** {result.error}\n"
+                e2e_summary += f"**Path:** {result.test_path}\n\n"
+
+            with open(e2e_results_file, "w") as f:
+                f.write(e2e_summary)
+
+            logger.info(f"Saved E2E test results to {e2e_results_file}")
 
         jira_add_attachment(issue_number, str(summary_file_path))
         logger.info(f"Attached test summary to issue #{issue_number}")
@@ -616,9 +642,21 @@ def execute_single_e2e_test(
 
     Story 3.3: Migrated from Copilot CLI to OpenCode HTTP API with task_type='test_fix'.
     Uses Claude Sonnet 4 (via GitHub Copilot) for E2E test execution.
+
+    Any shell scripts generated during execution are saved to e2e_temp_scripts directory.
     """
     test_name = os.path.basename(test_file).replace(".md", "")
     logger.info(f"Running E2E test: {test_name}")
+
+    # Create temp scripts directory for this execution
+    # This prevents generated .sh files from cluttering the project root
+    original_cwd = os.getcwd()
+    temp_scripts_dir = config.logs_dir / adw_id / "e2e_generator" / "scripts"
+    try:
+        os.makedirs(temp_scripts_dir, exist_ok=True)
+    except OSError as e:
+        logger.error(f"Failed to create temp scripts directory {temp_scripts_dir}: {e}")
+        # Continue anyway, just use original directory
 
     try:
         with open(test_file, "r") as f:
@@ -657,6 +695,12 @@ Report whether the test passed or failed, and provide details.
     logger.debug(f"Using task_type='test_fix' (routes to Claude Sonnet 4)")
 
     try:
+        # Change to temp scripts directory so any generated files go there, not project root
+        os.chdir(str(temp_scripts_dir))
+        logger.debug(
+            f"Changed working directory to {temp_scripts_dir} for E2E test execution"
+        )
+
         # Call OpenCode HTTP API instead of Copilot CLI subprocess
         response = execute_opencode_prompt(
             prompt=prompt,
@@ -756,67 +800,13 @@ Report whether the test passed or failed, and provide details.
             error=f"Execution error: {str(e)}",
         )
 
-    # Make issue comment
-    jira_make_issue_comment(
-        issue_number,
-        format_issue_message(adw_id, agent_name, f"✅ Running E2E test: {test_name}"),
-    )
-
-    prompt = f"""
-Please execute the following E2E test plan. 
-Perform the steps described and verify the expected outcomes.
-If the test involves UI, use available tools to simulate or verify if possible, 
-or code scripts to perform the check.
-
-Test Plan ({test_name}):
----
-{test_content}
----
-
-Report whether the test passed or failed, and provide details.
-"""
-
-    try:
-        command = [
-            "copilot",
-            "-p",
-            prompt,
-            "--allow-all-tools",
-            "--allow-all-paths",
-        ]
-
-        result = subprocess.run(command, capture_output=True, text=True)
-
-        parsed = parse_copilot_output(result.stdout)
-
-        e2e_result = E2ETestResult(
-            test_name=test_name,
-            status="passed" if success else "failed",
-            test_path=test_file,
-            error=error_msg,
-            screenshots=[],  # Screenshots support removed for now as we don't have direct access
-        )
-
-        status_emoji = "✅" if e2e_result.passed else "❌"
-        jira_make_issue_comment(
-            issue_number,
-            format_issue_message(
-                adw_id,
-                agent_name,
-                f"{status_emoji} E2E test completed: {test_name}\nFiles changed: {parsed.files_changed}",
-            ),
-        )
-
-        return e2e_result
-
-    except Exception as e:
-        logger.error(f"Error running E2E test {test_name}: {e}")
-        return E2ETestResult(
-            test_name=test_name,
-            status="failed",
-            test_path=test_file,
-            error=f"Execution error: {str(e)}",
-        )
+    finally:
+        # Always restore original working directory
+        try:
+            os.chdir(original_cwd)
+            logger.debug(f"Restored working directory to {original_cwd}")
+        except Exception as e:
+            logger.warning(f"Failed to restore working directory: {e}")
 
 
 def format_e2e_test_results_comment(
