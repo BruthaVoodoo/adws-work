@@ -45,11 +45,11 @@ test-app/
     Frontend will run on http://localhost:5173
 
 4. **Verify Integration**:
-    - Open http://localhost:5173 in your browser
-    - Click "Call /api/hello" button
-    - You should see: `{"hello": "world"}` displayed
+     - Open http://localhost:5173 in your browser
+     - Click "Call /api/hello" button - should see: `{"hello": "world"}`
+     - Click "Load Messages" button - should see messages list or "No messages found"
 
-    The frontend uses Vite proxy to forward `/api` requests to the backend at `http://localhost:3000`.
+     The frontend uses Vite proxy to forward `/api` requests to the backend at `http://localhost:3000`.
 
 See [DOCKER.md](DOCKER.md) for detailed Docker setup and troubleshooting.
 
@@ -129,15 +129,23 @@ npm run dev
 | `/` | GET | `{"message": "ADWS Test App Backend - Server running"}` |
 | `/api/hello` | GET | `{"hello": "world"}` |
 | `/api/status` | GET | `{"status": "ok", "uptime": <seconds>, "mongodb": "connected|disconnected", "timestamp": <iso-string>}` |
-| `/api/messages` | GET | `{"messages": [...]}` |
+| `/api/messages` | GET | `{"messages": [{"_id": "...", "text": "message content", "createdAt": "2026-01-23T..."}]}` |
 
 ### Frontend (http://localhost:5173)
 
 The frontend includes a UI to test the backend API:
 
 1. Open http://localhost:5173
-2. Click "Call /api/hello" button
-3. View the API response displayed on the page
+2. Click "Call /api/hello" button to test basic connectivity
+3. Click "Load Messages" button to fetch and display messages from MongoDB
+4. View the API responses displayed on the page
+
+**Message Loading Feature**: The frontend now includes a "Load Messages" button that:
+- Fetches messages from MongoDB via the `/api/messages` endpoint
+- Displays messages in a formatted list with timestamps
+- Shows empty state when no messages exist
+- Handles error states gracefully
+- Messages are sorted by creation date (newest first)
 
 The frontend uses Vite's proxy configuration to forward `/api/*` requests to `http://localhost:3000`.
 
@@ -155,15 +163,62 @@ The frontend uses Vite's proxy configuration to forward `/api/*` requests to `ht
 
 - [ ] Frontend dev server started (`cd frontend && npm run dev`)
 - [ ] Frontend accessible at http://localhost:5173
-- [ ] "Call /api/hello" button visible on page
-- [ ] Clicking button displays `{"hello": "world"}`
+- [ ] "Call /api/hello" button visible and working
+- [ ] "Load Messages" button visible and working
+- [ ] Clicking /api/hello button displays `{"hello": "world"}`
+- [ ] Clicking Load Messages shows messages list or "No messages found"
 - [ ] No CORS errors in browser console
 
 ### Integration Verification
 - [ ] Both frontend (5173) and backend (3000) running
 - [ ] Frontend successfully proxies `/api` requests to backend
+- [ ] Messages loading feature works end-to-end
 - [ ] No network errors in browser DevTools
 - [ ] API responses displayed correctly in UI
+- [ ] Message timestamps are properly formatted
+
+## Testing the Message Loading Feature
+
+### Adding Test Messages
+
+You can add test messages directly to MongoDB to see the message loading feature in action:
+
+```bash
+# Add a single message
+docker exec adws-test-app-mongodb mongosh --eval 'db.messages.insertOne({text: "Hello from MongoDB!", createdAt: new Date()})' adws-test-app
+
+# Add multiple messages
+docker exec adws-test-app-mongodb mongosh --eval 'db.messages.insertMany([
+  {text: "First message", createdAt: new Date()},
+  {text: "Second message", createdAt: new Date()},
+  {text: "Third message with timestamp", createdAt: new Date()}
+])' adws-test-app
+```
+
+### Verifying Message Display
+
+1. Add test messages using the commands above
+2. Open http://localhost:5173 in your browser
+3. Click the "Load Messages" button
+4. You should see:
+   - A formatted list of messages with text and timestamps
+   - Messages sorted by creation date (newest first)
+   - Message count in the header (e.g., "Messages (3)")
+   - Properly formatted timestamps (e.g., "Jan 23, 2026 at 7:30 PM")
+
+### Testing Edge Cases
+
+- **Empty State**: Clear all messages and verify "No messages found" displays
+  ```bash
+  docker exec adws-test-app-mongodb mongosh --eval 'db.messages.deleteMany({})' adws-test-app
+  ```
+
+- **Error Handling**: Stop MongoDB and verify error message displays
+  ```bash
+  docker-compose stop mongodb
+  ```
+
+- **Loading State**: The button should show "Loading..." during API calls
 
 ## Troubleshooting
 
@@ -289,11 +344,25 @@ The frontend uses Vite's proxy configuration to forward `/api/*` requests to `ht
 - ✅ **Story A1** — Create project scaffold and directory layout (2025-01-15)
 - ✅ **Story A2** — Implement Express API endpoint and MongoDB schema (2026-01-15)
 - ✅ **Story A3** — Implement frontend UI and API integration (2026-01-15)
+- ✅ **Message Loading Feature** — Display messages list from MongoDB in frontend UI (2026-01-23)
 
 ### Completed Stories
 - A1: Create project scaffold and directory layout
 - A2: Implement Express API endpoint and MongoDB schema
 - A3: Implement frontend UI and API integration
+- **NEW**: Message Loading Feature - Users can now load and view messages from MongoDB with formatted timestamps
+
+### Completed Features
+- ✅ Backend API endpoints for hello and messages
+- ✅ MongoDB integration with Message schema
+- ✅ Frontend React application with Vite
+- ✅ API proxy configuration for development
+- ✅ Message list component with proper styling
+- ✅ Loading states and error handling
+- ✅ Empty state handling
+- ✅ Timestamp formatting
+- ✅ End-to-end integration testing
+- ✅ Comprehensive documentation
 
 ### Pending Stories
 - A4: Documentation, verification steps, and Jira ticket

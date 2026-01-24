@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-01-23T19:24:26.322625",
+  "adw_id": "test_adw_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_bed6340ae001O2leyUL5K0bhjw",
+      "sessionID": "ses_4129cbf56ffe7FVBCcUTA1ewh5",
+      "role": "assistant",
+      "time": {
+        "created": 1769214263470,
+        "completed": 1769214266318
+      },
+      "parentID": "msg_bed6340ac001nCormTpVeJDRKy",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/ADWS",
+        "root": "/Users/t449579/Desktop/DEV/ADWS"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 327,
+        "output": 102,
+        "reasoning": 0,
+        "cache": {
+          "read": 15740,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_bed6347ac0012rzpzyWCgCvVyU",
+        "sessionID": "ses_4129cbf56ffe7FVBCcUTA1ewh5",
+        "messageID": "msg_bed6340ae001O2leyUL5K0bhjw",
+        "type": "step-start",
+        "snapshot": "bbf2b5a326258c664b7cc0147b1b0f1e0d017231"
+      },
+      {
+        "id": "prt_bed6347ad001KL8qLXTUntg3ux",
+        "sessionID": "ses_4129cbf56ffe7FVBCcUTA1ewh5",
+        "messageID": "msg_bed6340ae001O2leyUL5K0bhjw",
+        "type": "text",
+        "text": "I'm not sure what you'd like me to do with this test prompt. Could you clarify what you need help with?\n\nSome common tasks I can help with:\n- **Run tests** in your codebase\n- **Debug or fix code** issues\n- **Search** through your project files\n- **Create or edit** files\n- **Plan and track** development tasks\n- **Create git commits** or pull requests\n\nWhat would you like to accomplish?",
+        "time": {
+          "start": 1769214266246,
+          "end": 1769214266246
+        }
+      },
+      {
+        "id": "prt_bed634b87001ZuESKBv6hQft1g",
+        "sessionID": "ses_4129cbf56ffe7FVBCcUTA1ewh5",
+        "messageID": "msg_bed6340ae001O2leyUL5K0bhjw",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "bbf2b5a326258c664b7cc0147b1b0f1e0d017231",
+        "cost": 0,
+        "tokens": {
+          "input": 327,
+          "output": 102,
+          "reasoning": 0,
+          "cache": {
+            "read": 15740,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_4129cbf56ffe7FVBCcUTA1ewh5",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_adw_id/adw_classifier/response_20260123_192426.json",
+    "created_at": "2026-01-23T19:24:26.322634",
+    "log_type": "response"
+  }
+}

@@ -59,6 +59,9 @@ def parse_opencode_implementation_output(output: str):
         lines_removed: int = 0
         validation_status: str = "unknown"
         raw_output: str = ""
+        test_results: Optional[str] = None
+        warnings: Optional[list] = None
+        errors: Optional[list] = None
 
     # Initialize with default values
     result = ParsedOutput(

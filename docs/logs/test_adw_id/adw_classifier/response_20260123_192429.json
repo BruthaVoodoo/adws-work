@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-01-23T19:24:29.650900",
+  "adw_id": "test_adw_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_bed634bde001SEmyrwlW8XglzB",
+      "sessionID": "ses_4129cb427ffeIug0gp2rkuI8eA",
+      "role": "assistant",
+      "time": {
+        "created": 1769214266334,
+        "completed": 1769214269646
+      },
+      "parentID": "msg_bed634bdb001fNpBMPckELAZGU",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/ADWS",
+        "root": "/Users/t449579/Desktop/DEV/ADWS"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 327,
+        "output": 170,
+        "reasoning": 0,
+        "cache": {
+          "read": 15740,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_bed6351ab0010gZYXyiHW5xVmy",
+        "sessionID": "ses_4129cb427ffeIug0gp2rkuI8eA",
+        "messageID": "msg_bed634bde001SEmyrwlW8XglzB",
+        "type": "step-start",
+        "snapshot": "5a41efa6012b71a40a5739f4ef25859e90f59af5"
+      },
+      {
+        "id": "prt_bed6351ac001QUbyVjjPxnMRdv",
+        "sessionID": "ses_4129cb427ffeIug0gp2rkuI8eA",
+        "messageID": "msg_bed634bde001SEmyrwlW8XglzB",
+        "type": "text",
+        "text": "I see you've sent a test prompt with \"test text\". How can I help you? \n\nHere are some things I can assist with:\n\n- **Software engineering tasks**: debugging, adding features, refactoring code, writing tests\n- **Codebase exploration**: finding files, understanding structure, searching for specific code\n- **Git operations**: committing changes, creating branches, managing pull requests\n- **Build and test**: running tests, fixing failures, checking code quality\n- **Documentation**: explaining code, writing comments, generating docs\n\nWhat would you like to work on? If you need help with OpenCode features or have feedback, you can:\n- Press **ctrl+p** to list available actions\n- Report issues at https://github.com/anomalyco/opencode",
+        "time": {
+          "start": 1769214269574,
+          "end": 1769214269574
+        }
+      },
+      {
+        "id": "prt_bed635888001Kf2X4wXApTkCaY",
+        "sessionID": "ses_4129cb427ffeIug0gp2rkuI8eA",
+        "messageID": "msg_bed634bde001SEmyrwlW8XglzB",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "5a41efa6012b71a40a5739f4ef25859e90f59af5",
+        "cost": 0,
+        "tokens": {
+          "input": 327,
+          "output": 170,
+          "reasoning": 0,
+          "cache": {
+            "read": 15740,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_4129cb427ffeIug0gp2rkuI8eA",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_adw_id/adw_classifier/response_20260123_192429.json",
+    "created_at": "2026-01-23T19:24:29.650910",
+    "log_type": "response"
+  }
+}
