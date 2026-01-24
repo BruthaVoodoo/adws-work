@@ -96,8 +96,11 @@ describe('MessageList', () => {
       }
     ]
 
-    render(<MessageList messages={messages} />)
+    const { container } = render(<MessageList messages={messages} />)
     
-    expect(screen.getByText(longText)).toBeInTheDocument()
+    // Check that the message text is in the DOM (may be broken across multiple elements)
+    const messageText = container.querySelector('.message-text')
+    expect(messageText).toBeInTheDocument()
+    expect(messageText.textContent).toBe(longText)
   })
 })
