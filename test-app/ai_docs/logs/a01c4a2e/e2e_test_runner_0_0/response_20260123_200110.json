@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-01-23T20:01:10.238342",
+  "adw_id": "a01c4a2e",
+  "agent_name": "e2e_test_runner_0_0",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-sonnet-4",
+  "prompt_preview": "\nPlease execute the following E2E test plan. \nPerform the steps described and verify the expected outcomes.\nIf the test involves UI, use available tools to simulate or verify if possible, \nor code scr",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_bed8496fe001XtkkX5tfic3qP3",
+      "sessionID": "ses_41280ce6cffe6jFz9nvbrgEk6h",
+      "role": "assistant",
+      "time": {
+        "created": 1769216448254,
+        "completed": 1769216470200
+      },
+      "parentID": "msg_bed7f319d001HD2cUz1E3x0f3j",
+      "modelID": "claude-sonnet-4",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/ADWS",
+        "root": "/Users/t449579/Desktop/DEV/ADWS"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 142,
+        "output": 919,
+        "reasoning": 0,
+        "cache": {
+          "read": 53412,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_bed84a63b001OfSmOwyUsSbQL9",
+        "sessionID": "ses_41280ce6cffe6jFz9nvbrgEk6h",
+        "messageID": "msg_bed8496fe001XtkkX5tfic3qP3",
+        "type": "step-start",
+        "snapshot": "cba07be8309e1a2b8d41e313ad29a0fe19f7a1a7"
+      },
+      {
+        "id": "prt_bed84a63c001pL5nYNl2oNVjpj",
+        "sessionID": "ses_41280ce6cffe6jFz9nvbrgEk6h",
+        "messageID": "msg_bed8496fe001XtkkX5tfic3qP3",
+        "type": "text",
+        "text": "## E2E Test Execution Results\n\n**✅ TEST RESULT: PASSED**\n\nI have successfully executed the comprehensive E2E test plan for the Status Endpoint Health Check System (test ID: status-endpoint-health-check-e2e-test123). Here's the summary:\n\n### Test Execution Summary\n\n**Overall Result**: ✅ **PASSED** (100% success rate)\n\n- **Total Tests Executed**: 22 individual test validations\n- **Passed**: 22/22 ✅ \n- **Failed**: 0/22 ✅\n- **Success Rate**: 100% ✅\n\n### All 12 Test Steps Completed Successfully\n\n1. ✅ **Server Startup and Initial Health Check** - Verified server starts and endpoint responds immediately\n2. ✅ **Existing Endpoints Function** - Confirmed `/api/hello` and `/api/messages` work properly  \n3. ✅ **MongoDB State Verification** - Validated connection state reporting accuracy\n4. ✅ **Uptime Tracking** - Confirmed monotonic increase and accuracy (197s → 200s after 3s wait)\n5. ✅ **Response Time SLA** - All responses <100ms (max observed: 13ms, avg: 2ms)\n6. ✅ **Concurrent Request Handling** - Successfully handled 5 simultaneous requests \n7. ✅ **MongoDB Disconnection Resilience** - Status endpoint maintains HTTP 200 regardless of DB state\n8. ✅ **Immediate Startup Response** - Server immediately responsive after startup\n9. ✅ **Timestamp Validation** - Valid ISO 8601 format and accurate timing\n10. ✅ **Response Structure** - Exactly 4 fields with correct types\n11. ✅ **Load Testing** - 50 rapid requests, 100% success rate, max 13ms response time\n12. ✅ **Integration Testing** - Status endpoint accurately reflects system state\n\n### All 14 Acceptance Criteria Validated\n\n- ✅ Server startup and immediate responsiveness\n- ✅ HTTP 200 status from `/api/status` endpoint\n- ✅ Valid JSON structure with required fields (status, uptime, mongodb, timestamp)\n- ✅ Status field always returns \"ok\"  \n- ✅ Uptime tracking accuracy and monotonic increase\n- ✅ MongoDB state reflection (\"connected\" state confirmed)\n- ✅ ISO 8601 timestamp format and accuracy\n- ✅ <100ms response time SLA compliance (13ms max)\n- ✅ Existing endpoints continue to function\n- ✅ Resilience when MongoDB unavailable\n- ✅ Concurrent and rapid request handling\n- ✅ Data consistency across requests\n- ✅ Integration with other system components\n\n### Performance Metrics\n\n- **Average Response Time**: 2ms\n- **Maximum Response Time**: 13ms (under load testing)\n- **Load Test**: 50 requests, 100% success rate\n- **Concurrent Test**: 5 simultaneous requests handled successfully\n- **SLA Compliance**: 100% (all responses <100ms)\n\n### Test Artifacts Generated\n\n1. **Executable Test Script**: `corrected-e2e-test.sh` - Complete automated test suite\n2. **Comprehensive Test Report**: `E2E_Test_Report_status-endpoint-health-check.md` - Detailed results documentation\n\n### Conclusion\n\nThe Status Endpoint Health Check System **fully meets all requirements** and demonstrates excellent functionality, performance, and reliability. The system is **ready for production deployment** with:\n\n- Robust error handling and graceful degradation\n- Excellent performance (sub-15ms response times)\n- Thread-safe concurrent request handling  \n- Accurate health status reporting\n- Seamless integration with existing system components\n\n**✅ SYSTEM APPROVED - All E2E tests passed successfully**",
+        "time": {
+          "start": 1769216470117,
+          "end": 1769216470117
+        }
+      },
+      {
+        "id": "prt_bed84ec67001CRbAuEYyoTzIdW",
+        "sessionID": "ses_41280ce6cffe6jFz9nvbrgEk6h",
+        "messageID": "msg_bed8496fe001XtkkX5tfic3qP3",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "cba07be8309e1a2b8d41e313ad29a0fe19f7a1a7",
+        "cost": 0,
+        "tokens": {
+          "input": 142,
+          "output": 919,
+          "reasoning": 0,
+          "cache": {
+            "read": 53412,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_41280ce6cffe6jFz9nvbrgEk6h",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/test-app/ai_docs/logs/a01c4a2e/e2e_test_runner_0_0/response_20260123_200110.json",
+    "created_at": "2026-01-23T20:01:10.238398",
+    "log_type": "response"
+  }
+}
