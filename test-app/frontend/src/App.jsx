@@ -37,6 +37,7 @@ function App() {
     setMessages(null)
 
     try {
+      console.log('Loading messages from API...')
       const response = await fetch('/api/messages')
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -45,11 +46,14 @@ function App() {
       
       // Validate response structure
       if (!data || !Array.isArray(data.messages)) {
+        console.error('Invalid API response:', data)
         throw new Error('Invalid response format: expected messages array')
       }
       
+      console.log(`Successfully loaded ${data.messages.length} messages`)
       setMessages(data.messages)
     } catch (err) {
+      console.error('Error loading messages:', err)
       setMessagesError(err.message)
     } finally {
       setMessagesLoading(false)
@@ -66,12 +70,14 @@ function App() {
           onClick={callHelloApi} 
           disabled={loading}
           className="api-button"
+          aria-label="Test backend API connectivity"
+          aria-describedby={error ? "hello-error" : undefined}
         >
           {loading ? 'Loading...' : 'Call /api/hello'}
         </button>
 
         {error && (
-          <div className="error-message">
+          <div className="error-message" role="alert" id="hello-error">
             <strong>Error:</strong> {error}
           </div>
         )}
@@ -90,12 +96,14 @@ function App() {
           onClick={callMessagesApi} 
           disabled={messagesLoading}
           className="api-button"
+          aria-label="Load messages from MongoDB database"
+          aria-describedby={messagesError ? "messages-error" : undefined}
         >
           {messagesLoading ? 'Loading...' : 'Load Messages'}
         </button>
 
         {messagesError && (
-          <div className="error-message">
+          <div className="error-message" role="alert" id="messages-error">
             <strong>Error:</strong> {messagesError}
           </div>
         )}
