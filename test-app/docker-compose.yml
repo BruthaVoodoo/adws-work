@@ -23,7 +23,7 @@ services:
     container_name: adws-test-app-backend
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "5176:5176"
     environment:
       - MONGODB_URI=mongodb://mongodb:27017/adws-test-app
       - NODE_ENV=development
@@ -40,9 +40,9 @@ services:
     container_name: adws-test-app-frontend
     restart: unless-stopped
     ports:
-      - "5173:5173"
+      - "5175:5175"
     environment:
-      - VITE_BACKEND_URL=http://localhost:3000
+      - VITE_BACKEND_URL=http://localhost:5176
     depends_on:
       - backend
     volumes:

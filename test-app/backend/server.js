@@ -11,7 +11,7 @@ dotenv.config();
 const SERVER_START_TIME = Date.now();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5176;
 
 // Middleware
 app.use(cors());

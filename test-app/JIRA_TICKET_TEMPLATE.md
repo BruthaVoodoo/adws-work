@@ -81,7 +81,7 @@ As a developer, I want a health check endpoint so that I can verify the backend 
 - [ ] Test added in tests/api.test.js
 - [ ] Test suite passes (npm test)
 - [ ] README API endpoints table updated with new endpoint
-- [ ] Manual verification: curl http://localhost:3000/api/status
+- [ ] Manual verification: curl http://localhost:5176/api/status
 - [ ] Dev Agent Record updated
 
 ---
@@ -125,6 +125,56 @@ As a user, I want to see all messages from the database so that I can verify dat
 - [ ] README updated with new feature description
 - [ ] Dev Agent Record updated
 - [ ] All existing tests still passing
+
+---
+
+## Example Ticket: Implement Light/Dark Mode Toggle
+
+**Summary**: Implement Light/Dark mode theme toggle for test app UI
+
+**Description**:
+```
+As a user, I want to switch between light and dark themes so that I can use the application comfortably in different lighting conditions.
+
+**Context**:
+- Task type: feature
+- Epic: Test App Skeleton — ADWS Portable Validation
+- Related stories: A3 (frontend UI)
+- Test app version: 1.0.0
+
+**Implementation Plan**:
+1. Create theme context and provider in frontend (React Context API)
+2. Add theme toggle button to App.jsx header
+3. Implement dark mode CSS styles for all components
+4. Persist theme preference in localStorage
+5. Add unit tests for theme switching logic
+6. Update README with theme feature documentation
+7. Ensure all components respect theme colors
+```
+
+**Acceptance Criteria**:
+- [ ] Theme toggle button displays in UI header
+- [ ] Light mode displays light background with dark text
+- [ ] Dark mode displays dark background with light text
+- [ ] Theme preference persists across page reloads
+- [ ] All existing components styled for both themes
+- [ ] No console errors when switching themes
+- [ ] Unit tests for theme context passing
+- [ ] README updated with theme switching instructions
+
+**Definition of Done**:
+- [ ] Theme context and provider created in frontend
+- [ ] Toggle button implemented in App.jsx header
+- [ ] CSS variables or styled-components setup for theme colors
+- [ ] Light and dark theme palettes defined and applied
+- [ ] localStorage integration for theme persistence
+- [ ] Unit tests written and passing (npm test)
+- [ ] Manual verification: toggle theme, reload page, verify persistence
+- [ ] All components tested in both light and dark modes
+- [ ] README updated with theme feature documentation
+- [ ] Dev Agent Record updated with implementation details
+- [ ] All existing tests still passing
+- [ ] No console errors in browser DevTools
 
 ---
 

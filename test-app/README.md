@@ -33,7 +33,7 @@ test-app/
    npm start
    ```
 
-   Backend will run on http://localhost:3000
+   Backend will run on http://localhost:5176
 
 3. **Start Frontend**:
     ```bash
@@ -42,14 +42,14 @@ test-app/
     npm start
     ```
 
-    Frontend will run on http://localhost:5173
+    Frontend will run on http://localhost:5175
 
 4. **Verify Integration**:
-     - Open http://localhost:5173 in your browser
+     - Open http://localhost:5175 in your browser
      - Click "Call /api/hello" button - should see: `{"hello": "world"}`
      - Click "Load Messages" button - should see messages list or "No messages found"
 
-     The frontend uses Vite proxy to forward `/api` requests to the backend at `http://localhost:3000`.
+     The frontend uses Vite proxy to forward `/api` requests to the backend at `http://localhost:5176`.
 
 See [DOCKER.md](DOCKER.md) for detailed Docker setup and troubleshooting.
 
@@ -79,7 +79,7 @@ npm install
 npm start
 ```
 
-Backend will run on http://localhost:3000
+Backend will run on http://localhost:5176
 
 ### Frontend Setup
 ```bash
@@ -88,7 +88,7 @@ npm install
 npm start
 ```
 
-Frontend will run on http://localhost:5173
+Frontend will run on http://localhost:5175
 
 ## Development
 
@@ -106,7 +106,7 @@ cd frontend
 npm run dev
 ```
 
-The frontend proxies `/api` requests to `http://localhost:3000`, so you don't need to modify API URLs in React code.
+The frontend proxies `/api` requests to `http://localhost:5176`, so you don't need to modify API URLs in React code.
 
 ### Backend Development
 ```bash
@@ -122,7 +122,7 @@ npm run dev
 
 ## API Endpoints
 
-### Backend (http://localhost:3000)
+### Backend (http://localhost:5176)
 
 | Endpoint | Method | Response |
 |----------|--------|----------|
@@ -131,11 +131,11 @@ npm run dev
 | `/api/status` | GET | `{"status": "ok", "uptime": <seconds>, "mongodb": "connected|disconnected", "timestamp": <iso-string>}` |
 | `/api/messages` | GET | `{"messages": [{"_id": "...", "text": "message content", "createdAt": "2026-01-23T..."}]}` |
 
-### Frontend (http://localhost:5173)
+### Frontend (http://localhost:5175)
 
 The frontend includes a UI to test the backend API:
 
-1. Open http://localhost:5173
+1. Open http://localhost:5175
 2. Click "Call /api/hello" button to test basic connectivity
 3. Click "Load Messages" button to fetch and display messages from MongoDB
 4. View the API responses displayed on the page
@@ -147,7 +147,7 @@ The frontend includes a UI to test the backend API:
 - Handles error states gracefully
 - Messages are sorted by creation date (newest first)
 
-The frontend uses Vite's proxy configuration to forward `/api/*` requests to `http://localhost:3000`.
+The frontend uses Vite's proxy configuration to forward `/api/*` requests to `http://localhost:5176`.
 
 ## Verification Checklist
 
@@ -155,14 +155,14 @@ The frontend uses Vite's proxy configuration to forward `/api/*` requests to `ht
 
 - [ ] MongoDB container running (`docker-compose ps`)
 - [ ] Backend server started (`cd backend && npm start`)
-- [ ] Backend responds at http://localhost:3000
+- [ ] Backend responds at http://localhost:5176
 - [ ] `/api/hello` returns `{"hello": "world"}`
 - [ ] `/api/messages` returns `{"messages":[]}`
 
 ### Frontend Verification
 
 - [ ] Frontend dev server started (`cd frontend && npm run dev`)
-- [ ] Frontend accessible at http://localhost:5173
+- [ ] Frontend accessible at http://localhost:5175
 - [ ] "Call /api/hello" button visible and working
 - [ ] "Load Messages" button visible and working
 - [ ] Clicking /api/hello button displays `{"hello": "world"}`
@@ -170,7 +170,7 @@ The frontend uses Vite's proxy configuration to forward `/api/*` requests to `ht
 - [ ] No CORS errors in browser console
 
 ### Integration Verification
-- [ ] Both frontend (5173) and backend (3000) running
+- [ ] Both frontend (5175) and backend (5176) running
 - [ ] Frontend successfully proxies `/api` requests to backend
 - [ ] Messages loading feature works end-to-end
 - [ ] No network errors in browser DevTools
@@ -198,7 +198,7 @@ docker exec adws-test-app-mongodb mongosh --eval 'db.messages.insertMany([
 ### Verifying Message Display
 
 1. Add test messages using the commands above
-2. Open http://localhost:5173 in your browser
+2. Open http://localhost:5175 in your browser
 3. Click the "Load Messages" button
 4. You should see:
    - A formatted list of messages with text and timestamps
@@ -258,20 +258,20 @@ docker exec adws-test-app-mongodb mongosh --eval 'db.messages.insertMany([
 **Solutions**:
 1. Verify backend is running:
    ```bash
-   curl http://localhost:3000/api/hello
+   curl http://localhost:5176/api/hello
    ```
 
 2. Check Vite proxy configuration in `frontend/vite.config.js`:
    ```javascript
    proxy: {
      '/api': {
-       target: 'http://localhost:3000',
+       target: 'http://localhost:5176',
        changeOrigin: true,
      },
    }
    ```
 
-3. Try accessing backend directly: http://localhost:3000/api/hello
+3. Try accessing backend directly: http://localhost:5176/api/hello
 
 4. Check browser DevTools Network tab for failed requests
 
@@ -283,8 +283,8 @@ docker exec adws-test-app-mongodb mongosh --eval 'db.messages.insertMany([
 1. Find process using the port:
    ```bash
    # macOS/Linux
-   lsof -i :3000  # backend port
-   lsof -i :5173  # frontend port
+   lsof -i :5176  # backend port
+   lsof -i :5175  # frontend port
 
    # Or use kill:
    pkill -f "node server.js"
