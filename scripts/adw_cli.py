@@ -13,8 +13,69 @@ Usage:
 
 import sys
 import os
+import io
 import click
 from typing import Optional
+
+# Rich formatting for improved --help output
+from rich.console import Console
+from rich.table import Table
+from rich.text import Text
+
+
+class RichGroup(click.Group):
+    """Custom click Group that renders a Rich-styled help message.
+
+    Overrides get_help to return ANSI-colored help text produced by Rich.
+    """
+
+    def get_help(self, ctx: click.Context) -> str:
+        buf = io.StringIO()
+        console = Console(file=buf, force_terminal=True, color_system="truecolor")
+
+        # Title / header
+        console.rule("[bold cyan]ADWS - AI Developer Workflow System", style="cyan")
+        console.print(f"[bold]Version:[/bold] {__version__}\n")
+
+        # Long help / description
+        if self.help:
+            console.print(self.help)
+            console.print()
+
+        # Usage
+        console.print("[bold yellow]Usage[/bold yellow]")
+        try:
+            # Use Click's context usage to build a reliable usage string
+            usage = ctx.get_usage()
+        except Exception:
+            usage = "adw [COMMAND] [OPTIONS]"
+        console.print(Text(usage, style="green"))
+        console.print()
+
+        # Commands table
+        console.print("[bold magenta]Commands[/bold magenta]")
+        table = Table(show_header=True, header_style="bold magenta")
+        table.add_column("Command", style="cyan", no_wrap=True)
+        table.add_column("Description", style="white")
+
+        for name, cmd in self.commands.items():
+            # hide internal/hidden commands
+            if getattr(cmd, "hidden", False):
+                continue
+            desc = cmd.get_short_help_str() or ""
+            table.add_row(name, desc)
+
+        console.print(table)
+        console.print()
+
+        # Footer with example hint
+        console.print(
+            "[bold blue]Tip[/bold blue] Type [green]adw COMMAND --help[/green] for command-specific options."
+        )
+        console.print()
+
+        return buf.getvalue()
+
 
 # Add scripts directory to path so relative imports work
 sys.path.insert(0, os.path.dirname(__file__))
@@ -22,7 +83,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 __version__ = "0.1.0"
 
 
-@click.group()
+@click.group(cls=RichGroup)
 @click.version_option(version=__version__, prog_name="adw")
 def cli():
     """

@@ -36,7 +36,10 @@ dev = [
 adw = "scripts.adw_cli:main"
 
 [tool.setuptools]
-packages = ["scripts", "scripts.adw_modules", "agent", "prompts"]
+# Use automatic package discovery to avoid listing non-existent packages like `agent`.
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["scripts*", "prompts*"]
 
 [tool.setuptools.package-data]
 scripts = ["**/*.yaml", "**/*.md"]
