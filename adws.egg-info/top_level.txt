@@ -1,3 +1,2 @@
-agent
 prompts
 scripts

@@ -22,7 +22,6 @@ import sys
 import os
 import logging
 import json
-import re
 from typing import Optional
 from dotenv import load_dotenv
 
@@ -303,43 +302,7 @@ def main():
     os.makedirs(os.path.dirname(plan_file_path), exist_ok=True)
 
     # Extract the actual plan content from the LLM response
-    plan_content = ""
-
-    # Attempt to extract from antsible:function_calls for 'create' command with '-plan.md'
-    antsible_match = re.search(
-        r"""<antsible:invoke name="str_replace_editor">
-<antsible:parameter name="command">create</antsible:parameter>
-<antsible:parameter name="path">[^\"]+-plan.md</antsible:parameter>
-<antsible:parameter name="file_text">(.*?)</antsible:parameter>""",
-        plan_response.output,
-        re.DOTALL,
-    )
-    if antsible_match:
-        plan_content = antsible_match.group(1)
-        # The content might have escaped newlines and quotes from being embedded in XML
-        # We need to unescape them.
-        plan_content = plan_content.replace("\\n", "\n").replace('\\"', '"')
-    else:
-        # Fallback to existing logic if antsible pattern is not found
-        content_match = re.search(
-            r"<content>(.*?)</content>", plan_response.output, re.DOTALL
-        )
-        if content_match:
-            plan_content = content_match.group(1).strip()
-        else:
-            # Fallback to finding the start of the markdown plan
-            fallback_match = re.search(
-                r"""^# (Feature|Bug|Chore):.*
-""",
-                plan_response.output,
-                re.MULTILINE,
-            )
-            if fallback_match:
-                plan_content = plan_response.output[fallback_match.start() :]
-            else:
-                # Final fallback: if the output looks like a markdown plan, use it as-is
-                if plan_response.output.strip().startswith("#"):
-                    plan_content = plan_response.output.strip()
+    plan_content = plan_response.output.strip()
 
     if not plan_content:
         error_msg = "Could not extract plan content from the LLM output."

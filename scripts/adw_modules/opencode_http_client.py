@@ -955,21 +955,40 @@ def extract_text_response(parts: List[Dict[str, Any]]) -> str:
       When I call extract_text_response(parts)
       Then all text parts are concatenated in order
 
+    Enhancement: Also extracts plan content from tool_use parts where
+    the tool creates files with -plan.md extension.
+
     Args:
         parts: List of OpenCode Part dictionaries from response
 
     Returns:
-        str: Concatenated text content from all text parts, in order
+        str: Concatenated text content from all text parts and plan content from tool_use parts, in order
     """
     if not parts:
         return ""
 
     text_content = []
     for part in parts:
-        if isinstance(part, dict) and part.get("type") == "text":
+        if not isinstance(part, dict):
+            continue
+
+        part_type = part.get("type")
+
+        # Extract conversational text
+        if part_type == "text":
             content = part.get("text", "")
             if content and isinstance(content, str):
                 text_content.append(content.strip())
+
+        # Extract plan content from tool_use (file creation)
+        elif part_type == "tool_use":
+            tool_input = part.get("input", {})
+            if isinstance(tool_input, dict):
+                file_path = tool_input.get("path", "")
+                if isinstance(file_path, str) and "-plan.md" in file_path:
+                    file_content = tool_input.get("content", "")
+                    if file_content and isinstance(file_content, str):
+                        text_content.append(file_content.strip())
 
     return "\n".join(text_content)
 
