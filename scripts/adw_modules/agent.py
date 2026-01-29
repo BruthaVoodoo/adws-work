@@ -30,8 +30,8 @@ from .opencode_http_client import (
     estimate_metrics_from_parts,
 )
 
-# Load environment variables
-load_dotenv()
+# Note: Environment variables are loaded by main scripts to ensure proper precedence
+# Project .env files take priority over ADWS system .env files
 
 # Model ID mappings for GitHub Copilot via OpenCode
 # These models are provided by your organization's GitHub Copilot subscription
@@ -278,7 +278,6 @@ def execute_template(request: AgentTemplateRequest) -> AgentPromptResponse:
         prompt,
         request.adw_id,
         request.agent_name,
-        domain=request.domain,
         workflow_agent_name=request.workflow_agent_name,
     )
 

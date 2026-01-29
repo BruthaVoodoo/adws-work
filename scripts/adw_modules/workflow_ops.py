@@ -11,7 +11,7 @@ import subprocess
 import re
 import os
 import sys
-from typing import Tuple, Optional, cast
+from typing import Tuple, Optional, cast, Union
 from scripts.adw_modules.data_types import (
     AgentTemplateRequest,
     GitHubIssue,  # Keep for now if other functions use it
@@ -247,10 +247,9 @@ def extract_adw_info(
 
 
 def classify_issue(
-    issue: GitHubIssue,
+    issue: Union[GitHubIssue, JiraIssue],
     adw_id: str,
     logger: logging.Logger,
-    domain: str = "ADW_Core",
     workflow_agent_name: Optional[str] = None,
 ) -> Tuple[Optional[IssueClassSlashCommand], Optional[str]]:
     """Classify GitHub issue and return appropriate slash command using OpenCode HTTP API with Claude Haiku 4.5.
@@ -312,11 +311,10 @@ def classify_issue(
 
 
 def build_plan(
-    issue,
+    issue: JiraIssue,
     command: str,
     adw_id: str,
     logger: logging.Logger,
-    domain: str = "ADW_Core",
     workflow_agent_name: Optional[str] = None,
 ) -> AgentPromptResponse:
     """Build implementation plan for the issue using the specified command.
@@ -629,11 +627,10 @@ Now, please proceed with the implementation using the available tools.
 
 
 def generate_branch_name(
-    issue: GitHubIssue,
+    issue: Union[GitHubIssue, JiraIssue],
     issue_class: IssueClassSlashCommand,
     adw_id: str,
     logger: logging.Logger,
-    domain: str = "ADW_Core",
     workflow_agent_name: Optional[str] = None,
 ) -> Tuple[Optional[str], Optional[str]]:
     """Generate and create a git branch for the issue using OpenCode HTTP API with Claude Haiku 4.5.
@@ -693,11 +690,10 @@ def generate_branch_name(
 
 def create_commit(
     agent_name: str,
-    issue: JiraIssue,  # Changed from GitHubIssue
+    issue: Union[GitHubIssue, JiraIssue],
     issue_class: IssueClassSlashCommand,
     adw_id: str,
     logger: logging.Logger,
-    domain: str = "ADW_Core",
     workflow_agent_name: Optional[str] = None,
 ) -> Tuple[Optional[str], Optional[str]]:
     """Create a git commit with a properly formatted message using OpenCode HTTP API with Claude Haiku 4.5.
@@ -882,8 +878,13 @@ def ensure_adw_id(
     issue_number: str,
     adw_id: Optional[str] = None,
     logger: Optional[logging.Logger] = None,
-) -> str:
-    """Get ADW ID or create a new one and initialize state."""
+) -> Tuple[str, Optional[ADWState]]:
+    """Get ADW ID or create a new one and initialize state.
+
+    Returns:
+        Tuple of (adw_id, state) where state is None if newly created,
+        or the loaded state if it existed.
+    """
     if adw_id:
         state = ADWState.load(adw_id, logger)
         if state:
@@ -891,7 +892,9 @@ def ensure_adw_id(
                 logger.info(f"Found existing ADW state for ID: {adw_id}")
             else:
                 print(f"Found existing ADW state for ID: {adw_id}")
-            return adw_id
+            return adw_id, state
+
+        # Create new state with provided ADW ID
         state = ADWState(adw_id)
         state.update(adw_id=adw_id, issue_number=issue_number)
         state.save("ensure_adw_id")
@@ -899,7 +902,7 @@ def ensure_adw_id(
             logger.info(f"Created new ADW state for provided ID: {adw_id}")
         else:
             print(f"Created new ADW state for provided ID: {adw_id}")
-        return adw_id
+        return adw_id, state
 
     from adw_modules.utils import make_adw_id
 
@@ -911,7 +914,7 @@ def ensure_adw_id(
         logger.info(f"Created new ADW ID and state: {new_adw_id}")
     else:
         print(f"Created new ADW ID and state: {new_adw_id}")
-    return new_adw_id
+    return new_adw_id, state
 
 
 def find_existing_branch_for_issue(
@@ -1018,11 +1021,10 @@ def create_or_find_branch(
 
 
 def create_patch_plan(
-    issue: ReviewIssue,
+    issue: "ReviewIssue",
     spec_path: str,
     adw_id: str,
     logger: logging.Logger,
-    domain: str = "ADW_Core",
     workflow_agent_name: Optional[str] = None,
 ) -> Optional[str]:
     """Create a patch plan for a specific review issue.
@@ -1058,11 +1060,10 @@ def create_patch_plan(
 
         # Execute the template
         request = AgentTemplateRequest(
-            agent_name=agent_name,
+            agent_name="patch_planner",
             prompt=prompt,
             adw_id=adw_id,
             model="opus",
-            domain=domain,
             workflow_agent_name=workflow_agent_name,
         )
 

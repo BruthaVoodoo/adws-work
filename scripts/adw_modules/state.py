@@ -41,7 +41,6 @@ class ADWState:
             "branch_name",
             "plan_file",
             "issue_class",
-            "domain",
             "agent_name",
         }
         for key, value in kwargs.items():
@@ -62,14 +61,23 @@ class ADWState:
         os.makedirs(os.path.dirname(state_path), exist_ok=True)
 
         # Create ADWStateData for validation
+        adw_id = self.data.get("adw_id") or self.adw_id
+        if not adw_id:
+            raise ValueError("adw_id is required for state validation")
+
+        # Update agent_name from workflow_step if provided
+        agent_name = workflow_step or self.data.get("agent_name")
+        if workflow_step:
+            # Update the in-memory data as well
+            self.data["agent_name"] = workflow_step
+
         state_data = ADWStateData(
-            adw_id=self.data.get("adw_id"),
+            adw_id=adw_id,
             issue_number=self.data.get("issue_number"),
             branch_name=self.data.get("branch_name"),
             plan_file=self.data.get("plan_file"),
             issue_class=self.data.get("issue_class"),
-            domain=self.data.get("domain", "ADW_Core"),
-            agent_name=self.data.get("agent_name"),
+            agent_name=agent_name,
         )
 
         # Save as JSON
@@ -85,7 +93,6 @@ class ADWState:
         cls,
         adw_id: str,
         logger: Optional[logging.Logger] = None,
-        domain: str = "ADW_Core",
         agent_name: Optional[str] = None,
     ) -> Optional["ADWState"]:
         """Load state from file if it exists.
@@ -93,7 +100,6 @@ class ADWState:
         Args:
             adw_id: The ADW ID to load
             logger: Optional logger instance
-            domain: Deprecated.
             agent_name: Deprecated.
         """
         state_path = os.path.join(config.logs_dir, adw_id, cls.STATE_FILENAME)
@@ -153,7 +159,6 @@ class ADWState:
             "branch_name": self.data.get("branch_name"),
             "plan_file": self.data.get("plan_file"),
             "issue_class": self.data.get("issue_class"),
-            "domain": self.data.get("domain", "ADW_Core"),
             "agent_name": self.data.get("agent_name"),
         }
         print(json.dumps(output_data, indent=2))

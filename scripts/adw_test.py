@@ -986,8 +986,15 @@ def run_e2e_tests_with_resolution(
 
 def main():
     """Main entry point."""
-    # Load environment variables
-    load_dotenv()
+    # Load environment variables - explicitly load from current working directory
+    from pathlib import Path
+
+    project_env = Path.cwd() / ".env"
+    if project_env.exists():
+        load_dotenv(project_env, override=True)
+    else:
+        # Fallback to auto-discovery if no .env in current directory
+        load_dotenv(override=True)
 
     # Get rich console instance
     rich_console = get_rich_console_instance()
@@ -1015,7 +1022,7 @@ def main():
     )
 
     # Ensure ADW ID exists - creates one if needed
-    adw_id = ensure_adw_id(issue_number, arg_adw_id, temp_logger)
+    adw_id, existing_state = ensure_adw_id(issue_number, arg_adw_id, temp_logger)
 
     # Rich console header
     if rich_console:
@@ -1057,25 +1064,33 @@ def main():
             rich_console.error(error_msg)
         sys.exit(1)
 
-    # Try to load existing state
-    logger.info(f"Loading state")
-    if rich_console:
-        with rich_console.spinner(f"Loading ADW state for {adw_id}..."):
-            state = ADWState.load(adw_id, logger)
-    else:
-        state = ADWState.load(adw_id, logger)
-
-    if not state:
-        error_msg = f"No state found for ADW ID: {adw_id}"
-        logger.error(error_msg)
+    # Use existing state if available, otherwise load it
+    if existing_state:
+        state = existing_state
+        logger.info(f"Using existing state from ensure_adw_id")
         if rich_console:
-            rich_console.error(error_msg)
-            rich_console.error("Run adw_plan.py first to create the initial state")
-        sys.exit(1)
+            rich_console.success("Using existing ADW state")
+    else:
+        # Try to load existing state (fallback case)
+        logger.info(f"Loading state")
+        if rich_console:
+            with rich_console.spinner(f"Loading ADW state for {adw_id}..."):
+                state = ADWState.load(adw_id, logger)
+        else:
+            state = ADWState.load(adw_id, logger)
+
+        if not state:
+            error_msg = f"No state found for ADW ID: {adw_id}"
+            logger.error(error_msg)
+            if rich_console:
+                rich_console.error(error_msg)
+                rich_console.error("Run adw_plan.py first to create the initial state")
+            sys.exit(1)
+
+        if rich_console:
+            rich_console.success("ADW state loaded successfully")
 
     logger.info(f"Loaded state: {state.data}")
-    if rich_console:
-        rich_console.success("ADW state loaded successfully")
 
     # Get repo information from git remote
     try:

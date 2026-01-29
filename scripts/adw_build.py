@@ -94,8 +94,15 @@ def check_env_vars(logger: Optional[logging.Logger] = None) -> None:
 
 def main():
     """Main entry point."""
-    # Load environment variables
-    load_dotenv()
+    # Load environment variables - explicitly load from current working directory
+    from pathlib import Path
+
+    project_env = Path.cwd() / ".env"
+    if project_env.exists():
+        load_dotenv(project_env, override=True)
+    else:
+        # Fallback to auto-discovery if no .env in current directory
+        load_dotenv(override=True)
 
     # Get rich console instance
     rich_console = get_rich_console_instance()

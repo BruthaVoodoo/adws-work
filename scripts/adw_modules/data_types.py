@@ -193,7 +193,6 @@ class AgentTemplateRequest(BaseModel):
     prompt: str
     adw_id: str
     model: Literal["sonnet", "opus"] = "sonnet"
-    domain: str = "ADW_Core"
     workflow_agent_name: Optional[str] = None
 
 
@@ -234,7 +233,6 @@ class ADWStateData(BaseModel):
     branch_name: Optional[str] = None
     plan_file: Optional[str] = None
     issue_class: Optional[IssueClassSlashCommand] = None
-    domain: Literal["ADW_Core", "ADW_Agent"] = "ADW_Core"
     agent_name: Optional[str] = None
 
 

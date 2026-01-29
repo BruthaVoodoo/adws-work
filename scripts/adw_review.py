@@ -443,8 +443,15 @@ def format_review_comment(review_result: ReviewResult) -> str:
 
 def main():
     """Main entry point."""
-    # Load environment variables
-    load_dotenv()
+    # Load environment variables - explicitly load from current working directory
+    from pathlib import Path
+
+    project_env = Path.cwd() / ".env"
+    if project_env.exists():
+        load_dotenv(project_env, override=True)
+    else:
+        # Fallback to auto-discovery if no .env in current directory
+        load_dotenv(override=True)
 
     # Get rich console instance early for error output
     rich_console = get_rich_console_instance()
