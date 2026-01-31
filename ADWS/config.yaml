@@ -14,6 +14,12 @@ docs_dir: docs          # Directory for generated documentation
 language: python           # Programming language (python, javascript, go, etc.)
 test_command: uv run pytest  # Command to run tests
 
+# Provider Configuration
+# Controls which systems are used for git operations and issue tracking
+providers:
+  git: "butbucket"     # Options: "github", "bitbucket"
+  issues: "jira"    # Options: "jira", "github"
+
 # OpenCode HTTP API Configuration
 # OpenCode provides LLM access via GitHub Copilot models
 opencode:
