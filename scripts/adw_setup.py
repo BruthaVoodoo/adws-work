@@ -29,8 +29,8 @@ sys.path.insert(0, os.path.dirname(__file__))
 from adw_modules.config import config
 from adw_tests.health_check import (
     check_env_vars,
-    check_jira_connectivity,
-    check_bitbucket_connectivity,
+    check_issue_connectivity,
+    check_repo_connectivity,
     check_github_cli,
     check_opencode_server,
     HealthCheckResult,
@@ -38,9 +38,37 @@ from adw_tests.health_check import (
 )
 
 
+def detect_or_ask_repo_provider(project_dir: Optional[Path] = None) -> str:
+    """Detect repository provider or ask user."""
+    if project_dir is None:
+        project_dir = Path.cwd()
+
+    # Check for .git directory
+    git_dir = project_dir / ".git"
+    if git_dir.exists():
+        try:
+            # Check git config for origin URL
+            with open(git_dir / "config", "r") as f:
+                content = f.read()
+                if "github.com" in content:
+                    return "github"
+                if "bitbucket.org" in content:
+                    return "bitbucket"
+        except Exception:
+            pass
+
+    # Ask user if we can't detect (Note: in non-interactive mode this defaults to bitbucket)
+    # Since we are running in an agent, we can't easily ask interactively via standard input
+    # inside this script if it's run via subprocess. But since this is a CLI tool run by user,
+    # we'll default to 'bitbucket' for now to match legacy behavior unless we want to prompt.
+    # For now, let's default to bitbucket if not detected, but print a message.
+    print("   Could not auto-detect repo provider (defaulting to bitbucket)")
+    return "bitbucket"
+
+
 def detect_project_type(
     project_dir: Optional[Path] = None,
-) -> Tuple[str, str, str, str]:
+) -> Tuple[str, str, str, str, str]:
     """
     Auto-detect project type and recommend appropriate ADWS settings.
 
@@ -48,10 +76,12 @@ def detect_project_type(
         project_dir: Directory to analyze (defaults to current directory)
 
     Returns:
-        Tuple of (language, test_command, source_dir, test_dir)
+        Tuple of (language, test_command, source_dir, test_dir, repo_provider)
     """
     if project_dir is None:
         project_dir = Path.cwd()
+
+    repo_provider = detect_or_ask_repo_provider(project_dir)
 
     # Check for Node.js/JavaScript indicators
     if (project_dir / "package.json").exists():
@@ -62,20 +92,20 @@ def detect_project_type(
 
             # Check for workspaces (monorepo)
             if "workspaces" in package_data:
-                return "javascript", "npm test", ".", "."
+                return "javascript", "npm test", ".", ".", repo_provider
 
             # Check for React app
             if "react-scripts" in package_data.get(
                 "dependencies", {}
             ) or "react-scripts" in package_data.get("devDependencies", {}):
-                return "javascript", "npm test", "src", "__tests__"
+                return "javascript", "npm test", "src", "__tests__", repo_provider
 
             # Generic Node.js project
-            return "javascript", "npm test", "src", "test"
+            return "javascript", "npm test", "src", "test", repo_provider
 
         except (json.JSONDecodeError, FileNotFoundError):
             # Fallback to basic Node.js detection
-            return "javascript", "npm test", "src", "test"
+            return "javascript", "npm test", "src", "test", repo_provider
 
     # Check for Python indicators
     python_indicators = ["requirements.txt", "pyproject.toml", "setup.py", "Pipfile"]
@@ -84,34 +114,39 @@ def detect_project_type(
         if (project_dir / "uv.lock").exists() or (
             project_dir / "pyproject.toml"
         ).exists():
-            return "python", "uv run pytest", "src", "tests"
+            return "python", "uv run pytest", "src", "tests", repo_provider
         else:
-            return "python", "pytest", "src", "tests"
+            return "python", "pytest", "src", "tests", repo_provider
 
     # Check for Go
     if (project_dir / "go.mod").exists():
-        return "go", "go test ./...", ".", "."
+        return "go", "go test ./...", ".", ".", repo_provider
 
     # Check for Rust
     if (project_dir / "Cargo.toml").exists():
-        return "rust", "cargo test", "src", "tests"
+        return "rust", "cargo test", "src", "tests", repo_provider
 
     # Check for Java/Maven
     if (project_dir / "pom.xml").exists():
-        return "java", "mvn test", "src/main/java", "src/test/java"
+        return "java", "mvn test", "src/main/java", "src/test/java", repo_provider
 
     # Check for Java/Gradle
     if (project_dir / "build.gradle").exists() or (
         project_dir / "build.gradle.kts"
     ).exists():
-        return "java", "./gradlew test", "src/main/java", "src/test/java"
+        return "java", "./gradlew test", "src/main/java", "src/test/java", repo_provider
 
     # Default fallback (assume Python)
-    return "python", "pytest", "src", "tests"
+    return "python", "pytest", "src", "tests", repo_provider
 
 
 def update_project_config(
-    language: str, test_command: str, source_dir: str, test_dir: str
+    language: str,
+    test_command: str,
+    source_dir: str,
+    test_dir: str,
+    repo_provider: str,
+    issue_provider: str,
 ) -> bool:
     """
     Update ADWS/config.yaml with detected project settings.
@@ -121,6 +156,8 @@ def update_project_config(
         test_command: Test command to run
         source_dir: Source code directory
         test_dir: Test directory
+        repo_provider: Repository provider (bitbucket/github)
+        issue_provider: Issue tracker provider (jira/github)
 
     Returns:
         True if update was successful, False otherwise
@@ -140,6 +177,8 @@ def update_project_config(
         config_data["test_command"] = test_command
         config_data["source_dir"] = source_dir
         config_data["test_dir"] = test_dir
+        config_data["repo_provider"] = repo_provider
+        config_data["issue_provider"] = issue_provider
 
         # Write back to file
         with open(config_file, "w", encoding="utf-8") as f:
@@ -276,15 +315,23 @@ def run_setup() -> int:
     print()
     print("🔍 Step 2: Auto-detecting project type...")
 
-    language, test_command, source_dir, test_dir = detect_project_type()
+    language, test_command, source_dir, test_dir, repo_provider = detect_project_type()
     print(f"   Detected: {language.title()} project")
     print(f"   Test command: {test_command}")
     print(f"   Source directory: {source_dir}")
     print(f"   Test directory: {test_dir}")
+    print(f"   Repo provider: {repo_provider}")
+
+    # For now, default issue_provider to 'jira' unless user specifically wants GitHub issues
+    # In the future, we could detect this or ask
+    issue_provider = "jira"
+    print(f"   Issue provider: {issue_provider} (default)")
 
     # Update config with detected settings
     print("   Updating ADWS/config.yaml with detected settings...", end=" ")
-    if update_project_config(language, test_command, source_dir, test_dir):
+    if update_project_config(
+        language, test_command, source_dir, test_dir, repo_provider, issue_provider
+    ):
         print("✅ UPDATED")
     else:
         print("❌ FAILED TO UPDATE")
@@ -303,8 +350,8 @@ def run_setup() -> int:
 
     health_checks = {
         "environment": check_env_vars,
-        "jira_connectivity": check_jira_connectivity,
-        "bitbucket_connectivity": check_bitbucket_connectivity,
+        "issue_connectivity": check_issue_connectivity,
+        "repo_connectivity": check_repo_connectivity,
         "github_cli": check_github_cli,
         "opencode_server": check_opencode_server,
     }

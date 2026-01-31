@@ -38,10 +38,7 @@ from scripts.adw_modules.data_types import (
     E2ETestResult,
     IssueClassSlashCommand,
 )
-from scripts.adw_modules.bitbucket_ops import (
-    extract_repo_path,
-    get_repo_url,
-)
+from scripts.adw_modules import repo_ops
 from scripts.adw_modules.utils import (
     make_adw_id,
     setup_logger,
@@ -62,11 +59,7 @@ from scripts.adw_modules.workflow_ops import (
     ensure_adw_id,
     classify_issue,
 )
-from scripts.adw_modules.jira import (
-    jira_fetch_issue,
-    jira_make_issue_comment,
-    jira_add_attachment,
-)
+from scripts.adw_modules import issue_ops
 from scripts.adw_modules.config import config
 from scripts.adw_modules.agent import execute_opencode_prompt
 from scripts.adw_modules.opencode_http_client import check_opencode_server_available
@@ -215,7 +208,7 @@ def log_test_results(
         summary += f"All {len(results) + len(e2e_results)} tests passed successfully!\n"
 
     # Post the summary to the issue
-    jira_make_issue_comment(
+    issue_ops.add_comment(
         issue_number, format_issue_message(adw_id, "test_summary", summary)
     )
 
@@ -256,7 +249,7 @@ def log_test_results(
 
             logger.info(f"Saved E2E test results to {e2e_results_file}")
 
-        jira_add_attachment(issue_number, str(summary_file_path))
+        issue_ops.add_attachment(issue_number, str(summary_file_path))
         logger.info(f"Attached test summary to issue #{issue_number}")
 
     except Exception as e:
@@ -432,7 +425,7 @@ Your primary goal is to make the tests pass.
     logger.debug(f"Using task_type='test_fix' (routes to Claude Sonnet 4)")
 
     # Notify issue
-    jira_make_issue_comment(
+    issue_ops.add_comment(
         issue_number,
         format_issue_message(
             adw_id,
@@ -453,7 +446,7 @@ Your primary goal is to make the tests pass.
         # Handle OpenCode API failure
         if not response.success:
             logger.error(f"OpenCode HTTP API execution failed")
-            jira_make_issue_comment(
+            issue_ops.add_comment(
                 issue_number,
                 format_issue_message(
                     adw_id,
@@ -471,7 +464,7 @@ Your primary goal is to make the tests pass.
             response.files_changed if response.files_changed is not None else 0
         )
 
-        jira_make_issue_comment(
+        issue_ops.add_comment(
             issue_number,
             format_issue_message(
                 adw_id,
@@ -484,7 +477,7 @@ Your primary goal is to make the tests pass.
 
     except Exception as e:
         logger.error(f"Error invoking OpenCode HTTP API: {e}")
-        jira_make_issue_comment(
+        issue_ops.add_comment(
             issue_number,
             format_issue_message(
                 adw_id,
@@ -492,27 +485,6 @@ Your primary goal is to make the tests pass.
                 f"❌ OpenCode API invocation failed: {str(e)[:200]}...",
             ),
         )
-        return False
-
-        logger.info("Copilot CLI finished execution.")
-        logger.debug(f"Copilot output: {result.stdout}")
-
-        # Parse output just to log what happened
-        parsed = parse_copilot_output(result.stdout)
-
-        jira_make_issue_comment(
-            issue_number,
-            format_issue_message(
-                adw_id,
-                "test_resolver",
-                f"✅ Copilot finished. Success: {success}",
-            ),
-        )
-
-        return True
-
-    except Exception as e:
-        logger.error(f"Error invoking Copilot: {e}")
         return False
 
 
@@ -560,7 +532,7 @@ def run_tests_with_resolution(
 
         if resolution_success:
             logger.info(f"\n=== Re-running tests after resolution attempt ===")
-            jira_make_issue_comment(
+            issue_ops.add_comment(
                 issue_number,
                 format_issue_message(
                     adw_id,
@@ -577,7 +549,7 @@ def run_tests_with_resolution(
         logger.warning(
             f"Reached maximum retry attempts ({max_attempts}) with {failed_count} failures remaining"
         )
-        jira_make_issue_comment(
+        issue_ops.add_comment(
             issue_number,
             format_issue_message(
                 adw_id,
@@ -671,7 +643,7 @@ def execute_single_e2e_test(
         )
 
     # Make issue comment
-    jira_make_issue_comment(
+    issue_ops.add_comment(
         issue_number,
         format_issue_message(adw_id, agent_name, f"✅ Running E2E test: {test_name}"),
     )
@@ -712,7 +684,7 @@ Report whether the test passed or failed, and provide details.
         # Handle OpenCode API failure
         if not response.success:
             logger.error(f"OpenCode HTTP API execution failed for E2E test {test_name}")
-            jira_make_issue_comment(
+            issue_ops.add_comment(
                 issue_number,
                 format_issue_message(
                     adw_id,
@@ -780,7 +752,7 @@ Report whether the test passed or failed, and provide details.
         )
 
         status_emoji = "✅" if e2e_result.passed else "❌"
-        jira_make_issue_comment(
+        issue_ops.add_comment(
             issue_number,
             format_issue_message(
                 adw_id,
@@ -882,7 +854,7 @@ The following E2E tests failed:
 Please analyze the codebase and the test definitions to fix the issues.
 """
 
-    jira_make_issue_comment(
+    issue_ops.add_comment(
         issue_number,
         format_issue_message(
             adw_id,
@@ -956,7 +928,7 @@ def run_e2e_tests_with_resolution(
             failed_tests, adw_id, issue_number, logger, attempt
         ):
             logger.info(f"\n=== Re-running E2E tests after resolution ===")
-            jira_make_issue_comment(
+            issue_ops.add_comment(
                 issue_number,
                 format_issue_message(
                     adw_id,
@@ -972,7 +944,7 @@ def run_e2e_tests_with_resolution(
         logger.warning(
             f"Reached maximum E2E retry attempts ({max_attempts}) with {failed_count} failures remaining"
         )
-        jira_make_issue_comment(
+        issue_ops.add_comment(
             issue_number,
             format_issue_message(
                 adw_id,
@@ -1001,7 +973,7 @@ def main():
 
     # Ensure config is loaded from current project directory
     # This prevents config loading issues when working directory changes during execution
-    from adw_modules.config import config
+    from scripts.adw_modules.config import config
 
     config.reinitialize_for_project(Path.cwd())
 
@@ -1053,16 +1025,15 @@ def main():
     try:
         if rich_console:
             with rich_console.spinner(f"Fetching issue {issue_number} from Jira..."):
-                raw_jira_issue = jira_fetch_issue(issue_number)
-                from adw_modules.data_types import JiraIssue
+                raw_jira_issue = issue_ops.fetch_issue(issue_number)
+                from scripts.adw_modules.data_types import JiraIssue
 
-                issue = JiraIssue.from_raw_jira_issue(raw_jira_issue)
+                # issue is already normalized or needs checking type if we care
+                issue = raw_jira_issue
             rich_console.success(f"Successfully fetched issue: {issue.title}")
         else:
-            raw_jira_issue = jira_fetch_issue(issue_number)
-            from adw_modules.data_types import JiraIssue
-
-            issue = JiraIssue.from_raw_jira_issue(raw_jira_issue)
+            raw_jira_issue = issue_ops.fetch_issue(issue_number)
+            issue = raw_jira_issue
     except Exception as e:
         error_msg = f"Failed to fetch issue {issue_number} from Jira: {e}"
         logger.error(error_msg)
@@ -1100,8 +1071,8 @@ def main():
 
     # Get repo information from git remote
     try:
-        github_repo_url: str = get_repo_url()
-        repo_path: str = extract_repo_path(github_repo_url)
+        github_repo_url: str = repo_ops.get_repo_url()
+        repo_path: str = repo_ops.extract_repo_path(github_repo_url)
     except ValueError as e:
         logger.error(f"Error getting repository URL: {e}")
         # Not fatal for local testing, but might be for PRs
@@ -1133,7 +1104,7 @@ def main():
             logger.error(error_msg)
             if rich_console:
                 rich_console.error(error_msg)
-            jira_make_issue_comment(
+            issue_ops.add_comment(
                 issue_number,
                 format_issue_message(
                     adw_id, "ops", f"❌ Failed to checkout branch {branch_name}"
@@ -1163,7 +1134,7 @@ def main():
             logger.error(error_msg)
             if rich_console:
                 rich_console.error(error_msg)
-            jira_make_issue_comment(
+            issue_ops.add_comment(
                 issue_number,
                 format_issue_message(
                     adw_id, "ops", f"❌ Error creating branch: {error}"
@@ -1178,14 +1149,14 @@ def main():
             rich_console.success(
                 f"Created and checked out new test branch: {branch_name}"
             )
-        jira_make_issue_comment(
+        issue_ops.add_comment(
             issue_number,
             format_issue_message(
                 adw_id, "ops", f"✅ Created test branch: {branch_name}"
             ),
         )
 
-    jira_make_issue_comment(
+    issue_ops.add_comment(
         issue_number, format_issue_message(adw_id, "ops", "✅ Starting test suite")
     )
 
@@ -1195,7 +1166,7 @@ def main():
 
     # Run tests with automatic resolution and retry
     logger.info("\n=== Running test suite ===")
-    jira_make_issue_comment(
+    issue_ops.add_comment(
         issue_number,
         format_issue_message(adw_id, AGENT_TESTER, "✅ Running application tests..."),
     )
@@ -1225,7 +1196,7 @@ def main():
 
     # Format and post final results
     results_comment = format_test_results_comment(results, passed_count, failed_count)
-    jira_make_issue_comment(
+    issue_ops.add_comment(
         issue_number,
         format_issue_message(
             adw_id, AGENT_TESTER, f"📊 Final test results:\n{results_comment}"
@@ -1240,7 +1211,7 @@ def main():
         logger.warning("Skipping E2E tests due to unit test failures")
         if rich_console:
             rich_console.warning("Skipping E2E tests due to unit test failures")
-        jira_make_issue_comment(
+        issue_ops.add_comment(
             issue_number,
             format_issue_message(
                 adw_id, "ops", "⚠️ Skipping E2E tests due to unit test failures"
@@ -1253,7 +1224,7 @@ def main():
         logger.info("Skipping E2E tests as requested")
         if rich_console:
             rich_console.info("Skipping E2E tests as requested via --skip-e2e flag")
-        jira_make_issue_comment(
+        issue_ops.add_comment(
             issue_number,
             format_issue_message(
                 adw_id, "ops", "⚠️ Skipping E2E tests as requested via --skip-e2e flag"
@@ -1269,7 +1240,7 @@ def main():
 
         # Run E2E tests since unit tests passed
         logger.info("\n=== Running E2E test suite ===")
-        jira_make_issue_comment(
+        issue_ops.add_comment(
             issue_number,
             format_issue_message(adw_id, AGENT_E2E_TESTER, "✅ Starting E2E tests..."),
         )
@@ -1304,7 +1275,7 @@ def main():
             e2e_results_comment = format_e2e_test_results_comment(
                 e2e_results, e2e_passed_count, e2e_failed_count
             )
-            jira_make_issue_comment(
+            issue_ops.add_comment(
                 issue_number,
                 format_issue_message(
                     adw_id,
@@ -1330,17 +1301,16 @@ def main():
     if has_changes:
         # Commit the test results
         logger.info("\n=== Committing test results ===")
-        jira_make_issue_comment(
+        issue_ops.add_comment(
             issue_number,
             format_issue_message(adw_id, AGENT_TESTER, "✅ Committing test results"),
         )
 
         # Fetch issue details if we haven't already
         if not issue:
-            raw_issue = jira_fetch_issue(issue_number)
-            from adw_modules.data_types import JiraIssue
-
-            issue = JiraIssue.from_raw_jira_issue(raw_issue)
+            raw_issue = issue_ops.fetch_issue(issue_number)
+            # from adw_modules.data_types import JiraIssue
+            issue = raw_issue
 
         # Get issue classification if we need it for commit
         if not issue_class:
@@ -1362,7 +1332,7 @@ def main():
             logger.error(error_msg)
             if rich_console:
                 rich_console.error(error_msg)
-            jira_make_issue_comment(
+            issue_ops.add_comment(
                 issue_number,
                 format_issue_message(
                     adw_id, AGENT_TESTER, f"❌ Error committing test results: {error}"
@@ -1430,7 +1400,7 @@ def main():
                 style="red",
             )
 
-        jira_make_issue_comment(
+        issue_ops.add_comment(
             issue_number,
             format_issue_message(adw_id, "ops", failure_msg),
         )
@@ -1454,7 +1424,7 @@ def main():
                 style="green",
             )
 
-        jira_make_issue_comment(
+        issue_ops.add_comment(
             issue_number,
             format_issue_message(adw_id, "ops", success_msg),
         )

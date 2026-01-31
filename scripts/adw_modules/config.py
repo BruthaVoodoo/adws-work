@@ -119,6 +119,16 @@ class ADWConfig:
     def language(self) -> str:
         return self._data.get("language", "python")
 
+    @property
+    def repo_provider(self) -> str:
+        """Get repository provider (bitbucket or github)."""
+        return self._data.get("repo_provider", "bitbucket")
+
+    @property
+    def issue_provider(self) -> str:
+        """Get issue provider (jira or github)."""
+        return self._data.get("issue_provider", "jira")
+
     # OpenCode HTTP API configuration properties
     @property
     def opencode_server_url(self) -> str:

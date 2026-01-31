@@ -42,14 +42,23 @@ ADWS (AI Developer Workflow System) is a portable Python 3.10+ backend CLI tool 
   - `scripts/adw_modules/bedrock_agent.py` (AWS Bedrock)
   - `scripts/adw_modules/agent.py` (Proxy endpoint)
 
-### Bitbucket Cloud API
+### Git Repository Management
 - **Purpose**: Pull request creation and management
-- **Required Credentials**:
+- **Providers**: Bitbucket, GitHub
+- **Module**: `scripts/adw_modules/repo_ops.py` (Unified Facade)
+- **Implementations**:
+  - `scripts/adw_modules/repo/bitbucket.py`
+  - `scripts/adw_modules/repo/github.py`
+
+### Bitbucket Cloud API
+- **Required Credentials** (if provider=bitbucket):
   - `BITBUCKET_WORKSPACE`: Workspace name
   - `BITBUCKET_REPO_NAME`: Repository name
   - `BITBUCKET_API_TOKEN`: API token
-- **Operations**: Create PRs, update PR descriptions, check PR status
-- **Module**: `scripts/adw_modules/bitbucket_ops.py`
+
+### GitHub
+- **Required Credentials** (if provider=github):
+  - Uses `gh` CLI for authentication and operations
 
 ### Git
 - **Purpose**: Version control operations

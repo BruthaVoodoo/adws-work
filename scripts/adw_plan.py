@@ -27,11 +27,7 @@ from dotenv import load_dotenv
 
 from adw_modules.state import ADWState
 from adw_modules.git_ops import create_branch, commit_changes, finalize_git_operations
-from adw_modules.jira import (
-    jira_fetch_issue,
-    jira_make_issue_comment,
-    jira_add_attachment,
-)
+from adw_modules import issue_ops
 from adw_modules.workflow_ops import (
     classify_issue,
     build_plan,
@@ -147,12 +143,14 @@ def main():
     try:
         if rich_console:
             with rich_console.spinner(f"Fetching issue {issue_number} from Jira..."):
-                raw_jira_issue = jira_fetch_issue(issue_number)
-                issue = JiraIssue.from_raw_jira_issue(raw_jira_issue)
+                raw_jira_issue = issue_ops.fetch_issue(issue_number)
+                # issue = JiraIssue.from_raw_jira_issue(raw_jira_issue)
+                issue = raw_jira_issue
             rich_console.success(f"Successfully fetched issue: {issue.title}")
         else:
-            raw_jira_issue = jira_fetch_issue(issue_number)
-            issue = JiraIssue.from_raw_jira_issue(raw_jira_issue)
+            raw_jira_issue = issue_ops.fetch_issue(issue_number)
+            # issue = JiraIssue.from_raw_jira_issue(raw_jira_issue)
+            issue = raw_jira_issue
     except Exception as e:
         error_msg = f"Failed to fetch issue {issue_number} from Jira: {e}"
         logger.error(error_msg)
@@ -170,7 +168,7 @@ def main():
     state.save("adw_plan_init")
     logger.info(f"Initialized state")
 
-    jira_make_issue_comment(
+    issue_ops.add_comment(
         issue_number, format_issue_message(adw_id, "ops", "✅ Starting planning phase")
     )
 
@@ -191,7 +189,7 @@ def main():
             rich_console.error(error_msg)
         else:
             print(f"Error: {error_msg}")
-        jira_make_issue_comment(
+        issue_ops.add_comment(
             issue_number,
             format_issue_message(adw_id, "ops", f"❌ Error classifying issue: {error}"),
         )
@@ -202,7 +200,7 @@ def main():
     logger.info(f"Issue classified as: {issue_command}")
     if rich_console:
         rich_console.success(f"Issue classified as: {issue_command}")
-    jira_make_issue_comment(
+    issue_ops.add_comment(
         issue_number,
         format_issue_message(adw_id, "ops", f"✅ Issue classified as: {issue_command}"),
     )
@@ -221,7 +219,7 @@ def main():
             rich_console.error(error_msg)
         else:
             print(f"Error: {error_msg}")
-        jira_make_issue_comment(
+        issue_ops.add_comment(
             issue_number,
             format_issue_message(
                 adw_id, "ops", f"❌ Error generating branch name: {error}"
@@ -243,7 +241,7 @@ def main():
             rich_console.error(error_msg)
         else:
             print(f"Error: {error_msg}")
-        jira_make_issue_comment(
+        issue_ops.add_comment(
             issue_number,
             format_issue_message(adw_id, "ops", f"❌ Error creating branch: {error}"),
         )
@@ -254,7 +252,7 @@ def main():
     logger.info(f"Working on branch: {branch_name}")
     if rich_console:
         rich_console.success(f"Working on branch: {branch_name}")
-    jira_make_issue_comment(
+    issue_ops.add_comment(
         issue_number,
         format_issue_message(adw_id, "ops", f"✅ Working on branch: {branch_name}"),
     )
@@ -264,16 +262,17 @@ def main():
         rich_console.rule("Building Implementation Plan", style="cyan")
 
     logger.info("Building implementation plan")
-    jira_make_issue_comment(
+    issue_ops.add_comment(
         issue_number,
         format_issue_message(adw_id, AGENT_PLANNER, "✅ Building implementation plan"),
     )
 
     if rich_console:
         with rich_console.spinner("Generating implementation plan..."):
-            plan_response = build_plan(issue, issue_command, adw_id, logger)
+            # Force cast to satisfy mypy for now, or update build_plan signature later
+            plan_response = build_plan(issue, str(issue_command), adw_id, logger)
     else:
-        plan_response = build_plan(issue, issue_command, adw_id, logger)
+        plan_response = build_plan(issue, str(issue_command), adw_id, logger)
 
     if not plan_response.success:
         error_msg = f"Error building plan: {plan_response.output}"
@@ -282,7 +281,7 @@ def main():
             rich_console.error(error_msg)
         else:
             print(f"Error: {error_msg}")
-        jira_make_issue_comment(
+        issue_ops.add_comment(
             issue_number,
             format_issue_message(
                 adw_id, AGENT_PLANNER, f"❌ Error building plan: {plan_response.output}"
@@ -293,7 +292,7 @@ def main():
     logger.debug(f"Plan response: {plan_response.output}")
     if rich_console:
         rich_console.success("Implementation plan created successfully")
-    jira_make_issue_comment(
+    issue_ops.add_comment(
         issue_number,
         format_issue_message(adw_id, AGENT_PLANNER, "✅ Implementation plan created"),
     )
@@ -332,7 +331,7 @@ def main():
 
         # Attach plan to Jira
         try:
-            jira_add_attachment(issue_number, str(plan_file_path))
+            issue_ops.add_attachment(issue_number, str(plan_file_path))
             logger.info(f"Attached plan file to issue {issue_number}")
         except Exception as e:
             logger.error(f"Failed to attach plan file to Jira: {e}")
@@ -349,7 +348,7 @@ def main():
     state.update(plan_file=str(plan_file_path))
     state.save("adw_plan")
     logger.info(f"Plan file created: {plan_file_path}")
-    jira_make_issue_comment(
+    issue_ops.add_comment(
         issue_number,
         format_issue_message(adw_id, "ops", f"✅ Plan file created: {plan_file_path}"),
     )
@@ -368,7 +367,7 @@ def main():
         logger.error(error_msg)
         if rich_console:
             rich_console.error(error_msg)
-        jira_make_issue_comment(
+        issue_ops.add_comment(
             issue_number,
             format_issue_message(
                 adw_id, AGENT_PLANNER, f"❌ Error creating commit message: {error}"
@@ -388,7 +387,7 @@ def main():
         logger.error(error_msg)
         if rich_console:
             rich_console.error(error_msg)
-        jira_make_issue_comment(
+        issue_ops.add_comment(
             issue_number,
             format_issue_message(
                 adw_id, AGENT_PLANNER, f"❌ Error committing plan: {error}"
@@ -399,7 +398,7 @@ def main():
     logger.info(f"Committed plan: {commit_msg}")
     if rich_console:
         rich_console.success("Plan committed successfully")
-    jira_make_issue_comment(
+    issue_ops.add_comment(
         issue_number, format_issue_message(adw_id, AGENT_PLANNER, "✅ Plan committed")
     )
 
@@ -426,7 +425,7 @@ def main():
             title="Planning Summary",
             style="green",
         )
-    jira_make_issue_comment(
+    issue_ops.add_comment(
         issue_number, format_issue_message(adw_id, "ops", "✅ Planning phase completed")
     )
 
@@ -434,7 +433,7 @@ def main():
     state.save("adw_plan")
 
     # Post final state summary to issue
-    jira_make_issue_comment(
+    issue_ops.add_comment(
         issue_number,
         f"{adw_id}_ops: 📋 Final planning state:\n```json\n{json.dumps(state.data, indent=2)}\n```",
     )

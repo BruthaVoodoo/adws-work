@@ -7,11 +7,9 @@ import subprocess
 import logging
 from typing import Optional, Tuple
 
-# Import Jira operations for issue comments
-from scripts.adw_modules.jira import jira_make_issue_comment
-
-# Import Bitbucket operations for PR management
-from scripts.adw_modules.bitbucket_ops import check_pr_exists
+# Import Repo operations for PR management
+from scripts.adw_modules import repo_ops
+from scripts.adw_modules import issue_ops
 
 
 def get_current_branch() -> str:
@@ -114,14 +112,14 @@ def finalize_git_operations(state: "ADWState", logger: logging.Logger) -> None:
     final_pr_url = None
 
     try:
-        pr_info = check_pr_exists(branch_name)
+        pr_info = repo_ops.check_pr_exists(branch_name)
 
         if pr_info:
             # PR already exists - just post comment with link
             final_pr_url = pr_info["url"]
             logger.info(f"Found existing PR: {final_pr_url}")
             if issue_number and adw_id:
-                jira_make_issue_comment(
+                issue_ops.add_comment(
                     issue_number, f"{adw_id}_ops: ✅ Pull request: {final_pr_url}"
                 )
         else:
@@ -136,7 +134,7 @@ def finalize_git_operations(state: "ADWState", logger: logging.Logger) -> None:
                 logger.info(f"Created PR: {pr_url}")
                 # Post PR link to Jira issue
                 if issue_number and adw_id:
-                    jira_make_issue_comment(
+                    issue_ops.add_comment(
                         issue_number, f"{adw_id}_ops: ✅ Pull request created: {pr_url}"
                     )
             else:
@@ -144,7 +142,7 @@ def finalize_git_operations(state: "ADWState", logger: logging.Logger) -> None:
                 logger.error(f"Failed to create PR: {error_msg}")
                 # Post error to Jira
                 if issue_number and adw_id:
-                    jira_make_issue_comment(
+                    issue_ops.add_comment(
                         issue_number,
                         f"{adw_id}_ops: ❌ Failed to create pull request: {error_msg}",
                     )
@@ -155,7 +153,7 @@ def finalize_git_operations(state: "ADWState", logger: logging.Logger) -> None:
         # Post error to Jira if possible
         if issue_number and adw_id:
             try:
-                jira_make_issue_comment(issue_number, f"{adw_id}_ops: ❌ {error_msg}")
+                issue_ops.add_comment(issue_number, f"{adw_id}_ops: ❌ {error_msg}")
             except Exception as jira_error:
                 logger.error(f"Could not post error to Jira: {str(jira_error)}")
 

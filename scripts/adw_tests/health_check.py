@@ -43,8 +43,9 @@ from pydantic import BaseModel
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import required functions
-from adw_modules.jira import get_jira_client
 from adw_modules.opencode_http_client import check_opencode_server_available
+from adw_modules import repo_ops
+from adw_modules import issue_ops
 
 # Load environment variables
 load_dotenv(override=True)
@@ -71,14 +72,25 @@ class HealthCheckResult(BaseModel):
 
 def check_env_vars() -> CheckResult:
     """Check required environment variables."""
+    from adw_modules.config import config
+
     required_vars = {
         "JIRA_SERVER": "Jira Server URL",
         "JIRA_USERNAME": "Jira Username (email)",
         "JIRA_API_TOKEN": "Jira API Token",
-        "BITBUCKET_API_TOKEN": "Bitbucket API Token (for Bearer auth)",
-        "BITBUCKET_WORKSPACE": "Bitbucket Workspace",
-        "BITBUCKET_REPO_NAME": "Bitbucket Repository Name",
     }
+
+    # Add provider-specific requirements
+    if config.repo_provider == "bitbucket":
+        required_vars.update(
+            {
+                "BITBUCKET_API_TOKEN": "Bitbucket API Token (for Bearer auth)",
+                "BITBUCKET_WORKSPACE": "Bitbucket Workspace",
+                "BITBUCKET_REPO_NAME": "Bitbucket Repository Name",
+            }
+        )
+    # GitHub relies on CLI auth usually, so strict env vars might not be needed
+    # unless we enforce GITHUB_TOKEN. For now, we let the connectivity check handle it.
 
     optional_vars = {
         "GITHUB_PAT": "(Optional) GitHub Personal Access Token - only needed if you want ADW to use a different GitHub account than 'gh auth login'",
@@ -109,63 +121,34 @@ def check_env_vars() -> CheckResult:
     )
 
 
-def check_jira_connectivity() -> CheckResult:
-    """Test Jira API connectivity."""
+def check_issue_connectivity() -> CheckResult:
+    """Test Issue Tracker connectivity (Jira or GitHub)."""
     try:
-        jira_client = get_jira_client()
-        server_info = jira_client.server_info()
-        return CheckResult(
-            success=True,
-            details={
-                "jira_version": server_info["version"],
-                "server_title": server_info["serverTitle"],
-            },
-        )
-    except Exception as e:
-        return CheckResult(success=False, error=f"Jira connectivity failed: {str(e)}")
-
-
-def check_bitbucket_connectivity() -> CheckResult:
-    """Test Bitbucket API connectivity using Bearer Token."""
-    token = os.getenv("BITBUCKET_API_TOKEN")
-    workspace = os.getenv("BITBUCKET_WORKSPACE")
-    repo_name = os.getenv("BITBUCKET_REPO_NAME")
-
-    if not token:
-        return CheckResult(
-            success=False,
-            error="BITBUCKET_API_TOKEN environment variable not set.",
-        )
-
-    try:
-        api_url = f"https://api.bitbucket.org/2.0/repositories/{workspace}/{repo_name}"
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "Accept": "application/json",
-        }
-
-        response = requests.get(api_url, headers=headers, timeout=10)
-        response.raise_for_status()
-
-        user_data = response.json()
-        return CheckResult(
-            success=True, details={"authenticated_user": user_data.get("display_name")}
-        )
-
-    except requests.exceptions.RequestException as e:
-        if e.response is not None and e.response.status_code == 401:
+        result = issue_ops.check_connectivity()
+        if result["success"]:
+            return CheckResult(success=True, details=result.get("details", {}))
+        else:
             return CheckResult(
-                success=False,
-                error="Bitbucket API returned 401 Unauthorized. The BITBUCKET_API_TOKEN is likely invalid or expired.",
+                success=False, error=result.get("error", "Unknown error")
             )
-        return CheckResult(
-            success=False, error=f"Bitbucket connectivity failed: {str(e)}"
-        )
     except Exception as e:
         return CheckResult(
-            success=False,
-            error=f"An unexpected error occurred during Bitbucket check: {str(e)}",
+            success=False, error=f"Issue tracker connectivity failed: {str(e)}"
         )
+
+
+def check_repo_connectivity() -> CheckResult:
+    """Test Repository Provider connectivity (Bitbucket or GitHub)."""
+    try:
+        result = repo_ops.check_connectivity()
+        if result["success"]:
+            return CheckResult(success=True, details=result.get("details", {}))
+        else:
+            return CheckResult(
+                success=False, error=result.get("error", "Unknown error")
+            )
+    except Exception as e:
+        return CheckResult(success=False, error=f"Repo connectivity failed: {str(e)}")
 
 
 def check_github_cli() -> CheckResult:
@@ -247,9 +230,9 @@ def run_health_check() -> HealthCheckResult:
 
     checks_to_run = {
         "environment": check_env_vars,
-        "jira_connectivity": check_jira_connectivity,
-        "bitbucket_connectivity": check_bitbucket_connectivity,
-        "github_cli": check_github_cli,
+        "issue_connectivity": check_issue_connectivity,
+        "repo_connectivity": check_repo_connectivity,
+        "github_cli": check_github_cli,  # Still good to check generally
         "opencode_server": check_opencode_server,
     }
 

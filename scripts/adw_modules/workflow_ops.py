@@ -21,11 +21,8 @@ from scripts.adw_modules.data_types import (
     ReviewIssue,
 )
 from scripts.adw_modules.agent import execute_template, execute_opencode_prompt
-from scripts.adw_modules.bitbucket_ops import (
-    check_pr_exists,
-    create_pull_request as bb_create_pr,
-    update_pull_request,
-)
+from scripts.adw_modules import repo_ops
+from scripts.adw_modules import issue_ops
 from scripts.adw_modules.state import ADWState
 from scripts.adw_modules.utils import parse_json, load_prompt
 from scripts.adw_modules.issue_formatter import format_issue_context
@@ -824,7 +821,7 @@ def create_pull_request(
         # Check if PR already exists for this branch
         try:
             logger.debug(f"Checking if PR exists for branch: {branch_name}")
-            existing_pr = check_pr_exists(branch_name)
+            existing_pr = repo_ops.check_pr_exists(branch_name)
             logger.debug(f"PR exists check result: {existing_pr}")
         except Exception as e:
             error_msg = f"Failed to check if PR exists: {str(e)}"
@@ -835,7 +832,9 @@ def create_pull_request(
             # Update existing PR
             logger.info(f"Found existing PR for branch {branch_name}, updating...")
             try:
-                pr_url, _ = update_pull_request(branch_name, title, description)
+                pr_url, _ = repo_ops.update_pull_request(
+                    branch_name, title, description
+                )
                 logger.info(f"Updated pull request: {pr_url}")
                 return pr_url, None
             except RuntimeError as e:
@@ -844,7 +843,9 @@ def create_pull_request(
             # Create new PR
             logger.info(f"Creating new pull request for branch {branch_name}...")
             try:
-                pr_url, _ = bb_create_pr(branch_name, title, description)
+                pr_url, _ = repo_ops.create_pull_request(
+                    branch_name, title, description
+                )
                 logger.info(f"Created pull request: {pr_url}")
                 return pr_url, None
             except RuntimeError as e:
@@ -1003,6 +1004,14 @@ def create_or_find_branch(
         return "", f"Failed to classify issue: {error}"
 
     state.update(issue_class=issue_command)
+
+    # Create branch
+    if (
+        hasattr(issue, "key") and issue.key
+    ):  # Assuming it's a JiraIssue with a key like PROJECT-123
+        issue_key = issue.key
+    else:  # Fallback or if using GitHubIssue model which uses number
+        issue_key = str(issue.number)
 
     branch_name, error = generate_branch_name(issue, issue_command, adw_id, logger)
     if error:
