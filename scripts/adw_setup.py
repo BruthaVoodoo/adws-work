@@ -18,9 +18,10 @@ Story B3: Combine setup + healthcheck into single validation flow
 import os
 import sys
 import json
+import yaml
 from pathlib import Path
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple, Optional
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(__file__))
@@ -35,6 +36,120 @@ from adw_tests.health_check import (
     HealthCheckResult,
     CheckResult,
 )
+
+
+def detect_project_type(
+    project_dir: Optional[Path] = None,
+) -> Tuple[str, str, str, str]:
+    """
+    Auto-detect project type and recommend appropriate ADWS settings.
+
+    Args:
+        project_dir: Directory to analyze (defaults to current directory)
+
+    Returns:
+        Tuple of (language, test_command, source_dir, test_dir)
+    """
+    if project_dir is None:
+        project_dir = Path.cwd()
+
+    # Check for Node.js/JavaScript indicators
+    if (project_dir / "package.json").exists():
+        package_json_path = project_dir / "package.json"
+        try:
+            with open(package_json_path, "r", encoding="utf-8") as f:
+                package_data = json.load(f)
+
+            # Check for workspaces (monorepo)
+            if "workspaces" in package_data:
+                return "javascript", "npm test", ".", "."
+
+            # Check for React app
+            if "react-scripts" in package_data.get(
+                "dependencies", {}
+            ) or "react-scripts" in package_data.get("devDependencies", {}):
+                return "javascript", "npm test", "src", "__tests__"
+
+            # Generic Node.js project
+            return "javascript", "npm test", "src", "test"
+
+        except (json.JSONDecodeError, FileNotFoundError):
+            # Fallback to basic Node.js detection
+            return "javascript", "npm test", "src", "test"
+
+    # Check for Python indicators
+    python_indicators = ["requirements.txt", "pyproject.toml", "setup.py", "Pipfile"]
+    if any((project_dir / indicator).exists() for indicator in python_indicators):
+        # Check for uv usage
+        if (project_dir / "uv.lock").exists() or (
+            project_dir / "pyproject.toml"
+        ).exists():
+            return "python", "uv run pytest", "src", "tests"
+        else:
+            return "python", "pytest", "src", "tests"
+
+    # Check for Go
+    if (project_dir / "go.mod").exists():
+        return "go", "go test ./...", ".", "."
+
+    # Check for Rust
+    if (project_dir / "Cargo.toml").exists():
+        return "rust", "cargo test", "src", "tests"
+
+    # Check for Java/Maven
+    if (project_dir / "pom.xml").exists():
+        return "java", "mvn test", "src/main/java", "src/test/java"
+
+    # Check for Java/Gradle
+    if (project_dir / "build.gradle").exists() or (
+        project_dir / "build.gradle.kts"
+    ).exists():
+        return "java", "./gradlew test", "src/main/java", "src/test/java"
+
+    # Default fallback (assume Python)
+    return "python", "pytest", "src", "tests"
+
+
+def update_project_config(
+    language: str, test_command: str, source_dir: str, test_dir: str
+) -> bool:
+    """
+    Update ADWS/config.yaml with detected project settings.
+
+    Args:
+        language: Programming language
+        test_command: Test command to run
+        source_dir: Source code directory
+        test_dir: Test directory
+
+    Returns:
+        True if update was successful, False otherwise
+    """
+    config_file = Path.cwd() / "ADWS" / "config.yaml"
+
+    if not config_file.exists():
+        return False
+
+    try:
+        # Read existing config
+        with open(config_file, "r", encoding="utf-8") as f:
+            config_data = yaml.safe_load(f) or {}
+
+        # Update project-specific settings
+        config_data["language"] = language
+        config_data["test_command"] = test_command
+        config_data["source_dir"] = source_dir
+        config_data["test_dir"] = test_dir
+
+        # Write back to file
+        with open(config_file, "w", encoding="utf-8") as f:
+            yaml.dump(config_data, f, default_flow_style=False, sort_keys=False)
+
+        return True
+
+    except Exception as e:
+        print(f"Error updating config: {e}", file=sys.stderr)
+        return False
 
 
 def validate_configuration() -> tuple[bool, List[str]]:
@@ -157,16 +272,34 @@ def run_setup() -> int:
 
     print("✅ Configuration valid")
 
-    # Step 2: Get log directory (ADWS/logs/)
+    # Step 2: Auto-detect project type and update config if needed
+    print()
+    print("🔍 Step 2: Auto-detecting project type...")
+
+    language, test_command, source_dir, test_dir = detect_project_type()
+    print(f"   Detected: {language.title()} project")
+    print(f"   Test command: {test_command}")
+    print(f"   Source directory: {source_dir}")
+    print(f"   Test directory: {test_dir}")
+
+    # Update config with detected settings
+    print("   Updating ADWS/config.yaml with detected settings...", end=" ")
+    if update_project_config(language, test_command, source_dir, test_dir):
+        print("✅ UPDATED")
+    else:
+        print("❌ FAILED TO UPDATE")
+        print("   Warning: Could not update config.yaml with detected settings")
+
+    # Step 3: Get log directory (ADWS/logs/)
     try:
         logs_dir = cwd / "ADWS" / "logs"
     except Exception as e:
         print(f"❌ Error determining log directory: {e}")
         return 1
 
-    # Step 3: Run health checks
+    # Step 4: Run health checks
     print()
-    print("🏥 Step 2: Running health checks...")
+    print("🏥 Step 3: Running health checks...")
 
     health_checks = {
         "environment": check_env_vars,

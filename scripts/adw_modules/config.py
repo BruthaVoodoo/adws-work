@@ -6,28 +6,33 @@ from typing import Dict, Any, Optional
 
 
 class ADWConfig:
-    def __init__(self):
+    def __init__(self, project_dir: Optional[Path] = None):
         self._config_path: Optional[Path] = None
         self._data: Dict[str, Any] = {}
+        self._project_dir_override = project_dir
         self._load()
 
     def _load(self):
-        # Start from CWD and look up
-        cwd = Path.cwd()
-        adws_config_path = cwd / "ADWS" / "config.yaml"
+        # Use provided project directory or start from CWD
+        if self._project_dir_override:
+            start_dir = self._project_dir_override
+        else:
+            start_dir = Path.cwd()
 
-        # PRIORITY 1: Check for ADWS/config.yaml in CWD
+        adws_config_path = start_dir / "ADWS" / "config.yaml"
+
+        # PRIORITY 1: Check for ADWS/config.yaml in start directory
         if adws_config_path.exists() and adws_config_path.is_file():
-            self._config_path = adws_config_path
+            self._config_path = adws_config_path.resolve()  # Use absolute path
             self._load_config_from_file(adws_config_path)
             return
 
         # PRIORITY 2: Walk up directory tree to find ADWS/config.yaml
-        current = cwd
+        current = start_dir
         while current.parent != current:
             adws_path = current / "ADWS" / "config.yaml"
             if adws_path.exists() and adws_path.is_file():
-                self._config_path = adws_path
+                self._config_path = adws_path.resolve()  # Use absolute path
                 self._load_config_from_file(adws_path)
                 return
             current = current.parent
@@ -39,12 +44,12 @@ class ADWConfig:
             ".adw_config.yaml",
             ".adw_config.yml",
         ]
-        current = cwd
+        current = start_dir
         while True:
             for cand in legacy_candidates:
                 p = current / cand
                 if p.exists() and p.is_file():
-                    self._config_path = p
+                    self._config_path = p.resolve()  # Use absolute path
                     print(
                         f"Deprecation warning: Using legacy config file {p}. "
                         f"Please migrate to ADWS/config.yaml. Legacy config support will be removed in a future version.",
@@ -57,7 +62,7 @@ class ADWConfig:
                 break
             current = current.parent
 
-        # If no config found, use defaults based on CWD
+        # If no config found, use defaults based on start directory
         self._data = {}
 
     def _load_config_from_file(self, path: Path):
@@ -71,6 +76,15 @@ class ADWConfig:
                 file=sys.stderr,
             )
             self._data = {}
+
+    def reinitialize_for_project(self, project_dir: Path):
+        """Reinitialize config for a specific project directory.
+
+        This ensures the config is loaded from the correct project even if
+        working directory changes during execution.
+        """
+        self._project_dir_override = project_dir
+        self._load()
 
     @property
     def project_root(self) -> Path:

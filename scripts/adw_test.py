@@ -999,6 +999,12 @@ def main():
     # Get rich console instance
     rich_console = get_rich_console_instance()
 
+    # Ensure config is loaded from current project directory
+    # This prevents config loading issues when working directory changes during execution
+    from adw_modules.config import config
+
+    config.reinitialize_for_project(Path.cwd())
+
     # Parse arguments
     arg_issue_number, arg_adw_id, skip_e2e = parse_args(None)
 

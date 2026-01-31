@@ -75,6 +75,7 @@ tests/test_opencode_response_parsing.py
 tests/test_output_parser.py
 tests/test_plan_generation_integration.py
 tests/test_portable_architecture.py
+tests/test_state_cleanup.py
 tests/test_story_2_8_error_handling.py
 tests/test_story_2_9_planning_operations_integration.py
 tests/test_story_3_2_resolve_failed_tests_migration.py

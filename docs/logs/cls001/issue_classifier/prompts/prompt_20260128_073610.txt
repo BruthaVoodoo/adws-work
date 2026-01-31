@@ -1,1 +1,0 @@
-Classify: Add new user registration feature
