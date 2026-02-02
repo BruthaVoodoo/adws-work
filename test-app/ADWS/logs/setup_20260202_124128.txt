@@ -1,0 +1,39 @@
+ADW Setup Log
+==================================================
+Timestamp: 2026-02-02T12:41:28.912968
+
+Configuration Status: VALID
+
+Health Check Results:
+--------------------------------------------------
+
+[environment] PASS
+  Details: {
+  "missing_required": [],
+  "missing_optional": []
+}
+
+[issue_connectivity] PASS
+  Details: {
+  "jira_version": "1001.0.0-SNAPSHOT",
+  "server_title": "Jira"
+}
+
+[repo_connectivity] PASS
+  Details: {
+  "authenticated_user": null
+}
+
+[github_cli] PASS
+  Details: {
+  "version": "gh version 2.83.1 (2025-11-13)\nhttps://github.com/cli/cli/releases/tag/v2.83.1",
+  "auth_status": ""
+}
+
+[opencode_server] PASS
+  Details: {
+  "server_url": "http://localhost:4096",
+  "status": "available"
+}
+
+Overall Status: SUCCESS

@@ -1,50 +1,22 @@
-# ADWS Configuration
-#
-# This file contains project-specific configuration for ADWS (AI Developer Workflow System).
-# Place this file in the ADWS/ directory at your project root.
-#
-# Documentation: https://github.com/your-org/adws/docs/configuration
-
-# Project Structure
-source_dir: src          # Directory containing application source code
-test_dir: tests          # Directory containing test files
-docs_dir: docs          # Directory for generated documentation
-
-# Language and Build
-language: python           # Programming language (python, javascript, go, etc.)
-test_command: uv run pytest  # Command to run tests
-
-# Provider Configuration
-# Controls which systems are used for git operations and issue tracking
+source_dir: src
+test_dir: tests
+docs_dir: docs
+language: python
+test_command: uv run pytest
 providers:
-  git: "butbucket"     # Options: "github", "bitbucket"
-  issues: "jira"    # Options: "jira", "github"
-
-# OpenCode HTTP API Configuration
-# OpenCode provides LLM access via GitHub Copilot models
+  git: butbucket
+  issues: jira
 opencode:
-  # HTTP server endpoint (default: localhost:4096)
-  server_url: "http://localhost:4096"
-
-  # Model selection per task type
+  server_url: http://localhost:4096
   models:
-    # Heavy lifting: code implementation, test fixing, reviews
-    heavy_lifting: "github-copilot/claude-sonnet-4"
-
-    # Lightweight: planning, classification, document generation
-    lightweight: "github-copilot/claude-haiku-4.5"
-
-  # Timeouts (seconds)
-  timeout: 600                # Timeout for heavy code operations (10 min)
-  lightweight_timeout: 60       # Timeout for planning/classification (1 min)
-
-  # Retry configuration
-  max_retries: 3              # Number of retries on transient failures
-  retry_backoff: 1.5          # Exponential backoff multiplier
-
-  # Session management
-  reuse_sessions: false         # Reuse sessions across operations (experimental)
-
-  # Connection settings
-  connection_timeout: 30        # Seconds to wait for initial connection
-  read_timeout: 600            # Seconds to wait for response completion
+    heavy_lifting: github-copilot/claude-sonnet-4
+    lightweight: github-copilot/claude-haiku-4.5
+  timeout: 600
+  lightweight_timeout: 60
+  max_retries: 3
+  retry_backoff: 1.5
+  reuse_sessions: false
+  connection_timeout: 30
+  read_timeout: 600
+repo_provider: github
+issue_provider: jira

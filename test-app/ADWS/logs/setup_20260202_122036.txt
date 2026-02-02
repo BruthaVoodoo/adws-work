@@ -1,6 +1,6 @@
 ADW Setup Log
 ==================================================
-Timestamp: 2026-01-15T16:05:57.110336
+Timestamp: 2026-02-02T12:20:36.981468
 
 Configuration Status: VALID
 
@@ -13,16 +13,14 @@ Health Check Results:
   "missing_optional": []
 }
 
-[jira_connectivity] PASS
+[issue_connectivity] PASS
   Details: {
   "jira_version": "1001.0.0-SNAPSHOT",
   "server_title": "Jira"
 }
 
-[bitbucket_connectivity] PASS
-  Details: {
-  "authenticated_user": null
-}
+[repo_connectivity] FAIL
+  Error: Bitbucket API returned 401 Unauthorized. The BITBUCKET_API_TOKEN is likely invalid or expired.
 
 [github_cli] PASS
   Details: {
@@ -30,10 +28,13 @@ Health Check Results:
   "auth_status": ""
 }
 
-[opencode_server] FAIL
-  Error: OpenCode server at http://localhost:4096 is not available. Start it with: opencode serve --port 4096
+[opencode_server] PASS
+  Details: {
+  "server_url": "http://localhost:4096",
+  "status": "available"
+}
 
 Overall Status: FAILURE
 
 Errors:
-  - [Opencode Server] OpenCode server at http://localhost:4096 is not available. Start it with: opencode serve --port 4096
+  - [Repo Connectivity] Bitbucket API returned 401 Unauthorized. The BITBUCKET_API_TOKEN is likely invalid or expired.

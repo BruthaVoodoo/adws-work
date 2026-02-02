@@ -1,0 +1,53 @@
+{
+  "timestamp": "2026-02-02T12:46:46.691650",
+  "adw_id": "e5ec3762",
+  "agent_name": "issue_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "# Github Issue Command Selection\nBased on the `Jira Issue` below, follow the `Instructions` to select the appropriate command to execute based on the `Command Mapping`.\n\n## Instructions\n- Based on the",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c1f76c833001RxNIA41ICfn3Ma",
+      "sessionID": "ses_3e0893806ffeDapRgGeU2ALSG0",
+      "role": "assistant",
+      "time": {
+        "created": 1770054404147,
+        "completed": 1770054406682
+      },
+      "error": {
+        "name": "UnknownError",
+        "data": {
+          "message": "Error: No such file or directory"
+        }
+      },
+      "parentID": "msg_c1f76c80d001lVdNjV660fd1A3",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira/app",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      }
+    },
+    "parts": [],
+    "session_id": "ses_3e0893806ffeDapRgGeU2ALSG0",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/test-app/docs/logs/e5ec3762/issue_classifier/response_20260202_124646.json",
+    "created_at": "2026-02-02T12:46:46.691667",
+    "log_type": "response"
+  }
+}

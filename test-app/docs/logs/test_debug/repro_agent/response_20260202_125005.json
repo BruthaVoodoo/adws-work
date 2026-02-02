@@ -1,0 +1,53 @@
+{
+  "timestamp": "2026-02-02T12:50:05.289124",
+  "adw_id": "test_debug",
+  "agent_name": "repro_agent",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "\n    Classify the following issue as /bug, /feature, or /chore.\n    \n    Issue:\n    Title: Fix login page typo\n    Body: The word 'password' is spelled 'passwrod' on the login screen.\n    ",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c1f79d3ee001h5xFpfmP21yHAo",
+      "sessionID": "ses_3e0862c3fffewuZdmjiI6iQEqT",
+      "role": "assistant",
+      "time": {
+        "created": 1770054603758,
+        "completed": 1770054605281
+      },
+      "error": {
+        "name": "UnknownError",
+        "data": {
+          "message": "Error: No such file or directory"
+        }
+      },
+      "parentID": "msg_c1f79d3d5001i8j3z6YC4QDRCv",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira/app",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      }
+    },
+    "parts": [],
+    "session_id": "ses_3e0862c3fffewuZdmjiI6iQEqT",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/test-app/docs/logs/test_debug/repro_agent/response_20260202_125005.json",
+    "created_at": "2026-02-02T12:50:05.289146",
+    "log_type": "response"
+  }
+}
