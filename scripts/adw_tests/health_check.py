@@ -36,7 +36,7 @@ import argparse
 import requests
 from urllib.parse import urlparse
 
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 from pydantic import BaseModel
 
 # Add parent directory to path for imports
@@ -48,7 +48,9 @@ from adw_modules import repo_ops
 from adw_modules import issue_ops
 
 # Load environment variables
-load_dotenv(override=True)
+# Use usecwd=True to ensure we look in the current working directory (e.g. test-app/)
+# instead of starting from the script location (which might be in .venv/bin/)
+load_dotenv(find_dotenv(usecwd=True), override=True)
 
 
 class CheckResult(BaseModel):

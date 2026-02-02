@@ -1,0 +1,55 @@
+{
+  "timestamp": "2026-02-02T12:50:37.968477",
+  "adw_id": "test_debug",
+  "agent_name": "repro_agent",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "\n    Classify the following issue as /bug, /feature, or /chore.\n    \n    Issue:\n    Title: Fix login page typo\n    Body: The word 'password' is spelled 'passwrod' on the login screen.\n    ",
+  "error_context": "send_prompt_server_error failed with OpenCodeHTTPClientError: OpenCode Server Error: UnknownError - Error: No such file or directory",
+  "response": {
+    "error_type": "OpenCodeHTTPClientError",
+    "error_message": "OpenCode Server Error: UnknownError - Error: No such file or directory",
+    "operation": "send_prompt_server_error",
+    "additional_context": {
+      "server_info": {
+        "id": "msg_c1f7a50ae001Gy57MOsVZJ5Zz0",
+        "sessionID": "ses_3e085af68ffeBOoJ96bZoxy408",
+        "role": "assistant",
+        "time": {
+          "created": 1770054635695,
+          "completed": 1770054637954
+        },
+        "error": {
+          "name": "UnknownError",
+          "data": {
+            "message": "Error: No such file or directory"
+          }
+        },
+        "parentID": "msg_c1f7a509d001ZjewwVKTGRtXFX",
+        "modelID": "claude-haiku-4.5",
+        "providerID": "github-copilot",
+        "mode": "build",
+        "agent": "build",
+        "path": {
+          "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira/app",
+          "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+        },
+        "cost": 0,
+        "tokens": {
+          "input": 0,
+          "output": 0,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    }
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/test-app/docs/logs/test_debug/repro_agent/error_response_20260202_125037.json",
+    "created_at": "2026-02-02T12:50:37.968549",
+    "log_type": "error"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-02-02T13:21:03.945331",
+  "adw_id": "17a89ac4",
+  "agent_name": "sdlc_planner",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "# Feature Planning\n\nCreate a new plan to implement a new feature in a project using the exact specified markdown `Plan Format`. Follow the `Instructions` to create the plan and use the `Relevant Files",
+  "error_context": "send_prompt_timeout_retry failed with ReadTimeout: HTTPConnectionPool(host='localhost', port=4096): Read timed out. (read timeout=60)",
+  "response": {
+    "error_type": "ReadTimeout",
+    "error_message": "HTTPConnectionPool(host='localhost', port=4096): Read timed out. (read timeout=60)",
+    "operation": "send_prompt_timeout_retry",
+    "additional_context": {
+      "timeout": 60,
+      "attempt": 1,
+      "max_retries": 3,
+      "retry_delay": 1.0
+    }
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/test-app/docs/logs/17a89ac4/sdlc_planner/error_response_20260202_132103.json",
+    "created_at": "2026-02-02T13:21:03.945356",
+    "log_type": "error"
+  }
+}

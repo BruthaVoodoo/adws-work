@@ -701,7 +701,39 @@ class OpenCodeHTTPClient:
             # Success - parse response and optionally log successful response
             response_data = response.json()
 
+            # Check for server-side errors reported in info block
+            if "info" in response_data and "error" in response_data["info"]:
+                error_info = response_data["info"]["error"]
+                error_name = error_info.get("name", "UnknownError")
+                error_data = error_info.get("data", {})
+                error_details = (
+                    error_data.get("message")
+                    if isinstance(error_data, dict)
+                    else str(error_data)
+                )
+
+                error_msg = f"OpenCode Server Error: {error_name} - {error_details}"
+
+                # Log this error
+                if adw_id and agent_name:
+                    try:
+                        log_error_with_context(
+                            adw_id=adw_id,
+                            agent_name=agent_name,
+                            error=OpenCodeHTTPClientError(error_msg),
+                            operation="send_prompt_server_error",
+                            server_url=self.server_url,
+                            model_id=model_id,
+                            prompt_preview=prompt[:200] if prompt else None,
+                            additional_context={"server_info": response_data["info"]},
+                        )
+                    except Exception:
+                        pass
+
+                raise OpenCodeHTTPClientError(error_msg)
+
             # Transform OpenCode response to expected ADWS format
+
             # OpenCode returns: {"info": {...}, "parts": [...]}
             # ADWS expects: {"message": {...}, "parts": [...]}
             if "info" in response_data:

@@ -1,6 +1,6 @@
 ADW Setup Log
 ==================================================
-Timestamp: 2026-01-16T10:39:52.690106
+Timestamp: 2026-02-02T12:45:47.210851
 
 Configuration Status: VALID
 
@@ -10,16 +10,18 @@ Health Check Results:
 [environment] PASS
   Details: {
   "missing_required": [],
-  "missing_optional": []
+  "missing_optional": [
+    "GITHUB_PAT ((Optional) GitHub Personal Access Token - only needed if you want ADW to use a different GitHub account than 'gh auth login')"
+  ]
 }
 
-[jira_connectivity] PASS
+[issue_connectivity] PASS
   Details: {
   "jira_version": "1001.0.0-SNAPSHOT",
   "server_title": "Jira"
 }
 
-[bitbucket_connectivity] PASS
+[repo_connectivity] PASS
   Details: {
   "authenticated_user": null
 }
@@ -30,10 +32,10 @@ Health Check Results:
   "auth_status": ""
 }
 
-[opencode_server] FAIL
-  Error: OpenCode server at http://localhost:4096 is not available. Start it with: opencode serve --port 4096
+[opencode_server] PASS
+  Details: {
+  "server_url": "http://localhost:4096",
+  "status": "available"
+}
 
-Overall Status: FAILURE
-
-Errors:
-  - [Opencode Server] OpenCode server at http://localhost:4096 is not available. Start it with: opencode serve --port 4096
+Overall Status: SUCCESS

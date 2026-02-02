@@ -1,53 +1,24 @@
-# ADWS Configuration
-#
-# This file contains project-specific configuration for ADWS (AI Developer Workflow System).
-# Place this file in the ADWS/ directory at your project root.
-#
-# Documentation: https://github.com/your-org/adws/docs/configuration
-
-# Project Structure
-# Note: ADWS auto-detects project structure. These are hints.
-# For test-app (React + Express + MongoDB):
-source_dir: frontend,backend  # Frontend and backend directories
-test_dir: tests          # Directory containing test files (create if needed)
-docs_dir: ai_docs         # Directory for generated documentation
-
-# Language and Build
-language: javascript       # Programming language (python, javascript, go, etc.)
-test_command: npm test     # Command to run tests
-
-# E2E Testing Configuration
+source_dir: .
+test_dir: .
+docs_dir: docs
+language: javascript
+test_command: npm test
 e2e_tests:
-  enabled: true             # Enable E2E test discovery and execution
-  directory: "tests/scenarios"  # Directory containing E2E test scenario files
-  pattern: "*.md"           # File pattern for E2E test files
-  auto_generate: true       # Auto-generate E2E scenarios during adw_build
-
-# OpenCode HTTP API Configuration
-# OpenCode provides LLM access via GitHub Copilot models
+  enabled: true
+  directory: tests/scenarios
+  pattern: '*.md'
+  auto_generate: true
 opencode:
-  # HTTP server endpoint (default: localhost:4096)
-  server_url: "http://localhost:4096"
-
-  # Model selection per task type
+  server_url: http://localhost:4096
   models:
-    # Heavy lifting: code implementation, test fixing, reviews
-    heavy_lifting: "github-copilot/claude-sonnet-4"
-
-    # Lightweight: planning, classification, document generation
-    lightweight: "github-copilot/claude-haiku-4.5"
-
-  # Timeouts (seconds)
-  timeout: 1800                # Timeout for heavy code operations (30 min)
-  lightweight_timeout: 600       # Timeout for planning/classification (1 min)
-
-  # Retry configuration
-  max_retries: 3              # Number of retries on transient failures
-  retry_backoff: 1.5          # Exponential backoff multiplier
-
-  # Session management
-  reuse_sessions: false         # Reuse sessions across operations (experimental)
-
-  # Connection settings
-  connection_timeout: 30        # Seconds to wait for initial connection
-  read_timeout: 600            # Seconds to wait for response completion
+    heavy_lifting: github-copilot/claude-sonnet-4
+    lightweight: github-copilot/claude-haiku-4.5
+  timeout: 1800
+  lightweight_timeout: 60
+  max_retries: 3
+  retry_backoff: 1.5
+  reuse_sessions: false
+  connection_timeout: 30
+  read_timeout: 600
+repo_provider: bitbucket
+issue_provider: jira
