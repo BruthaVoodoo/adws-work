@@ -1012,6 +1012,12 @@ def extract_text_response(parts: List[Dict[str, Any]]) -> str:
             if content and isinstance(content, str):
                 text_content.append(content.strip())
 
+        # Extract code block content
+        elif part_type == "code_block":
+            content = part.get("content", "")
+            if content and isinstance(content, str):
+                text_content.append(content.strip())
+
         # Extract plan content from tool_use (file creation)
         elif part_type == "tool_use":
             tool_input = part.get("input", {})

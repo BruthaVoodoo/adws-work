@@ -63,6 +63,7 @@ from scripts.adw_modules import issue_ops
 from scripts.adw_modules.config import config
 from scripts.adw_modules.agent import execute_opencode_prompt
 from scripts.adw_modules.opencode_http_client import check_opencode_server_available
+from scripts.adw_modules.hook_resolution import handle_commit_failure
 
 # Agent name constants
 AGENT_TESTER = "test_runner"
@@ -1334,7 +1335,32 @@ def main():
             # Don't exit on commit error, continue to report final status
         else:
             # Actually commit
-            success, error = commit_changes(commit_msg)
+            if config.has_pre_commit_hooks and rich_console:
+                rich_console.rule("⚡ Running Pre-commit Hooks", style="yellow")
+
+            commit_result = commit_changes(commit_msg)
+
+            if (
+                config.has_pre_commit_hooks
+                and rich_console
+                and not commit_result.success
+            ):
+                rich_console.warning("Pre-commit hooks failed:")
+                rich_console.print(commit_result.output)
+
+            # Handle interactive resolution loop (outside spinner)
+            if not commit_result.success and commit_result.hook_failure_detected:
+                commit_result = handle_commit_failure(
+                    commit_result, commit_msg, adw_id, logger
+                )
+
+            success = commit_result.success
+            error = (
+                commit_result.error_message or commit_result.output
+                if not success
+                else None
+            )
+
             if success:
                 logger.info(f"Test results committed: {commit_msg}")
                 if rich_console:

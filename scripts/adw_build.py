@@ -46,6 +46,7 @@ from adw_modules.utils import setup_logger, get_rich_console_instance
 from adw_modules.data_types import JiraIssue
 from adw_modules.config import config
 from adw_modules.opencode_http_client import check_opencode_server_available
+from adw_modules.hook_resolution import handle_commit_failure
 
 
 def check_env_vars(logger: Optional[logging.Logger] = None) -> None:
@@ -430,11 +431,26 @@ def main():
         sys.exit(1)
 
     # Commit the implementation
+    if config.has_pre_commit_hooks and rich_console:
+        rich_console.rule("⚡ Running Pre-commit Hooks", style="yellow")
+
+    commit_result = None
     if rich_console:
         with rich_console.spinner("Committing implementation to git..."):
-            success, error = commit_changes(commit_msg)
+            commit_result = commit_changes(commit_msg)
+
+            if config.has_pre_commit_hooks and not commit_result.success:
+                rich_console.warning("Pre-commit hooks failed:")
+                rich_console.print(commit_result.output)
     else:
-        success, error = commit_changes(commit_msg)
+        commit_result = commit_changes(commit_msg)
+
+    # Handle interactive resolution loop (outside spinner)
+    if not commit_result.success and commit_result.hook_failure_detected:
+        commit_result = handle_commit_failure(commit_result, commit_msg, adw_id, logger)
+
+    success = commit_result.success
+    error = commit_result.error_message or commit_result.output if not success else None
 
     if not success:
         error_msg = f"Error committing implementation: {error}"

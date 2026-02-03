@@ -129,6 +129,11 @@ class ADWConfig:
         """Get issue provider (jira or github)."""
         return self._data.get("issue_provider", "jira")
 
+    @property
+    def has_pre_commit_hooks(self) -> bool:
+        """Check if project has pre-commit hooks configured."""
+        return self._data.get("has_pre_commit_hooks", False)
+
     # OpenCode HTTP API configuration properties
     @property
     def opencode_server_url(self) -> str:

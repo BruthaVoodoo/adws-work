@@ -142,6 +142,44 @@ def detect_project_type(
     return "python", "pytest", "src", "tests", repo_provider
 
 
+def detect_pre_commit_hooks(project_dir: Optional[Path] = None) -> bool:
+    """
+    Detect presence of git pre-commit hooks.
+
+    Checks for:
+    1. .husky directory
+    2. .pre-commit-config.yaml file
+    3. git config core.hooksPath
+    """
+    if project_dir is None:
+        project_dir = Path.cwd()
+
+    # Check for husky
+    if (project_dir / ".husky").exists():
+        return True
+
+    # Check for pre-commit config
+    if (project_dir / ".pre-commit-config.yaml").exists():
+        return True
+
+    # Check for git hooks path
+    try:
+        # Check if we are in a git repo
+        if (project_dir / ".git").exists():
+            result = subprocess.run(
+                ["git", "config", "core.hooksPath"],
+                cwd=project_dir,
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode == 0 and result.stdout.strip():
+                return True
+    except Exception:
+        pass
+
+    return False
+
+
 def update_project_config(
     language: str,
     test_command: str,
@@ -149,6 +187,7 @@ def update_project_config(
     test_dir: str,
     repo_provider: str,
     issue_provider: str,
+    has_pre_commit_hooks: bool = False,
 ) -> bool:
     """
     Update ADWS/config.yaml with detected project settings.
@@ -160,6 +199,7 @@ def update_project_config(
         test_dir: Test directory
         repo_provider: Repository provider (bitbucket/github)
         issue_provider: Issue tracker provider (jira/github)
+        has_pre_commit_hooks: Whether project has pre-commit hooks
 
     Returns:
         True if update was successful, False otherwise
@@ -181,6 +221,7 @@ def update_project_config(
         config_data["test_dir"] = test_dir
         config_data["repo_provider"] = repo_provider
         config_data["issue_provider"] = issue_provider
+        config_data["has_pre_commit_hooks"] = has_pre_commit_hooks
 
         # Write back to file
         with open(config_file, "w", encoding="utf-8") as f:
@@ -469,10 +510,23 @@ def run_setup() -> int:
     issue_provider = "jira"
     print(f"   Issue provider: {issue_provider} (default)")
 
+    # Detect pre-commit hooks
+    has_hooks = detect_pre_commit_hooks(cwd)
+    if has_hooks:
+        print("   Detected: Git pre-commit hooks enabled")
+    else:
+        print("   Detected: No pre-commit hooks found")
+
     # Update config with detected settings
     print("   Updating ADWS/config.yaml with detected settings...", end=" ")
     if update_project_config(
-        language, test_command, source_dir, test_dir, repo_provider, issue_provider
+        language,
+        test_command,
+        source_dir,
+        test_dir,
+        repo_provider,
+        issue_provider,
+        has_hooks,
     ):
         print("✅ UPDATED")
     else:

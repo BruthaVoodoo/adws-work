@@ -10,6 +10,7 @@ from typing import Optional, Tuple
 # Import Repo operations for PR management
 from . import repo_ops
 from . import issue_ops
+from .data_types import CommitResult
 
 
 def get_current_branch() -> str:
@@ -51,27 +52,51 @@ def create_branch(branch_name: str) -> Tuple[bool, Optional[str]]:
     return True, None
 
 
-def commit_changes(message: str) -> Tuple[bool, Optional[str]]:
-    """Stage all changes and commit. Returns (success, error_message)."""
+def commit_changes(message: str) -> CommitResult:
+    """Stage all changes and commit. Returns CommitResult."""
     # Check if there are changes to commit
     result = subprocess.run(
         ["git", "status", "--porcelain"], capture_output=True, text=True
     )
     if not result.stdout.strip():
-        return True, None  # No changes to commit
+        return CommitResult(success=True, output="No changes to commit")
 
     # Stage all changes
     result = subprocess.run(["git", "add", "-A"], capture_output=True, text=True)
     if result.returncode != 0:
-        return False, result.stderr
+        return CommitResult(
+            success=False, output=result.stderr, error_message="Failed to stage changes"
+        )
 
     # Commit
+    # Note: We capture output to detect hook failures
     result = subprocess.run(
         ["git", "commit", "-m", message], capture_output=True, text=True
     )
+
+    output = (result.stdout or "") + "\n" + (result.stderr or "")
+
     if result.returncode != 0:
-        return False, result.stderr
-    return True, None
+        # Check for hook failure indicators
+        hook_failure = False
+        keywords = [
+            "husky",
+            "pre-commit",
+            "lint-staged",
+            "hook failed",
+            "prevented commit",
+        ]
+        if any(k in output.lower() for k in keywords):
+            hook_failure = True
+
+        return CommitResult(
+            success=False,
+            output=output,
+            hook_failure_detected=hook_failure,
+            error_message="Commit failed",
+        )
+
+    return CommitResult(success=True, output=output)
 
 
 def finalize_git_operations(state: "ADWState", logger: logging.Logger) -> None:

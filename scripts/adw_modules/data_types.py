@@ -256,6 +256,15 @@ class ReviewResult(BaseModel):
     screenshot_urls: List[str] = []
 
 
+class CommitResult(BaseModel):
+    """Result of a git commit operation."""
+
+    success: bool
+    output: str  # Combined stdout/stderr
+    hook_failure_detected: bool = False
+    error_message: Optional[str] = None
+
+
 # OpenCode HTTP API Data Types
 
 
