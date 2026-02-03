@@ -12,7 +12,7 @@ import re
 import os
 import sys
 from typing import Tuple, Optional, cast, Union
-from scripts.adw_modules.data_types import (
+from .data_types import (
     AgentTemplateRequest,
     GitHubIssue,  # Keep for now if other functions use it
     JiraIssue,
@@ -20,15 +20,15 @@ from scripts.adw_modules.data_types import (
     IssueClassSlashCommand,
     ReviewIssue,
 )
-from scripts.adw_modules.agent import execute_template, execute_opencode_prompt
-from scripts.adw_modules import repo_ops
-from scripts.adw_modules import issue_ops
-from scripts.adw_modules.state import ADWState
-from scripts.adw_modules.utils import parse_json, load_prompt
-from scripts.adw_modules.issue_formatter import format_issue_context
-from scripts.adw_modules.git_verification import verify_git_changes, get_file_changes
-from scripts.adw_modules.plan_validator import cross_reference_plan_output
-from scripts.adw_modules.config import config
+from .agent import execute_template, execute_opencode_prompt
+from . import repo_ops
+from . import issue_ops
+from .state import ADWState
+from .utils import parse_json, load_prompt
+from .issue_formatter import format_issue_context
+from .git_verification import verify_git_changes, get_file_changes
+from .plan_validator import cross_reference_plan_output
+from .config import config
 
 
 # Agent name constants

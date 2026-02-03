@@ -143,14 +143,10 @@ def main():
     try:
         if rich_console:
             with rich_console.spinner(f"Fetching issue {issue_number} from Jira..."):
-                raw_jira_issue = issue_ops.fetch_issue(issue_number)
-                # issue = JiraIssue.from_raw_jira_issue(raw_jira_issue)
-                issue = raw_jira_issue
+                issue = issue_ops.fetch_issue(issue_number)
             rich_console.success(f"Successfully fetched issue: {issue.title}")
         else:
-            raw_jira_issue = issue_ops.fetch_issue(issue_number)
-            # issue = JiraIssue.from_raw_jira_issue(raw_jira_issue)
-            issue = raw_jira_issue
+            issue = issue_ops.fetch_issue(issue_number)
     except Exception as e:
         error_msg = f"Failed to fetch issue {issue_number} from Jira: {e}"
         logger.error(error_msg)

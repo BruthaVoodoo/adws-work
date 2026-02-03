@@ -8,8 +8,8 @@ import logging
 from typing import Optional, Tuple
 
 # Import Repo operations for PR management
-from scripts.adw_modules import repo_ops
-from scripts.adw_modules import issue_ops
+from . import repo_ops
+from . import issue_ops
 
 
 def get_current_branch() -> str:

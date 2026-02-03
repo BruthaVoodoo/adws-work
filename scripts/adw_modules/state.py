@@ -9,8 +9,8 @@ import os
 import sys
 import logging
 from typing import Dict, Any, Optional
-from scripts.adw_modules.data_types import ADWStateData
-from scripts.adw_modules.config import config
+from .data_types import ADWStateData
+from .config import config
 
 
 class ADWState:

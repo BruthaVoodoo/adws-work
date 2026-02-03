@@ -1294,30 +1294,6 @@ def check_opencode_server_available(
         # Any other error means server is not available
         return False
 
-    # Story 1.6: Response Logging and Error Handling Functions
-
-    # Clean URL and construct health check endpoint
-    server_url = server_url.rstrip("/")
-    health_url = f"{server_url}/health"
-
-    try:
-        # Make a quick GET request to health endpoint
-        response = requests.get(health_url, timeout=timeout)
-
-        # Consider any 2xx response as server available
-        # (Don't check for specific status - just that it's responding)
-        return 200 <= response.status_code < 300
-
-    except requests.exceptions.Timeout:
-        # Server not responding within timeout
-        return False
-    except requests.exceptions.ConnectionError:
-        # Cannot connect to server
-        return False
-    except Exception:
-        # Any other error means server is not available
-        return False
-
 
 def save_response_log(
     adw_id: str,

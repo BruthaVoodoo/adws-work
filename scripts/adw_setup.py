@@ -19,6 +19,8 @@ import os
 import sys
 import json
 import yaml
+import subprocess
+import time
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any, Tuple, Optional
@@ -284,6 +286,146 @@ def write_setup_log(
     print(f"\n📝 Setup log written to: {log_file}")
 
 
+def start_opencode_server(log_dir: Path) -> bool:
+    """Attempt to start OpenCode server in background."""
+    print("\n   ⚠️  OpenCode server not running. Attempting to auto-start...", end=" ")
+
+    os.makedirs(log_dir, exist_ok=True)
+    log_file = log_dir / "opencode_server.log"
+
+    try:
+        # Check if opencode command exists first
+        if (
+            subprocess.call(
+                ["which", "opencode"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            != 0
+        ):
+            print("❌ FAILED (command 'opencode' not found)")
+            return False
+
+        with open(log_file, "a") as f:
+            f.write(f"\n--- Starting OpenCode Server at {datetime.now()} ---\n")
+            # Start detached process
+            subprocess.Popen(
+                ["opencode", "serve", "--port", "4096"],
+                cwd=os.getcwd(),
+                stdout=f,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,
+            )
+
+        # Wait for server to initialize
+        time.sleep(3)
+        return True
+    except Exception as e:
+        print(f"❌ FAILED ({e})")
+        return False
+
+
+def detect_running_opencode_pid(port: int = 4096) -> Optional[int]:
+    """Check if opencode is running on the specified port using lsof."""
+    try:
+        # lsof -i :4096 -t (returns PID only)
+        result = subprocess.run(
+            ["lsof", "-i", f":{port}", "-t"], capture_output=True, text=True
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            # Return the first PID found
+            return int(result.stdout.strip().split("\n")[0])
+    except Exception:
+        pass
+    return None
+
+
+def get_process_cwd(pid: int) -> Optional[str]:
+    """Get CWD of a process given its PID."""
+    try:
+        # Try 'pwdx' on Linux or 'lsof -p PID' on macOS/Linux
+        # lsof is more portable for macOS
+        result = subprocess.run(
+            ["lsof", "-a", "-p", str(pid), "-d", "cwd", "-F", "n"],
+            capture_output=True,
+            text=True,
+        )
+        # Output format:
+        # p1234
+        # n/path/to/cwd
+        if result.returncode == 0:
+            for line in result.stdout.splitlines():
+                if line.startswith("n"):
+                    return line[1:]  # Strip 'n' prefix
+    except Exception:
+        pass
+    return None
+
+
+def kill_process(pid: int) -> bool:
+    """Kill a process by PID."""
+    try:
+        os.kill(pid, 9)  # SIGKILL
+        return True
+    except Exception:
+        return False
+
+
+def check_opencode_server_wrapper() -> "CheckResult":
+    """Check if OpenCode server is running and accessible."""
+    try:
+        # Import CheckResult here to ensure visibility
+        from scripts.adw_tests.health_check import CheckResult
+
+        is_available = check_opencode_server()
+
+        # is_available is a CheckResult
+        if is_available.success:
+            # Extended check: Verify CWD if it's running
+            pid = detect_running_opencode_pid(4096)
+            if pid:
+                cwd = get_process_cwd(pid)
+                current_project_root = str(Path.cwd())
+
+                # Check if running from a different directory (allowing for some flexibility, e.g. subdirs)
+                if cwd and cwd != current_project_root:
+                    print(
+                        f"\n      ⚠️  OpenCode server (PID {pid}) is running in: {cwd}"
+                    )
+                    print(f"      Current project is: {current_project_root}")
+                    print(f"      This may cause 'File not found' errors.")
+
+                    print(
+                        "      Do you want to restart it in the current directory? [y/N] ",
+                        end="",
+                    )
+                    response = input().lower()
+                    if response == "y":
+                        print("      Stopping old server...", end=" ")
+                        if kill_process(pid):
+                            print("Done.")
+                            # Returning False triggers the auto-start logic in run_setup
+                            time.sleep(1)  # Give port time to free up
+
+                            # Return a CheckResult indicating failure so setup loop retries
+                            return CheckResult(
+                                success=False,
+                                error="Restarting server in correct directory",
+                            )
+                        else:
+                            print("Failed to stop server.")
+
+            # Return original success CheckResult
+            return is_available
+
+        return is_available
+    except Exception as e:
+        # Return CheckResult on exception
+        from scripts.adw_tests.health_check import CheckResult
+
+        return CheckResult(success=False, error=str(e))
+
+
 def run_setup() -> int:
     """
     Run complete setup flow: configuration validation + health checks.
@@ -353,7 +495,7 @@ def run_setup() -> int:
         "issue_connectivity": check_issue_connectivity,
         "repo_connectivity": check_repo_connectivity,
         "github_cli": check_github_cli,
-        "opencode_server": check_opencode_server,
+        "opencode_server": check_opencode_server_wrapper,
     }
 
     checks_passed = 0
@@ -363,6 +505,17 @@ def run_setup() -> int:
         print(f"   Checking {check_name.replace('_', ' ').title()}...", end=" ")
         try:
             result = check_func()
+
+            # Special handling for OpenCode auto-start
+            if not result.success and check_name == "opencode_server":
+                if start_opencode_server(logs_dir):
+                    # Re-run check
+                    print(
+                        f"   Checking {check_name.replace('_', ' ').title()} (retry)...",
+                        end=" ",
+                    )
+                    result = check_func()
+
             if result.success:
                 print("✅ PASS")
                 checks_passed += 1

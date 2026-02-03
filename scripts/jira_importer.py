@@ -25,11 +25,11 @@ if env_path.exists():
 # Add scripts directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from adw_modules.jira import (
+from adw_modules.issue_ops import (
     jira_create_epic,
     jira_create_story,
     jira_get_project_issues,
-    get_jira_client,
+    check_connectivity,
 )
 
 
@@ -283,8 +283,13 @@ class JiraImporter:
             print("\n🔐 Verifying Jira connection...")
             if not self.dry_run:
                 try:
-                    jira = get_jira_client()
-                    print("   ✅ Jira connection successful")
+                    result = check_connectivity()
+                    if result.get("success"):
+                        print("   ✅ Jira connection successful")
+                    else:
+                        raise Exception(
+                            result.get("error", "Unknown connectivity error")
+                        )
                 except Exception as e:
                     print(f"   ❌ Jira connection failed: {e}")
                     return 1

@@ -31,7 +31,7 @@ from adw_modules.git_ops import (
     finalize_git_operations,
     get_current_branch,
 )
-from adw_modules.jira import (
+from adw_modules.issue_ops import (
     jira_fetch_issue,
     jira_make_issue_comment,
     jira_add_attachment,
@@ -142,12 +142,10 @@ def main():
     try:
         if rich_console:
             with rich_console.spinner(f"Fetching issue {issue_number} from Jira..."):
-                raw_jira_issue = jira_fetch_issue(issue_number)
-                issue = JiraIssue.from_raw_jira_issue(raw_jira_issue)
+                issue = jira_fetch_issue(issue_number)
             rich_console.success(f"Successfully fetched issue: {issue.title}")
         else:
-            raw_jira_issue = jira_fetch_issue(issue_number)
-            issue = JiraIssue.from_raw_jira_issue(raw_jira_issue)
+            issue = jira_fetch_issue(issue_number)
     except Exception as e:
         error_msg = f"Failed to fetch issue {issue_number} from Jira: {e}"
         logger.error(error_msg)
@@ -379,8 +377,7 @@ def main():
     # Fetch issue details from Jira
     logger.info(f"Fetching issue {issue_number} from Jira")
     try:
-        raw_jira_issue = jira_fetch_issue(issue_number)
-        issue = JiraIssue.from_raw_jira_issue(raw_jira_issue)
+        issue = jira_fetch_issue(issue_number)
     except Exception as e:
         error_msg = f"Failed to fetch issue {issue_number} from Jira: {e}"
         logger.error(error_msg)

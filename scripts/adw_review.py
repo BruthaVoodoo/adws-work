@@ -31,7 +31,7 @@ from dotenv import load_dotenv
 
 from adw_modules.state import ADWState
 from adw_modules.git_ops import commit_changes, finalize_git_operations
-from adw_modules.jira import (
+from adw_modules.issue_ops import (
     jira_fetch_issue,
     jira_make_issue_comment,
     jira_add_attachment,
@@ -498,12 +498,10 @@ def main():
     try:
         if rich_console:
             with rich_console.spinner(f"Fetching issue {issue_number} from Jira..."):
-                raw_jira_issue = jira_fetch_issue(issue_number)
-                issue = JiraIssue.from_raw_jira_issue(raw_jira_issue)
+                issue = jira_fetch_issue(issue_number)
             rich_console.success(f"Successfully fetched issue: {issue.title}")
         else:
-            raw_jira_issue = jira_fetch_issue(issue_number)
-            issue = JiraIssue.from_raw_jira_issue(raw_jira_issue)
+            issue = jira_fetch_issue(issue_number)
     except Exception as e:
         error_msg = f"Failed to fetch issue {issue_number} from Jira: {e}"
         temp_logger.error(error_msg)
@@ -733,8 +731,7 @@ def main():
 
                 # Commit the resolution changes
                 logger.info("Committing resolution changes")
-                raw_review_issue = jira_fetch_issue(issue_number)
-                review_issue_pydantic = JiraIssue.from_raw_jira_issue(raw_review_issue)
+                review_issue_pydantic = jira_fetch_issue(issue_number)
                 issue_command = state.get("issue_class", "/chore")
 
                 # Use a generic review patch implementor name for the commit
@@ -805,8 +802,7 @@ def main():
             )
 
     logger.info("Fetching issue data for commit message")
-    raw_review_issue = jira_fetch_issue(issue_number)
-    review_issue_pydantic = JiraIssue.from_raw_jira_issue(raw_review_issue)
+    review_issue_pydantic = jira_fetch_issue(issue_number)
 
     # Get issue classification from state
     issue_command = state.get("issue_class", "/chore")

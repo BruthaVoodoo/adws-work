@@ -1,0 +1,53 @@
+ADW Setup Log
+==================================================
+Timestamp: 2026-02-02T13:37:35.514103
+
+Configuration Status: VALID
+
+Health Check Results:
+--------------------------------------------------
+
+[environment] PASS
+  Details: {
+  "missing_required": [],
+  "missing_optional": [
+    "GITHUB_PAT ((Optional) GitHub Personal Access Token - only needed if you want ADW to use a different GitHub account than 'gh auth login')"
+  ]
+}
+
+[issue_connectivity] PASS
+  Details: {
+  "jira_version": "1001.0.0-SNAPSHOT",
+  "server_title": "Jira"
+}
+
+[repo_connectivity] PASS
+  Details: {
+  "authenticated_user": null
+}
+
+[github_cli] PASS
+  Details: {
+  "version": "gh version 2.83.1 (2025-11-13)\nhttps://github.com/cli/cli/releases/tag/v2.83.1",
+  "auth_status": ""
+}
+
+[opencode_server] FAIL
+  Error: Check failed: 2 validation errors for HealthCheckResult
+timestamp
+  Field required [type=missing, input_value={'success': False, 'error...tic.dev/2.12/v/missing"}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+checks
+  Field required [type=missing, input_value={'success': False, 'error...tic.dev/2.12/v/missing"}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+
+Overall Status: FAILURE
+
+Errors:
+  - [Opencode Server] 2 validation errors for HealthCheckResult
+timestamp
+  Field required [type=missing, input_value={'success': False, 'error...tic.dev/2.12/v/missing"}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+checks
+  Field required [type=missing, input_value={'success': False, 'error...tic.dev/2.12/v/missing"}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing

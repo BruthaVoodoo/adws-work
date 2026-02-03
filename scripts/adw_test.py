@@ -1025,15 +1025,10 @@ def main():
     try:
         if rich_console:
             with rich_console.spinner(f"Fetching issue {issue_number} from Jira..."):
-                raw_jira_issue = issue_ops.fetch_issue(issue_number)
-                from scripts.adw_modules.data_types import JiraIssue
-
-                # issue is already normalized or needs checking type if we care
-                issue = raw_jira_issue
+                issue = issue_ops.fetch_issue(issue_number)
             rich_console.success(f"Successfully fetched issue: {issue.title}")
         else:
-            raw_jira_issue = issue_ops.fetch_issue(issue_number)
-            issue = raw_jira_issue
+            issue = issue_ops.fetch_issue(issue_number)
     except Exception as e:
         error_msg = f"Failed to fetch issue {issue_number} from Jira: {e}"
         logger.error(error_msg)
@@ -1308,9 +1303,7 @@ def main():
 
         # Fetch issue details if we haven't already
         if not issue:
-            raw_issue = issue_ops.fetch_issue(issue_number)
-            # from adw_modules.data_types import JiraIssue
-            issue = raw_issue
+            issue = issue_ops.fetch_issue(issue_number)
 
         # Get issue classification if we need it for commit
         if not issue_class:

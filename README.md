@@ -91,14 +91,16 @@ BITBUCKET_API_TOKEN=token
 
 ### 6. Start the System
 1.  **Start OpenCode Server** (in a separate terminal window):
+    **Important:** You must run this command from the **root directory of your project** so the server can access your files.
     ```bash
+    cd /path/to/your/project
     opencode serve --port 4096
     ```
 2.  **Validate Setup**:
     ```bash
     adw setup
     ```
-    This command checks all connections (Jira, Git, OpenCode) and confirms your system is ready.
+    This command checks all connections (Jira, Git, OpenCode) and confirms your system is ready. It will also attempt to start the OpenCode server automatically if it's not running.
 
 
 ## 🛠️ Usage

@@ -5,7 +5,7 @@ with specific metrics, errors, and warnings for Jira issue comments.
 """
 
 from typing import Optional, List
-from scripts.adw_modules.data_types import AgentPromptResponse
+from .data_types import AgentPromptResponse
 
 
 def format_implementation_summary(
