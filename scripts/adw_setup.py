@@ -190,7 +190,8 @@ def update_project_config(
     has_pre_commit_hooks: bool = False,
 ) -> bool:
     """
-    Update ADWS/config.yaml with detected project settings.
+    Update ADWS/config.yaml with detected settings.
+    Preserves existing values if they are already set in the configuration.
 
     Args:
         language: Programming language
@@ -207,6 +208,41 @@ def update_project_config(
     config_file = Path.cwd() / "ADWS" / "config.yaml"
 
     if not config_file.exists():
+        return False
+
+    try:
+        # Read existing config
+        with open(config_file, "r", encoding="utf-8") as f:
+            config_data = yaml.safe_load(f) or {}
+
+        # Define settings to update
+        settings = {
+            "language": language,
+            "test_command": test_command,
+            "source_dir": source_dir,
+            "test_dir": test_dir,
+            "repo_provider": repo_provider,
+            "issue_provider": issue_provider,
+            "has_pre_commit_hooks": has_pre_commit_hooks,
+        }
+
+        updates_made = False
+
+        # Only update keys that are missing from config_data
+        for key, value in settings.items():
+            if key not in config_data:
+                config_data[key] = value
+                updates_made = True
+
+        # Write back to file only if changes were made
+        if updates_made:
+            with open(config_file, "w", encoding="utf-8") as f:
+                yaml.dump(config_data, f, default_flow_style=False, sort_keys=False)
+
+        return True
+
+    except Exception as e:
+        print(f"Error updating config: {e}", file=sys.stderr)
         return False
 
     try:

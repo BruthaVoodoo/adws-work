@@ -192,7 +192,7 @@ class AgentTemplateRequest(BaseModel):
     agent_name: str
     prompt: str
     adw_id: str
-    model: Literal["sonnet", "opus"] = "sonnet"
+    model: Literal["sonnet", "opus", "heavy", "heavy_lifting"] = "sonnet"
     workflow_agent_name: Optional[str] = None
 
 

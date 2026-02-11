@@ -1072,7 +1072,7 @@ def create_patch_plan(
             agent_name="patch_planner",
             prompt=prompt,
             adw_id=adw_id,
-            model="opus",
+            model="heavy",  # Use "heavy" instead of "opus" which routes to heavy_lifting model
             workflow_agent_name=workflow_agent_name,
         )
 

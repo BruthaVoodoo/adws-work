@@ -32,6 +32,7 @@ scripts/adw_modules/config.py
 scripts/adw_modules/data_types.py
 scripts/adw_modules/git_ops.py
 scripts/adw_modules/git_verification.py
+scripts/adw_modules/hook_resolution.py
 scripts/adw_modules/issue_formatter.py
 scripts/adw_modules/issue_ops.py
 scripts/adw_modules/jira_formatter.py
@@ -72,6 +73,9 @@ tests/test_create_commit_migration.py
 tests/test_create_pull_request_migration.py
 tests/test_extract_adw_info_migration.py
 tests/test_generate_branch_name_migration.py
+tests/test_git_ops_commit.py
+tests/test_hook_resolution.py
+tests/test_hooks_detection.py
 tests/test_jira_issues.py
 tests/test_model_routing.py
 tests/test_opencode_config.py

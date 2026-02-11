@@ -301,29 +301,7 @@ class OpenCodeHTTPClient:
     @staticmethod
     def get_model_for_task(task_type: str) -> str:
         """
-        Get appropriate model ID for a given task type.
-
-        Story 1.4 Acceptance Criteria:
-        - Given task_type = "classify"
-           When I call get_model_for_task(task_type)
-           Then it returns MODEL_LIGHTWEIGHT ("github-copilot/claude-haiku-4.5")
-
-        - Given task_type = "implement"
-           When I call get_model_for_task(task_type)
-           Then it returns MODEL_HEAVY_LIFTING ("github-copilot/claude-sonnet-4")
-
-        - Given all 9 task types
-           When I validate model routing for each
-           Then heavy tasks get Claude Sonnet 4 (GitHub Copilot), lightweight tasks get Claude Haiku 4.5 (GitHub Copilot)
-
-        Args:
-            task_type: The task type string (one of the supported TaskType values)
-
-        Returns:
-            str: Model ID for the specified task type
-
-        Raises:
-            ValueError: If task_type is not supported
+        Get appropriate model ID for a given task type from configuration.
         """
         if task_type not in TASK_TYPE_TO_MODEL:
             supported_tasks = ", ".join(TASK_TYPE_TO_MODEL.keys())
@@ -332,7 +310,11 @@ class OpenCodeHTTPClient:
                 f"Supported task types: {supported_tasks}"
             )
 
-        return TASK_TYPE_TO_MODEL[task_type]
+        # Use configuration to get actual model IDs
+        if TASK_TYPE_TO_MODEL[task_type] == MODEL_HEAVY_LIFTING:
+            return config.opencode_model_heavy_lifting
+        else:
+            return config.opencode_model_lightweight
 
     @staticmethod
     def get_all_task_types() -> Dict[str, str]:
@@ -428,8 +410,11 @@ class OpenCodeHTTPClient:
         final_model_id = model_id
         if final_model_id is None:
             if task_type is None:
+                # If neither model_id nor task_type is provided, and we are using configured defaults
+                # we should raise a clear error to the user
                 raise ValueError(
-                    "Either model_id or task_type must be provided for model routing"
+                    "Model configuration error: Neither model_id nor task_type provided. "
+                    "Please ensure 'opencode.models' are configured in ADWS/config.yaml"
                 )
             final_model_id = self.get_model_for_task(task_type)
 

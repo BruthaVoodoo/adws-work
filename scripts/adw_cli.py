@@ -83,6 +83,95 @@ sys.path.insert(0, os.path.dirname(__file__))
 __version__ = "0.1.0"
 
 
+class RichCommand(click.Command):
+    """Custom click Command that renders a Rich-styled help message.
+
+    Ensures consistent formatting with the main help command.
+    """
+
+    def get_help(self, ctx: click.Context) -> str:
+        buf = io.StringIO()
+        console = Console(file=buf, force_terminal=True, color_system="truecolor")
+
+        # Title / header
+        # adw plan -> ADW PLAN
+        # adw build -> ADW BUILD
+        cmd_name = self.name.upper() if self.name else "COMMAND"
+        console.rule(f"[bold cyan]ADW {cmd_name}[/bold cyan]", style="cyan")
+        console.print()
+
+        # Description (from docstring)
+        if self.help:
+            console.print(self.help)
+            console.print()
+
+        # Usage
+        console.print("[bold yellow]Usage[/bold yellow]")
+        try:
+            usage = ctx.get_usage()
+            # Clean up usage string if needed (Click usually formats it well)
+        except Exception:
+            usage = f"adw {self.name} [OPTIONS] [ARGS]"
+
+        console.print(Text(usage, style="green"))
+        console.print()
+
+        # Parameters (Arguments and Options)
+        params = self.get_params(ctx)
+
+        # Separate Options and Arguments
+        opts = [p for p in params if isinstance(p, click.Option)]
+        args = [p for p in params if isinstance(p, click.Argument)]
+
+        # Render Arguments
+        if args:
+            console.print("[bold magenta]Arguments[/bold magenta]")
+            table = Table(
+                show_header=True, header_style="bold magenta", box=None, padding=(0, 2)
+            )
+            table.add_column("Name", style="cyan", no_wrap=True)
+            table.add_column("Type", style="white")
+
+            for arg in args:
+                # Arguments don't have built-in help in Click 7/8 standardly
+                # We can show if it's required
+                name = arg.name.upper() if arg.name else "ARG"
+                req = "[required]" if arg.required else "[optional]"
+                table.add_row(name, req)
+
+            console.print(table)
+            console.print()
+
+        # Render Options
+        if opts:
+            console.print("[bold magenta]Options[/bold magenta]")
+            table = Table(
+                show_header=True, header_style="bold magenta", box=None, padding=(0, 2)
+            )
+            table.add_column("Flag", style="cyan", no_wrap=True)
+            table.add_column("Description", style="white")
+            table.add_column("Default", style="dim white")
+
+            for opt in opts:
+                # Filter out help option if we want, but usually good to keep
+                record = opt.get_help_record(ctx)
+                if record:
+                    # record is (opt_names, help_text)
+                    # We can try to extract default if available
+                    default_val = ""
+                    if opt.default is not None and not opt.required:
+                        # Don't show default for boolean flags usually, or handle carefully
+                        if not opt.is_flag:
+                            default_val = str(opt.default)
+
+                    table.add_row(record[0], record[1], default_val)
+
+            console.print(table)
+            console.print()
+
+        return buf.getvalue()
+
+
 @click.group(cls=RichGroup)
 @click.version_option(version=__version__, prog_name="adw")
 def cli():
@@ -113,7 +202,7 @@ def cli():
     pass
 
 
-@cli.command()
+@cli.command(cls=RichCommand)
 @click.argument("issue_key")
 @click.option(
     "--adw-id",
@@ -149,7 +238,7 @@ def plan(issue_key: str, adw_id: Optional[str]) -> None:
             raise
 
 
-@cli.command()
+@cli.command(cls=RichCommand)
 @click.argument("adw_id")
 @click.argument("issue_key")
 def build(adw_id: str, issue_key: str) -> None:
@@ -178,10 +267,21 @@ def build(adw_id: str, issue_key: str) -> None:
             raise
 
 
-@cli.command()
+@cli.command(cls=RichCommand)
 @click.argument("adw_id")
 @click.argument("issue_key")
-def test(adw_id: str, issue_key: str) -> None:
+@click.option(
+    "--skip-e2e",
+    is_flag=True,
+    help="Skip running E2E tests (run only unit tests)",
+)
+@click.option(
+    "--all",
+    "run_all_e2e",
+    is_flag=True,
+    help="Run ALL E2E tests (default: run only tests matching ADW ID)",
+)
+def test(adw_id: str, issue_key: str, skip_e2e: bool, run_all_e2e: bool) -> None:
     """
     Run tests and attempt auto-resolution of failures.
 
@@ -197,7 +297,13 @@ def test(adw_id: str, issue_key: str) -> None:
     """
     from scripts.adw_test import main as test_main
 
+    # Reconstruct sys.argv to pass arguments to the script
+    # The script uses sys.argv parsing manually in parse_args
     sys.argv = ["adw", issue_key, adw_id]
+    if skip_e2e:
+        sys.argv.append("--skip-e2e")
+    if run_all_e2e:
+        sys.argv.append("--all")
 
     try:
         test_main()
@@ -206,7 +312,7 @@ def test(adw_id: str, issue_key: str) -> None:
             raise
 
 
-@cli.command()
+@cli.command(cls=RichCommand)
 @click.argument("adw_id")
 @click.argument("issue_key")
 def review(adw_id: str, issue_key: str) -> None:
@@ -235,7 +341,7 @@ def review(adw_id: str, issue_key: str) -> None:
             raise
 
 
-@cli.command()
+@cli.command(cls=RichCommand)
 def setup() -> None:
     """
     Configure ADWS and validate environment.
@@ -261,7 +367,7 @@ def setup() -> None:
             raise
 
 
-@cli.command()
+@cli.command(cls=RichCommand)
 def healthcheck() -> None:
     """
     Run comprehensive system health check (deprecated: use 'adw setup').
@@ -281,7 +387,7 @@ def healthcheck() -> None:
             raise
 
 
-@cli.command()
+@cli.command(cls=RichCommand)
 @click.option(
     "--force",
     "-f",
@@ -322,7 +428,7 @@ def init(force: bool) -> None:
             raise
 
 
-@cli.command()
+@cli.command(cls=RichCommand)
 def analyze() -> None:
     """
     Analyze project structure and generate report.

@@ -186,6 +186,10 @@ def resolve_review_issues(
     resolved_count = 0
     failed_count = 0
     adw_id = state.get("adw_id")
+    if not adw_id:
+        logger.error("ADW ID is missing from state in resolve_review_issues")
+        return 0, 0
+
     # Ensure we have a rich console instance for UI feedback in this helper
     rich_console = get_rich_console_instance()
 
@@ -208,8 +212,8 @@ def resolve_review_issues(
 
     for idx, issue in enumerate(blocker_issues):
         # Use rich_console step to mark issue resolution steps if available
-        if get_rich_console_instance():
-            get_rich_console_instance().step(
+        if rich_console:
+            rich_console.step(
                 f"Resolving blocker issue {idx + 1}/{len(blocker_issues)}: Issue #{issue.review_issue_number}"
             )
         else:
@@ -524,7 +528,7 @@ def main():
 
     if state:
         # Found existing state
-        issue_number = state.get("issue_number", issue_number)
+        issue_number = str(state.get("issue_number", issue_number))
         if rich_console:
             rich_console.success("Found existing ADW state - resuming review")
         jira_make_issue_comment(
@@ -545,7 +549,8 @@ def main():
     check_env_vars(logger)
 
     # Ensure we have required state fields
-    if not state.get("branch_name"):
+    branch_name = state.get("branch_name")
+    if not branch_name:
         error_msg = "No branch name in state - run adw_plan.py first"
         logger.error(error_msg)
         jira_make_issue_comment(
@@ -553,8 +558,9 @@ def main():
         )
         sys.exit(1)
 
+    branch_name = str(branch_name)
+
     # Checkout the branch from state
-    branch_name = state.get("branch_name")
     # Preparing Workspace phase (match adw_build.py)
     if rich_console:
         rich_console.rule("Preparing Workspace", style="cyan")
@@ -607,6 +613,7 @@ def main():
     # Run the review with resolution retry loop
     attempt = 0
     max_attempts = MAX_REVIEW_RETRY_ATTEMPTS if not skip_resolution else 1
+    review_result = None  # Initialize to avoid unbound error
 
     while attempt < max_attempts:
         attempt += 1
@@ -733,18 +740,21 @@ def main():
                 # Commit the resolution changes
                 logger.info("Committing resolution changes")
                 review_issue_pydantic = jira_fetch_issue(issue_number)
-                issue_command = state.get("issue_class", "/chore")
+
+                # Get issue classification from state with type safety
+                issue_class_raw = state.get("issue_class", "/chore")
+                issue_command = str(issue_class_raw) if issue_class_raw else "/chore"
 
                 # Use a generic review patch implementor name for the commit
                 commit_msg, error = create_commit(
                     AGENT_REVIEW_PATCH_IMPLEMENTOR,
                     review_issue_pydantic,
-                    issue_command,
+                    issue_command,  # type: ignore[arg-type]
                     adw_id,
                     logger,
                 )
 
-                if not error:
+                if not error and commit_msg:
                     if rich_console and config.has_pre_commit_hooks:
                         rich_console.rule("⚡ Running Pre-commit Hooks", style="yellow")
 
@@ -798,6 +808,18 @@ def main():
                                 f"❌ Error committing resolution: {error}",
                             ),
                         )
+                else:
+                    # Handle error from create_commit
+                    error_msg = error or "Failed to generate commit message"
+                    logger.error(f"Error creating resolution commit: {error_msg}")
+                    jira_make_issue_comment(
+                        issue_number,
+                        format_issue_message(
+                            adw_id,
+                            AGENT_REVIEW_PATCH_IMPLEMENTOR,
+                            f"❌ Error creating resolution commit: {error_msg}",
+                        ),
+                    )
             else:
                 # No issues were resolved, no point in retrying
                 logger.info("No issues were resolved, stopping retry attempts")
@@ -812,7 +834,7 @@ def main():
                 break
 
     # Log final attempt status
-    if attempt == max_attempts and not review_result.success:
+    if attempt == max_attempts and review_result and not review_result.success:
         blocker_count = sum(
             1 for i in review_result.review_issues if i.issue_severity == "blocker"
         )
@@ -833,12 +855,17 @@ def main():
     review_issue_pydantic = jira_fetch_issue(issue_number)
 
     # Get issue classification from state
-    issue_command = state.get("issue_class", "/chore")
+    issue_class_raw = state.get("issue_class", "/chore")
+    issue_command = str(issue_class_raw) if issue_class_raw else "/chore"
 
     # Create the commit message
     logger.info("Creating review commit")
     commit_msg, error = create_commit(
-        AGENT_REVIEWER, review_issue_pydantic, issue_command, adw_id, logger
+        AGENT_REVIEWER,
+        review_issue_pydantic,
+        issue_command,  # type: ignore[arg-type]
+        adw_id,
+        logger,
     )
 
     if error:
@@ -851,13 +878,20 @@ def main():
         )
         sys.exit(1)
 
+    if not commit_msg:
+        logger.error("Commit message is empty")
+        sys.exit(1)
+
     # === COMMITTING CHANGES PHASE ===
     if rich_console:
         rich_console.rule("Committing Changes", style="cyan")
         with rich_console.spinner("Committing review to git..."):
-            success, error = commit_changes(commit_msg)
+            commit_result = commit_changes(commit_msg)
     else:
-        success, error = commit_changes(commit_msg)
+        commit_result = commit_changes(commit_msg)
+
+    success = commit_result.success
+    error = commit_result.error_message or commit_result.output if not success else None
 
     if not success:
         logger.error(f"Error committing review: {error}")
@@ -898,6 +932,12 @@ def main():
 
     # Output state for chaining
     state.to_stdout()
+
+    # If review_result is somehow still None (should not happen if loop ran),
+    # we skip summary and exit successfully as fallback
+    if review_result is None:
+        logger.warning("Review result is None - skipping summary generation")
+        return
 
     # Display a formatted summary panel matching adw_build styling
     try:

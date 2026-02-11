@@ -91,6 +91,7 @@ def execute_opencode_prompt(
     adw_id: str = "unknown",
     agent_name: str = "agent",
     model_id: Optional[str] = None,
+    timeout: Optional[float] = None,
 ) -> AgentPromptResponse:
     """
     Execute a prompt using OpenCode HTTP API with task-aware model selection.
@@ -106,6 +107,7 @@ def execute_opencode_prompt(
         adw_id: ADW workflow ID for logging
         agent_name: Agent name for logging
         model_id: Optional explicit model override
+        timeout: Optional timeout override in seconds
 
     Returns:
         AgentPromptResponse: Backward-compatible response format
@@ -121,6 +123,7 @@ def execute_opencode_prompt(
             model_id=model_id,
             adw_id=adw_id,
             agent_name=agent_name,
+            timeout=timeout,
         )
 
         # Convert to backward-compatible format
@@ -283,7 +286,7 @@ def execute_template(request: AgentTemplateRequest) -> AgentPromptResponse:
 
     # Map request.model to task_type for intelligent routing
     # Note: This is a transitional mapping until calling code is updated to provide task_type directly
-    if request.model == "opus":
+    if request.model in ["heavy", "heavy_lifting"]:
         # Heavy lifting task - will route to Claude Sonnet 4
         task_type = "implement"  # Default heavy lifting task type
     else:

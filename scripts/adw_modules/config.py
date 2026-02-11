@@ -198,6 +198,22 @@ class ADWConfig:
         """Get OpenCode read timeout (seconds)."""
         return self._data.get("opencode", {}).get("read_timeout", 600)
 
+    @property
+    def unit_test_timeout(self) -> int:
+        """Get unit test execution timeout in seconds.
+
+        Default: 300 seconds (5 minutes)
+        """
+        return self._data.get("timeouts", {}).get("unit_test", 300)
+
+    @property
+    def e2e_test_timeout(self) -> int:
+        """Get E2E test execution timeout in seconds.
+
+        Default: 600 seconds (10 minutes)
+        """
+        return self._data.get("timeouts", {}).get("e2e_test", 600)
+
     # E2E Test Configuration
     @property
     def e2e_tests_enabled(self) -> bool:

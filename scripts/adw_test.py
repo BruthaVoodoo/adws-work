@@ -100,36 +100,43 @@ def check_env_vars(logger: Optional[logging.Logger] = None) -> None:
 def parse_args(
     state: Optional[ADWState] = None,
     logger: Optional[logging.Logger] = None,
-) -> Tuple[Optional[str], Optional[str], bool]:
+) -> Tuple[Optional[str], Optional[str], bool, bool]:
     """Parse command line arguments.
-    Returns (issue_number, adw_id, skip_e2e) where issue_number and adw_id may be None."""
+    Returns (issue_number, adw_id, skip_e2e, run_all_e2e) where issue_number and adw_id may be None."""
     skip_e2e = False
+    run_all_e2e = False
 
     # Check for --skip-e2e flag in args
     if "--skip-e2e" in sys.argv:
         skip_e2e = True
         sys.argv.remove("--skip-e2e")
 
+    # Check for --all flag in args
+    if "--all" in sys.argv:
+        run_all_e2e = True
+        sys.argv.remove("--all")
+
     # If we have state from stdin, we might not need issue number from args
     if state:
         # In piped mode, we might have no args at all
         if len(sys.argv) >= 2:
             # If an issue number is provided, use it
-            return sys.argv[1], None, skip_e2e
+            return sys.argv[1], None, skip_e2e, run_all_e2e
         else:
             # Otherwise, we'll get issue from state
-            return None, None, skip_e2e
+            return None, None, skip_e2e, run_all_e2e
 
     # Standalone mode - need at least issue number
     if len(sys.argv) < 2:
         usage_msg = [
             "Usage:",
-            "  Standalone: uv run adw_test.py <issue-number> [adw-id] [--skip-e2e]",
-            "  Chained: ... | uv run adw_test.py [--skip-e2e]",
+            "  Standalone: uv run adw_test.py <issue-number> [adw-id] [--skip-e2e] [--all]",
+            "  Chained: ... | uv run adw_test.py [--skip-e2e] [--all]",
             "Examples:",
             "  uv run adw_test.py 123",
             "  uv run adw_test.py 123 abc12345",
             "  uv run adw_test.py 123 --skip-e2e",
+            "  uv run adw_test.py 123 --all",
             '  echo \'{"issue_number": "123"}\' | uv run adw_test.py',
         ]
         if logger:
@@ -143,7 +150,7 @@ def parse_args(
     issue_number = sys.argv[1]
     adw_id = sys.argv[2] if len(sys.argv) > 2 else None
 
-    return issue_number, adw_id, skip_e2e
+    return issue_number, adw_id, skip_e2e, run_all_e2e
 
 
 def log_test_results(
@@ -310,7 +317,11 @@ def run_tests(
         # Run the test command
         # We use shell=True to handle complex commands like "uv run pytest" easily
         result = subprocess.run(
-            test_command, shell=True, capture_output=True, text=True
+            test_command,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=config.unit_test_timeout,
         )
 
         logger.debug(f"Test command exit code: {result.returncode}")
@@ -330,6 +341,27 @@ def run_tests(
         )
 
         return result.returncode == 0, full_output, results, passed, failed
+
+    except subprocess.TimeoutExpired as e:
+        error_msg = f"Test execution timed out after {config.unit_test_timeout} seconds"
+        logger.error(error_msg)
+
+        # Capture whatever output was generated before timeout
+        # Note: e.stdout and e.stderr are bytes in TimeoutExpired, need decoding
+        stdout = e.stdout.decode("utf-8") if e.stdout else ""
+        stderr = e.stderr.decode("utf-8") if e.stderr else ""
+        full_output = f"{stdout}\n{stderr}\n\n[ADWS] {error_msg}"
+
+        # Create a timeout failure result
+        timeout_result = TestResult(
+            test_name="Test Suite Execution",
+            passed=False,
+            execution_command=test_command,
+            test_purpose="Full test suite execution",
+            error=f"{error_msg}. Last output:\n{stdout[-500:] if stdout else 'No output'}",
+        )
+
+        return False, full_output, [timeout_result], 0, 1
 
     except Exception as e:
         logger.error(f"Error executing test command: {e}")
@@ -567,8 +599,12 @@ def run_e2e_tests(
     issue_number: str,
     logger: logging.Logger,
     attempt: int = 1,
+    run_all: bool = False,
 ) -> List[E2ETestResult]:
-    """Run all E2E tests found in configured directory using OpenCode HTTP API."""
+    """Run E2E tests found in configured directory using OpenCode HTTP API.
+
+    If run_all is False, only runs tests that match the adw_id.
+    """
 
     # Skip E2E tests if not enabled
     if not config.e2e_tests_enabled:
@@ -579,12 +615,28 @@ def run_e2e_tests(
     e2e_dir = config.project_root / config.e2e_tests_directory
     e2e_pattern = str(e2e_dir / config.e2e_tests_pattern)
     e2e_test_files = glob.glob(e2e_pattern)
-    logger.info(f"Found {len(e2e_test_files)} E2E test files in {e2e_dir}")
+    logger.info(f"Found {len(e2e_test_files)} total E2E test files in {e2e_dir}")
 
     if not e2e_test_files:
         logger.warning(f"No E2E test files found in {e2e_pattern}")
         logger.info(f"To create E2E tests, add scenario files to: {e2e_dir}")
         return []
+
+    # Filter tests if not running all
+    if not run_all:
+        logger.info(f"Filtering E2E tests for ADW ID: {adw_id}")
+        # Filter files that contain the ADW ID in their filename
+        # This assumes a naming convention like {issue}-{adw_id}-test.md
+        original_count = len(e2e_test_files)
+        e2e_test_files = [f for f in e2e_test_files if adw_id in os.path.basename(f)]
+        logger.info(
+            f"Selected {len(e2e_test_files)} of {original_count} tests matching ADW ID"
+        )
+
+        if not e2e_test_files and original_count > 0:
+            logger.warning(f"No E2E tests found matching ADW ID {adw_id}")
+            logger.info("Use --all to run all available E2E tests")
+            return []
 
     results = []
 
@@ -680,6 +732,7 @@ Report whether the test passed or failed, and provide details.
             task_type="test_fix",  # Routes to Claude Sonnet 4 (GitHub Copilot)
             adw_id=adw_id,
             agent_name=agent_name,
+            timeout=config.e2e_test_timeout,
         )
 
         # Handle OpenCode API failure
@@ -885,6 +938,7 @@ def run_e2e_tests_with_resolution(
     issue_number: str,
     logger: logging.Logger,
     max_attempts: int = MAX_E2E_TEST_RETRY_ATTEMPTS,
+    run_all: bool = False,
 ) -> Tuple[List[E2ETestResult], int, int]:
     """
     Run E2E tests with automatic resolution and retry logic.
@@ -900,7 +954,7 @@ def run_e2e_tests_with_resolution(
         logger.info(f"\n=== E2E Test Run Attempt {attempt}/{max_attempts} ===")
 
         # Run E2E tests
-        results = run_e2e_tests(adw_id, issue_number, logger, attempt)
+        results = run_e2e_tests(adw_id, issue_number, logger, attempt, run_all=run_all)
 
         if not results:
             logger.warning("No E2E test results to process")
@@ -979,7 +1033,7 @@ def main():
     config.reinitialize_for_project(Path.cwd())
 
     # Parse arguments
-    arg_issue_number, arg_adw_id, skip_e2e = parse_args(None)
+    arg_issue_number, arg_adw_id, skip_e2e, run_all_e2e = parse_args(None)
 
     # Initialize state and issue number
     issue_number = arg_issue_number
@@ -1245,7 +1299,9 @@ def main():
         if rich_console:
             with rich_console.spinner("Running E2E tests with automated resolution..."):
                 e2e_results, e2e_passed_count, e2e_failed_count = (
-                    run_e2e_tests_with_resolution(adw_id, issue_number, logger)
+                    run_e2e_tests_with_resolution(
+                        adw_id, issue_number, logger, run_all=run_all_e2e
+                    )
                 )
 
             # Display E2E test results in a table
@@ -1263,7 +1319,9 @@ def main():
                 )
         else:
             e2e_results, e2e_passed_count, e2e_failed_count = (
-                run_e2e_tests_with_resolution(adw_id, issue_number, logger)
+                run_e2e_tests_with_resolution(
+                    adw_id, issue_number, logger, run_all=run_all_e2e
+                )
             )
 
         # Format and post E2E results
