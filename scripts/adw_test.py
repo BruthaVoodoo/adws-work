@@ -37,6 +37,7 @@ from scripts.adw_modules.data_types import (
     TestResult,
     E2ETestResult,
     IssueClassSlashCommand,
+    TokenLimitExceeded,
 )
 from scripts.adw_modules import repo_ops
 from scripts.adw_modules.utils import (
@@ -418,6 +419,98 @@ def format_test_results_comment(
     return "\n".join(comment_parts)
 
 
+def handle_token_limit_exceeded(
+    exc: TokenLimitExceeded,
+    prompt: str,
+    adw_id: str,
+    logger: logging.Logger,
+) -> tuple[bool, Optional[str]]:
+    """
+    Display formatted token limit error and prompt user for action.
+
+    Returns:
+        Tuple of (should_retry: bool, truncated_prompt: Optional[str])
+        If should_retry is True, truncated_prompt contains aggressively truncated prompt.
+        If should_retry is False, workflow should abort.
+    """
+    # Display formatted error message
+    error_msg = f"""
+{"=" * 80}
+⚠️  TOKEN LIMIT EXCEEDED
+{"=" * 80}
+
+Token Count:        {exc.token_count:,}
+Model Limit:        {exc.model_limit:,}
+Overage:            {exc.overage_percentage:.1f}%
+Model:              {exc.model_id}
+
+Prompt saved to:    agents/{adw_id}/test_resolver/prompts/
+
+{"=" * 80}
+OPTIONS:
+{"=" * 80}
+
+1) Aggressive Truncation & Retry
+   - Truncate test output to fit within token limit
+   - Retry with shortened prompt
+   - May lose some context but usually sufficient
+
+2) Abort Workflow
+   - Stop test resolution attempts
+   - Manually review saved prompt file
+   - Reduce test failure output or prompt size
+
+{"=" * 80}
+"""
+
+    logger.warning(error_msg)
+    print(error_msg)
+
+    # Prompt user for choice
+    while True:
+        choice = input("Enter choice (1 or 2): ").strip()
+
+        if choice == "1":
+            logger.info("User chose: Aggressive truncation and retry")
+
+            # Calculate how much we need to truncate
+            # Target 80% of model limit to leave room for overhead
+            target_tokens = int(exc.model_limit * 0.8)
+            reduction_needed = exc.token_count - target_tokens
+
+            # Estimate characters per token (rough: ~4 chars per token)
+            chars_to_remove = reduction_needed * 4
+
+            # Truncate from the middle of the prompt to preserve structure
+            prompt_len = len(prompt)
+            if chars_to_remove >= prompt_len:
+                # Extreme truncation - just keep beginning and end
+                truncated = (
+                    prompt[:1000]
+                    + f"\n\n[... {prompt_len - 2000} characters truncated due to token limit ...]\n\n"
+                    + prompt[-1000:]
+                )
+            else:
+                # Remove from middle
+                keep_start = (prompt_len - chars_to_remove) // 2
+                keep_end = prompt_len - keep_start
+                truncated = (
+                    prompt[:keep_start]
+                    + f"\n\n[... {chars_to_remove} characters truncated due to token limit ...]\n\n"
+                    + prompt[keep_end:]
+                )
+
+            logger.info(f"Truncated prompt from {prompt_len} to {len(truncated)} chars")
+            return True, truncated
+
+        elif choice == "2":
+            logger.info("User chose: Abort workflow")
+            return False, None
+
+        else:
+            print("Invalid choice. Please enter 1 or 2.")
+
+
 def resolve_failed_tests(
     failed_tests: List[TestResult],
     test_output: str,
@@ -507,6 +600,102 @@ Your primary goal is to make the tests pass.
         )
 
         return True
+
+    except TokenLimitExceeded as exc:
+        logger.error(f"Token limit exceeded: {exc.message}")
+
+        # Handle token limit error with user interaction
+        should_retry, truncated_prompt = handle_token_limit_exceeded(
+            exc, prompt, adw_id, logger
+        )
+
+        if not should_retry or truncated_prompt is None:
+            # User chose to abort
+            issue_ops.add_comment(
+                issue_number,
+                format_issue_message(
+                    adw_id,
+                    "test_resolver",
+                    f"❌ Token limit exceeded ({exc.token_count:,} > {exc.model_limit:,}). Workflow aborted by user.",
+                ),
+            )
+            return False
+
+        # Retry with truncated prompt
+        logger.info("Retrying with truncated prompt...")
+        issue_ops.add_comment(
+            issue_number,
+            format_issue_message(
+                adw_id,
+                "test_resolver",
+                f"⚠️ Token limit exceeded. Retrying with truncated prompt...",
+            ),
+        )
+
+        try:
+            response = execute_opencode_prompt(
+                prompt=truncated_prompt,
+                task_type="test_fix",
+                adw_id=adw_id,
+                agent_name="test_resolver",
+            )
+
+            if not response.success:
+                logger.error(f"OpenCode HTTP API execution failed after truncation")
+                issue_ops.add_comment(
+                    issue_number,
+                    format_issue_message(
+                        adw_id,
+                        "test_resolver",
+                        f"❌ OpenCode API execution failed after truncation",
+                    ),
+                )
+                return False
+
+            logger.info("OpenCode HTTP API finished execution with truncated prompt.")
+            files_changed = (
+                response.files_changed if response.files_changed is not None else 0
+            )
+
+            issue_ops.add_comment(
+                issue_number,
+                format_issue_message(
+                    adw_id,
+                    "test_resolver",
+                    f"✅ OpenCode API finished with truncated prompt. Files changed: {files_changed}",
+                ),
+            )
+
+            return True
+
+        except TokenLimitExceeded as retry_exc:
+            # Still exceeds limit after truncation
+            logger.error(
+                f"Token limit still exceeded after truncation: {retry_exc.message}"
+            )
+            issue_ops.add_comment(
+                issue_number,
+                format_issue_message(
+                    adw_id,
+                    "test_resolver",
+                    f"❌ Token limit still exceeded after truncation. Manual intervention required.",
+                ),
+            )
+            return False
+
+        except Exception as retry_e:
+            logger.error(
+                f"Error invoking OpenCode HTTP API after truncation: {retry_e}"
+            )
+            issue_ops.add_comment(
+                issue_number,
+                format_issue_message(
+                    adw_id,
+                    "test_resolver",
+                    f"❌ OpenCode API invocation failed after truncation: {str(retry_e)[:200]}...",
+                ),
+            )
+            return False
 
     except Exception as e:
         logger.error(f"Error invoking OpenCode HTTP API: {e}")
