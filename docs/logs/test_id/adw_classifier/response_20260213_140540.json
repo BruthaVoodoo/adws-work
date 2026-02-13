@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-13T14:05:40.345114",
+  "adw_id": "test_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5864f68c001uKuBmLOeEhkSq3",
+      "sessionID": "ses_3a79b13a9ffeT5zuV4h0ynW749",
+      "role": "assistant",
+      "time": {
+        "created": 1771009537676,
+        "completed": 1771009540338
+      },
+      "parentID": "msg_c5864ec60001iuKCEiQkJClJsx",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16311,
+        "output": 179,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5864fc0a001PIUcgPDw0E3JgE",
+        "sessionID": "ses_3a79b13a9ffeT5zuV4h0ynW749",
+        "messageID": "msg_c5864f68c001uKuBmLOeEhkSq3",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5864fc0b0018tfb06NPcfpa3C",
+        "sessionID": "ses_3a79b13a9ffeT5zuV4h0ynW749",
+        "messageID": "msg_c5864f68c001uKuBmLOeEhkSq3",
+        "type": "text",
+        "text": "Perfect! The system is working properly. Here's the test result summary:\n\n**Health Status:**\n- ✅ **Overall Status**: Healthy\n- ✅ **API Service**: Online\n- ⚠️ **Agents Service**: Currently offline (but API is functioning)\n- **Last Health Check**: 2026-02-13 at 19:05:37 UTC\n- **Server Uptime**: ~4.25 days\n\n**Session Information:**\n- **Active Sessions**: 0\n- **Session Timeout**: 3600 seconds (1 hour)\n- **Server Uptime**: ~4.25 days\n\nThe system is operational and ready to handle requests. The agents service being offline is a note, but the main API service is running smoothly.",
+        "time": {
+          "start": 1771009540233,
+          "end": 1771009540233
+        }
+      },
+      {
+        "id": "prt_c586500900012I2B5qnCTNsfJB",
+        "sessionID": "ses_3a79b13a9ffeT5zuV4h0ynW749",
+        "messageID": "msg_c5864f68c001uKuBmLOeEhkSq3",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16311,
+          "output": 179,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a79b13a9ffeT5zuV4h0ynW749",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_id/adw_classifier/response_20260213_140540.json",
+    "created_at": "2026-02-13T14:05:40.345122",
+    "log_type": "response"
+  }
+}

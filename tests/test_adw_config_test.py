@@ -28,6 +28,10 @@ from scripts.adw_config_test import (
     switch_to_fallback_mode,
     validate_configuration,
     save_configuration,
+    setup_custom_framework,
+    check_pytest_json_report_installed,
+    install_pytest_json_report,
+    offer_pytest_json_report_install,
 )
 
 
@@ -75,15 +79,16 @@ class TestDetectTestFramework:
         package_json.write_text('{"devDependencies": {"jest": "^29.0.0"}}')
 
         with patch("scripts.adw_config_test.Path.cwd", return_value=tmp_path):
-            result = detect_test_framework()
+            with patch("builtins.input", return_value="a"):  # User accepts
+                result = detect_test_framework()
 
-            assert result["framework"] == "jest"
-            assert "npm test" in result["test_command"]
-            assert result["output_format"] == "json"
-            assert result["parser"] == "jest"
+                assert result["framework"] == "jest"
+                assert "npm test" in result["test_command"]
+                assert result["output_format"] == "json"
+                assert result["parser"] == "jest"
 
-            captured = capsys.readouterr()
-            assert "Detected: Jest" in captured.out
+                captured = capsys.readouterr()
+                assert "Detected: Jest" in captured.out
 
     def test_detect_react_scripts(self, tmp_path, capsys):
         """Test detecting React (which includes Jest)."""
@@ -91,13 +96,14 @@ class TestDetectTestFramework:
         package_json.write_text('{"dependencies": {"react-scripts": "^5.0.0"}}')
 
         with patch("scripts.adw_config_test.Path.cwd", return_value=tmp_path):
-            result = detect_test_framework()
+            with patch("builtins.input", return_value="a"):  # User accepts
+                result = detect_test_framework()
 
-            assert result["framework"] == "jest"
-            assert "--watchAll=false" in result["test_command"]
+                assert result["framework"] == "jest"
+                assert "npm test" in result["test_command"]
 
-            captured = capsys.readouterr()
-            assert "React (Jest)" in captured.out
+                captured = capsys.readouterr()
+                assert "Detected: Jest" in captured.out
 
     def test_detect_pytest_with_plugin(self, tmp_path, capsys):
         """Test detecting Pytest with pytest-json-report plugin."""
@@ -105,19 +111,20 @@ class TestDetectTestFramework:
         pytest_ini.write_text("[pytest]\n")
 
         with patch("scripts.adw_config_test.Path.cwd", return_value=tmp_path):
-            with patch("subprocess.run") as mock_run:
-                # Simulate pytest-json-report is installed
-                mock_run.return_value = MagicMock(returncode=0)
+            with patch(
+                "scripts.adw_config_test.offer_pytest_json_report_install",
+                return_value=True,
+            ):
+                with patch("builtins.input", return_value="a"):  # User accepts
+                    result = detect_test_framework()
 
-                result = detect_test_framework()
+                    assert result["framework"] == "pytest"
+                    assert "--json-report" in result["test_command"]
+                    assert result["output_format"] == "json"
 
-                assert result["framework"] == "pytest"
-                assert "--json-report" in result["test_command"]
-                assert result["output_format"] == "json"
-
-                captured = capsys.readouterr()
-                assert "Detected: Pytest" in captured.out
-                assert "plugin available" in captured.out
+                    captured = capsys.readouterr()
+                    assert "Detected: Pytest" in captured.out
+                    assert "plugin available" in captured.out
 
     def test_detect_pytest_without_plugin(self, tmp_path, capsys):
         """Test detecting Pytest without JSON plugin."""
@@ -125,10 +132,10 @@ class TestDetectTestFramework:
         pytest_ini.write_text("[pytest]\n")
 
         with patch("scripts.adw_config_test.Path.cwd", return_value=tmp_path):
-            with patch("subprocess.run") as mock_run:
-                # Simulate pytest-json-report is not installed
-                mock_run.return_value = MagicMock(returncode=1)
-
+            with patch(
+                "scripts.adw_config_test.offer_pytest_json_report_install",
+                return_value=False,
+            ):
                 result = detect_test_framework()
 
                 assert result["framework"] == "pytest"
@@ -137,7 +144,7 @@ class TestDetectTestFramework:
                 assert result["parser"] == "console"
 
                 captured = capsys.readouterr()
-                assert "plugin not found" in captured.out
+                assert "console fallback mode" in captured.out
 
     def test_detect_go(self, tmp_path, capsys):
         """Test detecting Go test framework."""
@@ -408,17 +415,339 @@ class TestIntegration:
         config_file.write_text("language: javascript\n")
 
         with patch("scripts.adw_config_test.Path.cwd", return_value=tmp_path):
-            # Step 1: Detect
-            detected = detect_test_framework()
-            assert detected["framework"] == "jest"
+            with patch("builtins.input", return_value="a"):  # User accepts
+                # Step 1: Detect
+                detected = detect_test_framework()
+                assert detected["framework"] == "jest"
 
-            # Step 2: Save
-            result = save_configuration(detected)
+                # Step 2: Save
+                result = save_configuration(detected)
+                assert result is True
+
+                # Step 3: Verify
+                with open(config_file) as f:
+                    saved = yaml.safe_load(f)
+
+                assert saved["test_configuration"]["framework"] == "jest"
+                assert "npm test" in saved["test_configuration"]["test_command"]
+
+
+class TestSetupCustomFramework:
+    """Tests for setup_custom_framework function."""
+
+    def test_setup_custom_console_mode(self, capsys):
+        """Test setting up custom framework with console output."""
+        inputs = ["go test ./...", "n"]  # command, no JSON support
+
+        with patch("builtins.input", side_effect=inputs):
+            result = setup_custom_framework()
+
+            assert result["framework"] == "custom"
+            assert result["test_command"] == "go test ./..."
+            assert result["output_format"] == "console"
+            assert result["parser"] == "console"
+            assert result["json_output_file"] is None
+
+            captured = capsys.readouterr()
+            assert "Custom Framework Setup" in captured.out
+            assert "Using console output mode" in captured.out
+
+    def test_setup_custom_json_mode(self, capsys):
+        """Test setting up custom framework with JSON output."""
+        inputs = [
+            "rspec --format json",  # command
+            "y",  # has JSON support
+            ".adw/rspec-results.json",  # JSON file path
+            "n",  # don't update command
+        ]
+
+        with patch("builtins.input", side_effect=inputs):
+            result = setup_custom_framework()
+
+            assert result["framework"] == "custom"
+            assert result["test_command"] == "rspec --format json"
+            assert result["output_format"] == "json"
+            assert result["parser"] == "generic"
+            assert result["json_output_file"] == ".adw/rspec-results.json"
+
+            captured = capsys.readouterr()
+            assert "JSON output file: .adw/rspec-results.json" in captured.out
+
+    def test_setup_custom_json_mode_with_command_update(self, capsys):
+        """Test setting up custom framework and updating command for JSON flags."""
+        inputs = [
+            "mvn test",  # initial command
+            "y",  # has JSON support
+            "target/surefire-reports/TEST-results.json",  # JSON file
+            "y",  # update command
+            "mvn test -Dsurefire.reportFormat=json",  # updated command
+        ]
+
+        with patch("builtins.input", side_effect=inputs):
+            result = setup_custom_framework()
+
+            assert result["framework"] == "custom"
+            assert result["test_command"] == "mvn test -Dsurefire.reportFormat=json"
+            assert result["output_format"] == "json"
+            assert result["parser"] == "generic"
+
+    def test_setup_custom_json_without_file_path(self, capsys):
+        """Test JSON mode selection but no file path provided (fallback to console)."""
+        inputs = [
+            "cargo test",  # command
+            "y",  # has JSON support
+            "",  # no file path
+        ]
+
+        with patch("builtins.input", side_effect=inputs):
+            result = setup_custom_framework()
+
+            assert result["framework"] == "custom"
+            assert result["test_command"] == "cargo test"
+            assert result["output_format"] == "console"
+            assert result["parser"] == "console"
+            assert result["json_output_file"] is None
+
+            captured = capsys.readouterr()
+            assert "falling back to console mode" in captured.out
+
+    def test_setup_custom_empty_command(self, capsys):
+        """Test setup with empty command returns empty dict."""
+        inputs = [""]  # empty command
+
+        with patch("builtins.input", side_effect=inputs):
+            result = setup_custom_framework()
+
+            assert result == {}
+
+            captured = capsys.readouterr()
+            assert "Test command is required" in captured.out
+
+    def test_setup_custom_displays_examples(self, capsys):
+        """Test that examples are displayed to user."""
+        inputs = ["dotnet test", "n"]
+
+        with patch("builtins.input", side_effect=inputs):
+            setup_custom_framework()
+
+            captured = capsys.readouterr()
+            assert "Examples of test commands:" in captured.out
+            assert "go test" in captured.out
+            assert "rspec" in captured.out
+            assert "mvn test" in captured.out
+            assert "cargo test" in captured.out
+            assert "dotnet test" in captured.out
+
+
+class TestPytestJsonReportInstallation:
+    """Tests for pytest-json-report installation functions."""
+
+    def test_check_pytest_json_report_installed_true(self):
+        """Test checking for installed pytest-json-report."""
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(returncode=0)
+
+            result = check_pytest_json_report_installed()
+
+            assert result is True
+            mock_run.assert_called_once()
+            assert "pip" in mock_run.call_args[0][0]
+            assert "show" in mock_run.call_args[0][0]
+            assert "pytest-json-report" in mock_run.call_args[0][0]
+
+    def test_check_pytest_json_report_installed_false(self):
+        """Test checking for missing pytest-json-report."""
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(returncode=1)
+
+            result = check_pytest_json_report_installed()
+
+            assert result is False
+
+    def test_check_pytest_json_report_exception(self):
+        """Test handling exception during check."""
+        with patch("subprocess.run") as mock_run:
+            mock_run.side_effect = Exception("Command failed")
+
+            result = check_pytest_json_report_installed()
+
+            assert result is False
+
+    def test_install_pytest_json_report_success(self, capsys):
+        """Test successful installation of pytest-json-report."""
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(returncode=0, stdout="Success", stderr="")
+
+            result = install_pytest_json_report()
+
+            assert result is True
+            mock_run.assert_called_once()
+            call_args = mock_run.call_args[0][0]
+            assert "pip" in call_args
+            assert "install" in call_args
+            assert "pytest-json-report" in call_args
+
+            captured = capsys.readouterr()
+            assert "Installing pytest-json-report" in captured.out
+            assert "installed successfully" in captured.out
+
+    def test_install_pytest_json_report_failure(self, capsys):
+        """Test failed installation of pytest-json-report."""
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(
+                returncode=1, stdout="", stderr="Installation error"
+            )
+
+            result = install_pytest_json_report()
+
+            assert result is False
+
+            captured = capsys.readouterr()
+            assert "Installation failed" in captured.out
+
+    def test_install_pytest_json_report_timeout(self, capsys):
+        """Test installation timeout."""
+        with patch("subprocess.run") as mock_run:
+            from subprocess import TimeoutExpired
+
+            mock_run.side_effect = TimeoutExpired("pip install", 120)
+
+            result = install_pytest_json_report()
+
+            assert result is False
+
+            captured = capsys.readouterr()
+            assert "timed out" in captured.out
+
+    def test_install_pytest_json_report_exception(self, capsys):
+        """Test installation exception handling."""
+        with patch("subprocess.run") as mock_run:
+            mock_run.side_effect = Exception("Unexpected error")
+
+            result = install_pytest_json_report()
+
+            assert result is False
+
+            captured = capsys.readouterr()
+            assert "Installation error" in captured.out
+
+    def test_offer_pytest_json_report_already_installed(self):
+        """Test offer when package is already installed."""
+        with patch(
+            "scripts.adw_config_test.check_pytest_json_report_installed",
+            return_value=True,
+        ):
+            result = offer_pytest_json_report_install()
+
             assert result is True
 
-            # Step 3: Verify
-            with open(config_file) as f:
-                saved = yaml.safe_load(f)
+    def test_offer_pytest_json_report_user_accepts(self, capsys):
+        """Test offer when user accepts installation."""
+        with patch(
+            "scripts.adw_config_test.check_pytest_json_report_installed"
+        ) as mock_check:
+            # First call: not installed, second call after install: installed
+            mock_check.side_effect = [False, True]
 
-            assert saved["test_configuration"]["framework"] == "jest"
-            assert "npm test" in saved["test_configuration"]["test_command"]
+            with patch(
+                "scripts.adw_config_test.install_pytest_json_report", return_value=True
+            ):
+                with patch("builtins.input", return_value="y"):
+                    result = offer_pytest_json_report_install()
+
+                    assert result is True
+
+                    captured = capsys.readouterr()
+                    assert (
+                        "pytest-json-report plugin enables JSON output" in captured.out
+                    )
+                    assert "Benefits:" in captured.out
+
+    def test_offer_pytest_json_report_user_declines(self, capsys):
+        """Test offer when user declines installation."""
+        with patch(
+            "scripts.adw_config_test.check_pytest_json_report_installed",
+            return_value=False,
+        ):
+            with patch("builtins.input", return_value="n"):
+                result = offer_pytest_json_report_install()
+
+                assert result is False
+
+                captured = capsys.readouterr()
+                assert "Skipping installation" in captured.out
+                assert "console fallback mode" in captured.out
+
+    def test_offer_pytest_json_report_install_fails(self, capsys):
+        """Test offer when installation fails."""
+        with patch(
+            "scripts.adw_config_test.check_pytest_json_report_installed",
+            return_value=False,
+        ):
+            with patch(
+                "scripts.adw_config_test.install_pytest_json_report", return_value=False
+            ):
+                with patch("builtins.input", return_value="y"):
+                    result = offer_pytest_json_report_install()
+
+                    assert result is False
+
+                    captured = capsys.readouterr()
+                    assert "Installation failed" in captured.out
+
+    def test_offer_pytest_json_report_install_verification_fails(self, capsys):
+        """Test offer when install succeeds but verification fails."""
+        with patch(
+            "scripts.adw_config_test.check_pytest_json_report_installed"
+        ) as mock_check:
+            # First: not installed, after install: still not installed (verification fails)
+            mock_check.side_effect = [False, False]
+
+            with patch(
+                "scripts.adw_config_test.install_pytest_json_report", return_value=True
+            ):
+                with patch("builtins.input", return_value="y"):
+                    result = offer_pytest_json_report_install()
+
+                    assert result is False
+
+                    captured = capsys.readouterr()
+                    assert "verification failed" in captured.out
+
+
+class TestDetectTestFrameworkWithAutoInstall:
+    """Tests for framework detection with auto-install integration."""
+
+    def test_detect_pytest_offers_install_when_missing(self, tmp_path, capsys):
+        """Test that pytest detection offers to install plugin when missing."""
+        pytest_ini = tmp_path / "pytest.ini"
+        pytest_ini.write_text("[pytest]\n")
+
+        with patch("scripts.adw_config_test.Path.cwd", return_value=tmp_path):
+            with patch(
+                "scripts.adw_config_test.offer_pytest_json_report_install",
+                return_value=False,
+            ):
+                result = detect_test_framework()
+
+                assert result["framework"] == "pytest"
+                assert result["output_format"] == "console"
+                assert result["parser"] == "console"
+
+    def test_detect_pytest_uses_json_when_installed(self, tmp_path, capsys):
+        """Test that pytest detection uses JSON mode when plugin is available."""
+        pytest_ini = tmp_path / "pytest.ini"
+        pytest_ini.write_text("[pytest]\n")
+
+        with patch("scripts.adw_config_test.Path.cwd", return_value=tmp_path):
+            with patch(
+                "scripts.adw_config_test.offer_pytest_json_report_install",
+                return_value=True,
+            ):
+                with patch("builtins.input", return_value="a"):  # User accepts
+                    result = detect_test_framework()
+
+                    assert result["framework"] == "pytest"
+                    assert result["output_format"] == "json"
+                    assert result["parser"] == "pytest"
+                    assert "--json-report" in result["test_command"]

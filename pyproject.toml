@@ -22,6 +22,7 @@ dependencies = [
     "boto3",  # Optional: Only used by isolated bedrock_agent.py; can be removed if not needed
     "pyyaml",
     "click>=8.0",
+    "tiktoken>=0.5.0",
 ]
 
 [project.optional-dependencies]

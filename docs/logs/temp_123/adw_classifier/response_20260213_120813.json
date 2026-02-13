@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-13T12:08:13.928523",
+  "adw_id": "temp_123",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text for ADW",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c57f96e34001j4ncKxsLeLEvMW",
+      "sessionID": "ses_3a80691f2ffep94iQfG4uJ9rKY",
+      "role": "assistant",
+      "time": {
+        "created": 1771002490420,
+        "completed": 1771002493891
+      },
+      "parentID": "msg_c57f96e12001nFcR3apN8253lU",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16018,
+        "output": 164,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c57f973c2001dr1WlW7gSI7zGL",
+        "sessionID": "ses_3a80691f2ffep94iQfG4uJ9rKY",
+        "messageID": "msg_c57f96e34001j4ncKxsLeLEvMW",
+        "type": "step-start",
+        "snapshot": "e338254167bf5a359d403956690a4f08e99fc862"
+      },
+      {
+        "id": "prt_c57f973c3001AiP3RlMM0FSJQI",
+        "sessionID": "ses_3a80691f2ffep94iQfG4uJ9rKY",
+        "messageID": "msg_c57f96e34001j4ncKxsLeLEvMW",
+        "type": "text",
+        "text": "I received your test prompt. This appears to be a simple test message: \"test text for ADW\".\n\nHow can I help you? Here are some things I can do:\n\n1. **Read/Explore Code** - Search through your codebase, find files, understand structure\n2. **Edit Files** - Modify code, fix bugs, implement features\n3. **Run Commands** - Execute bash commands, git operations, npm/build commands\n4. **Manage Projects & Tasks** - Create, track, and organize projects and tasks\n5. **Search Knowledge Base** - Find relevant documentation or examples\n6. **Create/Modify Documents** - Work with project specifications and documentation\n\nPlease let me know what specific task you'd like help with!",
+        "time": {
+          "start": 1771002493620,
+          "end": 1771002493620
+        }
+      },
+      {
+        "id": "prt_c57f97ac1001MqemxAB4ggqK3X",
+        "sessionID": "ses_3a80691f2ffep94iQfG4uJ9rKY",
+        "messageID": "msg_c57f96e34001j4ncKxsLeLEvMW",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "e338254167bf5a359d403956690a4f08e99fc862",
+        "cost": 0,
+        "tokens": {
+          "input": 16018,
+          "output": 164,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a80691f2ffep94iQfG4uJ9rKY",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/temp_123/adw_classifier/response_20260213_120813.json",
+    "created_at": "2026-02-13T12:08:13.928547",
+    "log_type": "response"
+  }
+}

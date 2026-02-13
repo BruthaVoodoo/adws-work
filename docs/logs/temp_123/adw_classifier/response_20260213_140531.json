@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-13T14:05:31.128092",
+  "adw_id": "temp_123",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text for ADW",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5864d1a4001y3DAM9gVOOKmOo",
+      "sessionID": "ses_3a79b2e6affeiEnoMSPhnZH0N8",
+      "role": "assistant",
+      "time": {
+        "created": 1771009528228,
+        "completed": 1771009531097
+      },
+      "parentID": "msg_c5864d19a001VH4NhSBZxz3wUg",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16018,
+        "output": 153,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5864d6c5001G5Pz5vwUJfBsOI",
+        "sessionID": "ses_3a79b2e6affeiEnoMSPhnZH0N8",
+        "messageID": "msg_c5864d1a4001y3DAM9gVOOKmOo",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5864d6c6001lh4on57AsiUej3",
+        "sessionID": "ses_3a79b2e6affeiEnoMSPhnZH0N8",
+        "messageID": "msg_c5864d1a4001y3DAM9gVOOKmOo",
+        "type": "text",
+        "text": "I appreciate you sending this test prompt! However, I'm not entirely sure what you'd like me to do with \"test text for ADW\". \n\nCould you provide more context? For example:\n\n1. **Are you testing the system's responsiveness?** - In that case, everything is working fine! ✓\n2. **Do you want me to perform a specific action** with this text (analyze it, process it, store it somewhere)?\n3. **Is this related to a project or task** you're working on?\n4. **Are you testing a particular tool or feature** in this environment?\n\nLet me know what you'd like to accomplish, and I'll be happy to help!",
+        "time": {
+          "start": 1771009530924,
+          "end": 1771009530924
+        }
+      },
+      {
+        "id": "prt_c5864dc2f0018EWTFZBV3OtzPO",
+        "sessionID": "ses_3a79b2e6affeiEnoMSPhnZH0N8",
+        "messageID": "msg_c5864d1a4001y3DAM9gVOOKmOo",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16018,
+          "output": 153,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a79b2e6affeiEnoMSPhnZH0N8",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/temp_123/adw_classifier/response_20260213_140531.json",
+    "created_at": "2026-02-13T14:05:31.128112",
+    "log_type": "response"
+  }
+}

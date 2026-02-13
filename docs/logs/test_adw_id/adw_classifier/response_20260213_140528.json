@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-13T14:05:28.177560",
+  "adw_id": "test_adw_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5864c3d2001Hn38SOsSIsdLm5",
+      "sessionID": "ses_3a79b3c43ffedE3VFjc9wLU3Mm",
+      "role": "assistant",
+      "time": {
+        "created": 1771009524690,
+        "completed": 1771009528172
+      },
+      "parentID": "msg_c5864c3c7001CQz9EF5US6Tf63",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16015,
+        "output": 196,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5864c8d2001VKy4xpefkD30U8",
+        "sessionID": "ses_3a79b3c43ffedE3VFjc9wLU3Mm",
+        "messageID": "msg_c5864c3d2001Hn38SOsSIsdLm5",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5864c8dc001KITgqyTdQgj6Wn",
+        "sessionID": "ses_3a79b3c43ffedE3VFjc9wLU3Mm",
+        "messageID": "msg_c5864c3d2001Hn38SOsSIsdLm5",
+        "type": "text",
+        "text": "I appreciate you sending a test prompt! This appears to be a simple test message. \n\nI'm ready to help you with a variety of tasks, including:\n\n- **Code development**: Writing, reviewing, and debugging code\n- **Project management**: Creating and managing projects, tasks, and documents\n- **Git operations**: Committing changes, creating branches, managing repositories\n- **Knowledge base search**: Finding information and code examples\n- **File operations**: Reading, editing, and writing files\n- **Terminal commands**: Running bash commands and scripts\n- **Jira integration**: Creating and managing Jira issues\n- **Pull requests**: Creating and managing GitHub pull requests\n\nWhat would you like help with? Feel free to ask me to:\n- Help with a coding project\n- Search for documentation or code examples\n- Manage tasks or project workflows\n- Debug an issue\n- Or anything else you need assistance with!",
+        "time": {
+          "start": 1771009528071,
+          "end": 1771009528071
+        }
+      },
+      {
+        "id": "prt_c5864d1090012eg0lemwtCra3r",
+        "sessionID": "ses_3a79b3c43ffedE3VFjc9wLU3Mm",
+        "messageID": "msg_c5864c3d2001Hn38SOsSIsdLm5",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16015,
+          "output": 196,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a79b3c43ffedE3VFjc9wLU3Mm",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_adw_id/adw_classifier/response_20260213_140528.json",
+    "created_at": "2026-02-13T14:05:28.177569",
+    "log_type": "response"
+  }
+}

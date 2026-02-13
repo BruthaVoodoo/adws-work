@@ -1,0 +1,10 @@
+TOKEN LIMIT EXCEEDED
+============================================================
+Model: github-copilot/claude-sonnet-4
+Token Count: 200,000
+Model Limit: 128,000
+Overage: 56.2%
+============================================================
+
+PROMPT CONTENT:
+Test

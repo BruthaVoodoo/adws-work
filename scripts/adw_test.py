@@ -307,11 +307,195 @@ def parse_local_test_output(
     return results, passed_count, failed_count
 
 
+def run_and_parse_json(
+    json_output_file: str, framework: str, test_command: str, logger: logging.Logger
+) -> Tuple[List[TestResult], int, int]:
+    """Parse JSON test output using configured framework parser.
+
+    Args:
+        json_output_file: Path to JSON output file
+        framework: Test framework name (jest, pytest, generic)
+        test_command: Command that was executed
+        logger: Logger instance
+
+    Returns:
+        Tuple of (results, passed_count, failed_count)
+    """
+    from scripts.adw_modules.test_parsers import (
+        parse_jest_json,
+        parse_pytest_json,
+        parse_generic_json,
+    )
+
+    logger.info(f"Parsing JSON output from: {json_output_file}")
+
+    # Route to appropriate parser
+    if framework == "jest":
+        parsed_data = parse_jest_json(json_output_file)
+    elif framework == "pytest":
+        parsed_data = parse_pytest_json(json_output_file)
+    else:
+        parsed_data = parse_generic_json(json_output_file)
+
+    # Check for parsing errors
+    if "error" in parsed_data:
+        logger.error(f"JSON parsing error: {parsed_data['error']}")
+        # Fallback to generic failure result
+        return (
+            [
+                TestResult(
+                    test_name="Test Suite Execution",
+                    passed=False,
+                    execution_command=test_command,
+                    test_purpose="Full test suite execution",
+                    error=f"JSON parsing failed: {parsed_data['error']}",
+                )
+            ],
+            0,
+            1,
+        )
+
+    # Convert parsed data to TestResult objects
+    results = []
+
+    # Add failed tests
+    for failure in parsed_data.get("failed_test_details", []):
+        results.append(
+            TestResult(
+                test_name=failure.get("test_name", "Unknown Test"),
+                passed=False,
+                execution_command=test_command,
+                test_purpose=f"Test from {failure.get('file_path', 'unknown')}",
+                error=failure.get("error_message", "No error message"),
+            )
+        )
+
+    # If all passed, add a single passing result
+    passed_tests = parsed_data.get("passed_tests", 0)
+    if passed_tests > 0 and not results:
+        results.append(
+            TestResult(
+                test_name=f"Test Suite ({passed_tests} tests)",
+                passed=True,
+                execution_command=test_command,
+                test_purpose="Full test suite execution",
+                error=None,
+            )
+        )
+
+    passed_count = parsed_data.get("passed_tests", 0)
+    failed_count = parsed_data.get("failed_tests", 0)
+
+    logger.info(f"JSON parsing complete - {passed_count} passed, {failed_count} failed")
+
+    return results, passed_count, failed_count
+
+
+def run_and_parse_console(
+    console_output: str, exit_code: int, test_command: str, logger: logging.Logger
+) -> Tuple[List[TestResult], int, int]:
+    """Parse console output using fallback console parser.
+
+    Args:
+        console_output: Raw console output string
+        exit_code: Command exit code
+        test_command: Command that was executed
+        logger: Logger instance
+
+    Returns:
+        Tuple of (results, passed_count, failed_count)
+    """
+    from scripts.adw_modules.test_parsers import parse_console_output
+
+    logger.info("Parsing console output (fallback mode)")
+
+    # Parse console output
+    parsed_data = parse_console_output(console_output)
+
+    # Check for parsing errors
+    if "error" in parsed_data:
+        logger.warning(f"Console parsing warning: {parsed_data['error']}")
+
+    # Log compression stats if available
+    if "reduction_percent" in parsed_data:
+        logger.info(
+            f"Console output compressed: {parsed_data['original_size']} → "
+            f"{parsed_data['compressed_size']} bytes ({parsed_data['reduction_percent']}% reduction)"
+        )
+
+    # Convert parsed data to TestResult objects
+    results = []
+
+    # Add failed tests from parsed failures
+    for failure in parsed_data.get("failed_test_details", []):
+        results.append(
+            TestResult(
+                test_name=failure.get("test_name", "Unknown Test"),
+                passed=False,
+                execution_command=test_command,
+                test_purpose=f"Test from {failure.get('file_path', 'unknown')}",
+                error=failure.get("error_message", "No error message"),
+            )
+        )
+
+    # If no failures extracted but exit code indicates failure, use generic failure
+    if not results and exit_code != 0:
+        results.append(
+            TestResult(
+                test_name="Test Suite Execution",
+                passed=False,
+                execution_command=test_command,
+                test_purpose="Full test suite execution",
+                error=f"Test command failed with exit code {exit_code}",
+            )
+        )
+
+    # If all passed (exit code 0 and no failures)
+    if exit_code == 0 and not results:
+        results.append(
+            TestResult(
+                test_name="Test Suite Execution",
+                passed=True,
+                execution_command=test_command,
+                test_purpose="Full test suite execution",
+                error=None,
+            )
+        )
+
+    passed_count = sum(1 for r in results if r.passed)
+    failed_count = len(results) - passed_count
+
+    logger.info(
+        f"Console parsing complete - {passed_count} passed, {failed_count} failed"
+    )
+
+    return results, passed_count, failed_count
+
+
 def run_tests(
     adw_id: str, logger: logging.Logger
 ) -> Tuple[bool, str, List[TestResult], int, int]:
-    """Run the test suite locally using detected command."""
-    test_command = get_test_command()
+    """Run the test suite locally using configured test command and parsers."""
+    # Load test configuration from config.yaml
+    test_config = config._data.get("test_configuration", {})
+
+    # Handle missing or invalid test config gracefully
+    if not test_config:
+        logger.warning(
+            "No test_configuration found in config.yaml, using fallback defaults"
+        )
+        test_command = config.test_command
+        output_format = "console"
+        json_output_file = None
+    else:
+        test_command = test_config.get("test_command", config.test_command)
+        output_format = test_config.get("output_format", "console")
+        json_output_file = test_config.get("json_output_file")
+
+        logger.info(
+            f"Loaded test config - framework: {test_config.get('framework', 'unknown')}, output: {output_format}"
+        )
+
     logger.info(f"Running tests with command: {test_command}")
 
     try:
@@ -336,10 +520,20 @@ def run_tests(
 
         full_output = result.stdout + "\n" + result.stderr
 
-        # Parse results
-        results, passed, failed = parse_local_test_output(
-            full_output, result.returncode, test_command
-        )
+        # Route to appropriate parser based on output_format
+        if output_format == "json" and json_output_file:
+            # Use JSON parser
+            results, passed, failed = run_and_parse_json(
+                json_output_file,
+                test_config.get("framework", "unknown"),
+                test_command,
+                logger,
+            )
+        else:
+            # Use console parser (default fallback)
+            results, passed, failed = run_and_parse_console(
+                full_output, result.returncode, test_command, logger
+            )
 
         return result.returncode == 0, full_output, results, passed, failed
 

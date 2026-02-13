@@ -35,6 +35,98 @@ from adw_modules.test_parsers import (
 )
 
 
+def check_pytest_json_report_installed() -> bool:
+    """
+    Check if pytest-json-report is installed.
+
+    Returns:
+        True if installed, False otherwise
+    """
+    try:
+        result = subprocess.run(
+            ["pip", "show", "pytest-json-report"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
+
+
+def install_pytest_json_report() -> bool:
+    """
+    Install pytest-json-report package using pip.
+
+    Returns:
+        True if installation successful, False otherwise
+    """
+    print("\n📦 Installing pytest-json-report...")
+    print("   Running: pip install pytest-json-report")
+
+    try:
+        result = subprocess.run(
+            ["pip", "install", "pytest-json-report"],
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+
+        if result.returncode == 0:
+            print("✅ pytest-json-report installed successfully")
+            return True
+        else:
+            print(f"❌ Installation failed (exit code {result.returncode})")
+            if result.stderr:
+                print(f"   Error: {result.stderr[:200]}")
+            return False
+
+    except subprocess.TimeoutExpired:
+        print("❌ Installation timed out (120s)")
+        return False
+    except Exception as e:
+        print(f"❌ Installation error: {e}")
+        return False
+
+
+def offer_pytest_json_report_install() -> bool:
+    """
+    Offer to install pytest-json-report and handle user consent.
+
+    Returns:
+        True if plugin is available (already installed or newly installed), False otherwise
+    """
+    if check_pytest_json_report_installed():
+        return True
+
+    print(
+        "\n💡 pytest-json-report plugin enables JSON output for better test result parsing"
+    )
+    print("   Benefits:")
+    print("   - Structured test data (reduces token usage by ~85%)")
+    print("   - More reliable failure extraction")
+    print("   - Better integration with ADWS workflow")
+    print()
+    print("Would you like to install pytest-json-report? (y/n): ", end="")
+
+    response = input().lower().strip()
+
+    if response == "y":
+        if install_pytest_json_report():
+            # Verify installation
+            if check_pytest_json_report_installed():
+                return True
+            else:
+                print("⚠️  Installation reported success but verification failed")
+                return False
+        else:
+            print("⚠️  Installation failed, falling back to console mode")
+            return False
+    else:
+        print("   Skipping installation, using console fallback mode")
+        return False
+
+
 def display_current_config() -> Dict[str, Any]:
     """
     Display current test configuration from config.yaml.
@@ -62,6 +154,174 @@ def display_current_config() -> Dict[str, Any]:
     return test_config
 
 
+def setup_pytest() -> Dict[str, Any]:
+    """
+    Interactive setup flow for Pytest configuration.
+
+    Checks for pytest-json-report plugin, offers to auto-install if missing,
+    displays recommended JSON command or fallback to console mode.
+
+    Returns:
+        Test configuration dict with:
+        - framework: "pytest"
+        - test_command: Command string
+        - output_format: "json" or "console"
+        - json_output_file: Path or None
+        - parser: "pytest" or "console"
+    """
+    print("✅ Detected: Pytest")
+
+    # Check if pytest-json-report is available, offer to install if not
+    has_json_plugin = offer_pytest_json_report_install()
+
+    if has_json_plugin:
+        print("   ✅ pytest-json-report plugin available")
+        print("\n📋 Recommended command:")
+        recommended_cmd = (
+            "pytest --json-report --json-report-file=.adw/test-results.json"
+        )
+        print(f"   {recommended_cmd}")
+        print("\n💡 Benefits:")
+        print("   - Structured test data (reduces token usage by ~85%)")
+        print("   - More reliable failure extraction")
+        print("   - Better integration with ADWS workflow")
+        print()
+
+        # Offer accept/edit/reject choices
+        print("Choose an option:")
+        print("  [a] Accept recommended command")
+        print("  [e] Edit command")
+        print("  [r] Reject (use console fallback)")
+        print()
+        choice = input("Your choice (a/e/r): ").lower().strip()
+
+        if choice == "a":
+            print("✅ Using recommended JSON configuration")
+            return {
+                "framework": "pytest",
+                "test_command": recommended_cmd,
+                "output_format": "json",
+                "json_output_file": ".adw/test-results.json",
+                "parser": "pytest",
+            }
+        elif choice == "e":
+            print(f"\nCurrent command: {recommended_cmd}")
+            print("Enter your custom command:")
+            custom_cmd = input("> ").strip()
+            if custom_cmd:
+                print(f"✅ Using custom command: {custom_cmd}")
+                return {
+                    "framework": "pytest",
+                    "test_command": custom_cmd,
+                    "output_format": "json",
+                    "json_output_file": ".adw/test-results.json",
+                    "parser": "pytest",
+                }
+            else:
+                print("⚠️  No command entered, using recommended")
+                return {
+                    "framework": "pytest",
+                    "test_command": recommended_cmd,
+                    "output_format": "json",
+                    "json_output_file": ".adw/test-results.json",
+                    "parser": "pytest",
+                }
+        else:  # reject or anything else
+            print("   Using console fallback mode")
+            return {
+                "framework": "pytest",
+                "test_command": "pytest",
+                "output_format": "console",
+                "json_output_file": None,
+                "parser": "console",
+            }
+    else:
+        print("   Using console fallback mode")
+        return {
+            "framework": "pytest",
+            "test_command": "pytest",
+            "output_format": "console",
+            "json_output_file": None,
+            "parser": "console",
+        }
+
+
+def setup_jest() -> Dict[str, Any]:
+    """
+    Interactive setup flow for Jest configuration.
+
+    Displays recommended JSON command with benefits, allows user to
+    accept/edit/reject. Jest has built-in JSON support, no plugin needed.
+
+    Returns:
+        Test configuration dict with:
+        - framework: "jest"
+        - test_command: Command string
+        - output_format: "json" or "console"
+        - json_output_file: Path or None
+        - parser: "jest" or "console"
+    """
+    print("✅ Detected: Jest")
+    print("   ✅ Jest has built-in JSON output support")
+    print("\n📋 Recommended command:")
+    recommended_cmd = "npm test -- --json --outputFile=.adw/test-results.json"
+    print(f"   {recommended_cmd}")
+    print("\n💡 Benefits:")
+    print("   - Structured test data (reduces token usage by ~85%)")
+    print("   - More reliable failure extraction")
+    print("   - Better integration with ADWS workflow")
+    print()
+
+    # Offer accept/edit/reject choices
+    print("Choose an option:")
+    print("  [a] Accept recommended command")
+    print("  [e] Edit command")
+    print("  [r] Reject (use console fallback)")
+    print()
+    choice = input("Your choice (a/e/r): ").lower().strip()
+
+    if choice == "a":
+        print("✅ Using recommended JSON configuration")
+        return {
+            "framework": "jest",
+            "test_command": recommended_cmd,
+            "output_format": "json",
+            "json_output_file": ".adw/test-results.json",
+            "parser": "jest",
+        }
+    elif choice == "e":
+        print(f"\nCurrent command: {recommended_cmd}")
+        print("Enter your custom command:")
+        custom_cmd = input("> ").strip()
+        if custom_cmd:
+            print(f"✅ Using custom command: {custom_cmd}")
+            return {
+                "framework": "jest",
+                "test_command": custom_cmd,
+                "output_format": "json",
+                "json_output_file": ".adw/test-results.json",
+                "parser": "jest",
+            }
+        else:
+            print("⚠️  No command entered, using recommended")
+            return {
+                "framework": "jest",
+                "test_command": recommended_cmd,
+                "output_format": "json",
+                "json_output_file": ".adw/test-results.json",
+                "parser": "jest",
+            }
+    else:  # reject or anything else
+        print("   Using console fallback mode")
+        return {
+            "framework": "jest",
+            "test_command": "npm test",
+            "output_format": "console",
+            "json_output_file": None,
+            "parser": "console",
+        }
+
+
 def detect_test_framework() -> Dict[str, Any]:
     """
     Auto-detect test framework and return recommended configuration.
@@ -86,63 +346,20 @@ def detect_test_framework() -> Dict[str, Any]:
             dev_deps = pkg_data.get("devDependencies", {})
             scripts = pkg_data.get("scripts", {})
 
-            # Check for Jest
+            # Check for Jest - use setup_jest() for interactive flow
             if "jest" in dev_deps or "jest" in deps:
-                print("✅ Detected: Jest")
-                return {
-                    "framework": "jest",
-                    "test_command": "npm test -- --json --outputFile=.adw/test-results.json",
-                    "output_format": "json",
-                    "json_output_file": ".adw/test-results.json",
-                    "parser": "jest",
-                }
+                return setup_jest()
 
-            # Check for React scripts (includes Jest)
+            # Check for React scripts (includes Jest) - use setup_jest() for interactive flow
             if "react-scripts" in dev_deps or "react-scripts" in deps:
-                print("✅ Detected: React (Jest)")
-                return {
-                    "framework": "jest",
-                    "test_command": "npm test -- --json --outputFile=.adw/test-results.json --watchAll=false",
-                    "output_format": "json",
-                    "json_output_file": ".adw/test-results.json",
-                    "parser": "jest",
-                }
+                return setup_jest()
         except Exception:
             pass
 
-    # Check for Pytest
+    # Check for Pytest - use setup_pytest() for interactive flow
     pytest_indicators = ["pytest.ini", "pyproject.toml", "requirements.txt", "setup.py"]
     if any((project_dir / indicator).exists() for indicator in pytest_indicators):
-        print("✅ Detected: Pytest")
-
-        # Check if pytest-json-report is available
-        try:
-            result = subprocess.run(
-                ["pip", "show", "pytest-json-report"], capture_output=True, text=True
-            )
-            has_json_plugin = result.returncode == 0
-        except Exception:
-            has_json_plugin = False
-
-        if has_json_plugin:
-            print("   ✅ pytest-json-report plugin available")
-            return {
-                "framework": "pytest",
-                "test_command": "pytest --json-report --json-report-file=.adw/test-results.json",
-                "output_format": "json",
-                "json_output_file": ".adw/test-results.json",
-                "parser": "pytest",
-            }
-        else:
-            print("   ⚠️  pytest-json-report plugin not found")
-            print("   Using console fallback mode")
-            return {
-                "framework": "pytest",
-                "test_command": "pytest",
-                "output_format": "console",
-                "json_output_file": None,
-                "parser": "console",
-            }
+        return setup_pytest()
 
     # Check for other frameworks
     if (project_dir / "go.mod").exists():
@@ -168,6 +385,90 @@ def detect_test_framework() -> Dict[str, Any]:
     print("❌ Could not detect test framework")
     print("   Please configure manually")
     return {}
+
+
+def setup_custom_framework() -> Dict[str, Any]:
+    """
+    Interactive setup for custom/unrecognized test frameworks.
+
+    Prompts user for:
+    - Test command
+    - JSON output support
+    - JSON output file path (if supported)
+
+    Returns:
+        Configuration dictionary for custom framework
+    """
+    print("\n🔧 Custom Framework Setup")
+    print("=" * 60)
+    print("Let's configure your test framework manually.")
+    print()
+
+    # Provide examples
+    print("Examples of test commands:")
+    print("  - go test ./...                    (Go)")
+    print("  - rspec                             (Ruby/RSpec)")
+    print("  - mvn test                          (Java/Maven)")
+    print("  - cargo test                        (Rust)")
+    print("  - dotnet test                       (C#/.NET)")
+    print()
+
+    # Prompt for test command
+    test_command = input("Enter your test command: ").strip()
+
+    if not test_command:
+        print("❌ Test command is required")
+        return {}
+
+    print(f"✅ Test command: {test_command}")
+    print()
+
+    # Ask about JSON output support
+    print("Does your test framework support JSON output?")
+    print("(This enables better parsing and filtering of test results)")
+    json_support = input("Support JSON output? (y/n): ").lower().strip()
+
+    if json_support == "y":
+        print()
+        print("What's the output file path for JSON results?")
+        print("  Example: .adw/test-results.json")
+        json_output_file = input("JSON output file path: ").strip()
+
+        if not json_output_file:
+            print("⚠️  No file path provided, falling back to console mode")
+            return {
+                "framework": "custom",
+                "test_command": test_command,
+                "output_format": "console",
+                "json_output_file": None,
+                "parser": "console",
+            }
+
+        print(f"✅ JSON output file: {json_output_file}")
+        print()
+        print("Note: You may need to add JSON flags to your test command")
+        print(f"      Current command: {test_command}")
+        print("Update command to include JSON flags? (y/n): ", end="")
+
+        if input().lower().strip() == "y":
+            test_command = edit_test_command(test_command)
+
+        return {
+            "framework": "custom",
+            "test_command": test_command,
+            "output_format": "json",
+            "json_output_file": json_output_file,
+            "parser": "generic",  # Generic parser for custom JSON formats
+        }
+    else:
+        print("✅ Using console output mode")
+        return {
+            "framework": "custom",
+            "test_command": test_command,
+            "output_format": "console",
+            "json_output_file": None,
+            "parser": "console",
+        }
 
 
 def edit_test_command(current_command: str) -> str:
@@ -379,14 +680,15 @@ def show_menu() -> str:
     print("=" * 60)
     print("1. Display current configuration")
     print("2. Re-detect test framework")
-    print("3. Edit test command manually")
-    print("4. Switch to console fallback mode")
-    print("5. Validate current configuration")
-    print("6. Apply changes and save")
-    print("7. Exit without saving")
+    print("3. Configure custom framework")
+    print("4. Edit test command manually")
+    print("5. Switch to console fallback mode")
+    print("6. Validate current configuration")
+    print("7. Apply changes and save")
+    print("8. Exit without saving")
     print("=" * 60)
 
-    choice = input("Enter your choice (1-7): ").strip()
+    choice = input("Enter your choice (1-8): ").strip()
     return choice
 
 
@@ -433,6 +735,16 @@ def run_config_test() -> int:
                     print("✅ Configuration updated (not yet saved)")
 
         elif choice == "3":
+            # Custom framework
+            custom_config = setup_custom_framework()
+            if custom_config:
+                print("\n✅ Custom configuration created")
+                print("Apply this configuration? (y/n): ", end="")
+                if input().lower() == "y":
+                    pending_config = custom_config
+                    print("✅ Configuration updated (not yet saved)")
+
+        elif choice == "4":
             # Edit command
             current_cmd = pending_config.get("test_command", "")
             if not current_cmd:
@@ -444,7 +756,7 @@ def run_config_test() -> int:
             pending_config["test_command"] = new_cmd
             print("✅ Test command updated (not yet saved)")
 
-        elif choice == "4":
+        elif choice == "5":
             # Fallback mode
             if not pending_config:
                 print("❌ No configuration to convert")
@@ -457,7 +769,7 @@ def run_config_test() -> int:
                 pending_config = fallback
                 print("✅ Switched to fallback mode (not yet saved)")
 
-        elif choice == "5":
+        elif choice == "6":
             # Validate
             if not pending_config:
                 print("❌ No configuration to validate")
@@ -465,7 +777,7 @@ def run_config_test() -> int:
 
             validate_configuration(pending_config)
 
-        elif choice == "6":
+        elif choice == "7":
             # Save
             if not pending_config:
                 print("❌ No configuration to save")
@@ -485,7 +797,7 @@ def run_config_test() -> int:
                     print("\n❌ Failed to save configuration")
                     return 1
 
-        elif choice == "7":
+        elif choice == "8":
             # Exit
             if pending_config != current_config:
                 print("\n⚠️  You have unsaved changes")
@@ -497,7 +809,7 @@ def run_config_test() -> int:
             return 0
 
         else:
-            print("❌ Invalid choice. Please enter 1-7")
+            print("❌ Invalid choice. Please enter 1-8")
 
 
 def main():

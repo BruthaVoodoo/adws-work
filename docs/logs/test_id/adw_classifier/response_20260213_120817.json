@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-13T12:08:17.166296",
+  "adw_id": "test_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "test prompt",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c57f97c830011Ixlz94kLex529",
+      "sessionID": "ses_3a80683fcffeE5U0syDej3goI9",
+      "role": "assistant",
+      "time": {
+        "created": 1771002494083,
+        "completed": 1771002497159
+      },
+      "parentID": "msg_c57f97c25001QF4uC1VCF8Pk25",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16012,
+        "output": 165,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c57f98273001wzJQ8ppEJUfMxw",
+        "sessionID": "ses_3a80683fcffeE5U0syDej3goI9",
+        "messageID": "msg_c57f97c830011Ixlz94kLex529",
+        "type": "step-start",
+        "snapshot": "e338254167bf5a359d403956690a4f08e99fc862"
+      },
+      {
+        "id": "prt_c57f98275001h0vnpg7ffdFDfr",
+        "sessionID": "ses_3a80683fcffeE5U0syDej3goI9",
+        "messageID": "msg_c57f97c830011Ixlz94kLex529",
+        "type": "text",
+        "text": "Hello! I'm here to help you with various tasks. To better assist you, could you let me know what you'd like me to do? Here are some things I can help with:\n\n**Development & Code:**\n- Read and edit files in your codebase\n- Run bash commands and git operations\n- Search and explore your project files\n- Create and manage pull requests\n\n**Project Management:**\n- Create and manage projects, tasks, and documents\n- Track project progress and versions\n- Organize work with todo lists\n\n**Research & Knowledge:**\n- Search documentation and knowledge bases\n- Fetch and analyze web content\n- Answer questions about your code\n\n**What would you like to do?** Just let me know, and I'll get started! 😊",
+        "time": {
+          "start": 1771002497045,
+          "end": 1771002497045
+        }
+      },
+      {
+        "id": "prt_c57f9881d0016bnTNJEMxBwg8P",
+        "sessionID": "ses_3a80683fcffeE5U0syDej3goI9",
+        "messageID": "msg_c57f97c830011Ixlz94kLex529",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "e338254167bf5a359d403956690a4f08e99fc862",
+        "cost": 0,
+        "tokens": {
+          "input": 16012,
+          "output": 165,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a80683fcffeE5U0syDej3goI9",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_id/adw_classifier/response_20260213_120817.json",
+    "created_at": "2026-02-13T12:08:17.166305",
+    "log_type": "response"
+  }
+}

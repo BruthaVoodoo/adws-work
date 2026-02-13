@@ -4,6 +4,44 @@ from datetime import datetime
 from typing import Optional, List, Literal, Dict, Any
 from pydantic import BaseModel, Field, ConfigDict
 
+
+# Custom Exceptions
+
+
+class TokenLimitExceeded(Exception):
+    """Raised when prompt token count exceeds model's token limit.
+
+    Attributes:
+        token_count: Actual token count in prompt
+        model_limit: Model's maximum token limit
+        overage_percentage: Percentage over limit (positive number)
+        model_id: Model identifier that was being used
+    """
+
+    def __init__(
+        self,
+        token_count: int,
+        model_limit: int,
+        overage_percentage: float,
+        model_id: str,
+        message: Optional[str] = None,
+    ):
+        self.token_count = token_count
+        self.model_limit = model_limit
+        self.overage_percentage = overage_percentage
+        self.model_id = model_id
+
+        if message is None:
+            message = (
+                f"Token limit exceeded: {token_count:,} tokens exceeds "
+                f"{model_limit:,} limit by {overage_percentage:.1f}% "
+                f"(model: {model_id})"
+            )
+
+        super().__init__(message)
+        self.message = message
+
+
 # Supported slash commands for issue classification
 # These should align with your custom slash commands in .claude/commands that you want to run
 IssueClassSlashCommand = Literal["/chore", "/bug", "/feature", "/new"]

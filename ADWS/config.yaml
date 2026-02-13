@@ -9,7 +9,7 @@ providers:
 opencode:
   server_url: http://localhost:4096
   models:
-    heavy_lifting: github-copilot/claude-sonnet-4
+    heavy_lifting: github-copilot/claude-sonnet-4.5
     lightweight: github-copilot/claude-haiku-4.5
   timeout: 600
   lightweight_timeout: 60
@@ -20,3 +20,14 @@ opencode:
   read_timeout: 600
 repo_provider: github
 issue_provider: jira
+
+# Test Configuration
+# Configured via: adw setup (auto-detect) or adw config test (manual)
+test_configuration:
+  framework: pytest  # jest | pytest | custom | unknown
+  test_command: uv run pytest
+  output_format: console  # json | console
+  json_output_file: null  # Path to JSON output file (e.g., .adw/test-results.json)
+  parser: console  # jest | pytest | console
+  validated: false  # Set to true after successful validation
+  last_validated: null  # ISO 8601 timestamp of last validation

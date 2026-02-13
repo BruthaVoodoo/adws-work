@@ -223,3 +223,149 @@ uv run pytest
 
 ### Health Check
 Run `adw setup` or `python -m scripts.adw_tests.health_check` to verify the environment, connectivity, and configuration.
+
+### Test Framework Configuration
+
+ADWS automatically detects and configures your test framework during setup. Supported frameworks include Jest (JavaScript/TypeScript) and Pytest (Python), with fallback support for custom frameworks.
+
+#### Test Configuration Schema
+
+The test configuration is stored in `ADWS/config.yaml` under the `test` section:
+
+```yaml
+test:
+  framework: jest                    # Detected framework: jest, pytest, or custom
+  test_command: npm test -- --json   # Command to run tests
+  output_format: json                # Output format: json or console
+  output_file: .adw/test-results.json  # Path to JSON output file (if json format)
+  parser: jest                       # Parser type: jest, pytest, generic, or console
+  validated: true                    # Whether command has been validated
+  last_validated: "2026-02-13T10:30:00Z"  # Timestamp of last validation
+```
+
+#### Supported Frameworks
+
+**Jest (JavaScript/TypeScript)**
+- **Detection**: Checks for `jest` in `package.json` dependencies or `react-scripts`
+- **Recommended command**: `npm test -- --json --outputFile=.adw/test-results.json`
+- **Parser**: Uses `parse_jest_json()` to extract failed test details
+- **JSON format**: Native Jest JSON reporter format
+
+**Pytest (Python)**
+- **Detection**: Checks for `pytest.ini`, `pyproject.toml`, or pytest in dependencies
+- **Recommended command**: `pytest --json-report --json-report-file=.adw/test-results.json`
+- **Parser**: Uses `parse_pytest_json()` to extract failed test details
+- **Requires plugin**: `pytest-json-report` (auto-installed during setup if missing)
+- **Fallback**: Console mode if plugin installation fails
+
+**Custom/Unknown Frameworks**
+- **Fallback parser**: Generic JSON parser or console output parser
+- **Manual configuration**: User provides test command and specifies if JSON output is supported
+- **Examples**: Go (`go test`), RSpec (`rspec`), Maven (`mvn test`)
+
+#### Setup Process
+
+During `adw setup`, ADWS will:
+1. Detect your test framework automatically
+2. Check for required plugins (e.g., `pytest-json-report`)
+3. Offer to auto-install missing dependencies
+4. Display recommended test command
+5. Allow you to accept, edit, or reject the configuration
+6. Validate the command with a quick test run (30s timeout)
+7. Save configuration to `ADWS/config.yaml`
+
+#### Reconfiguring Tests
+
+To re-detect and reconfigure your test framework:
+
+```bash
+adw config
+# Select option: "2. Re-detect test framework"
+```
+
+This will:
+- Re-scan your project for test framework indicators
+- Update recommendations based on current setup
+- Re-validate the test command
+- Save updated configuration
+
+#### Manual Configuration
+
+You can manually edit `ADWS/config.yaml` to customize test configuration:
+
+```yaml
+test:
+  framework: custom
+  test_command: your-custom-test-command
+  output_format: console  # or json
+  output_file: path/to/output.json  # only needed if output_format is json
+  parser: console  # or generic for JSON
+  validated: false
+```
+
+After manual changes, run `adw config` and choose validation to test your configuration.
+
+---
+
+## Token Management
+
+### Model Token Limits
+
+ADWS uses different models for different workload types through OpenCode. Each model has token limits:
+
+| Model | Input Limit | Output Limit | Use Case |
+|-------|-------------|--------------|----------|
+| Claude Sonnet 4 | 128,000 tokens | 8,192 tokens | Heavy lifting (plan, build, review) |
+| Claude Haiku 4.5 | 128,000 tokens | 8,192 tokens | Lightweight tasks (classify, summarize) |
+| Claude Opus 4* | 200,000 tokens | 8,192 tokens | Future fallback for large contexts |
+
+*Availability depends on your OpenCode/GitHub Copilot subscription
+
+### Token Limit Errors
+
+If you encounter a token limit error like:
+```
+OpenCode Server Error: APIError - prompt token count of 184573 exceeds the limit of 128000
+```
+
+This means the prompt being sent to the LLM is too large. This typically happens during:
+- **Test phase**: When many tests fail and generate large output
+- **Review phase**: When reviewing changes across many files
+- **Build phase**: When implementing large features with extensive context
+
+### Troubleshooting Token Errors
+
+**1. Check the saved prompt**
+ADWS saves all prompts to `ADWS/logs/{adw_id}/{phase}/prompts/`. Inspect the saved prompt to understand what's consuming tokens.
+
+**2. Reduce test output (for test phase errors)**
+- Configure your test framework to use JSON output mode (more compact)
+- Limit test verbosity in your test configuration
+- Run tests in smaller batches manually if needed
+
+**3. Simplify the issue scope**
+- Break large features into smaller sub-tasks
+- Reduce the number of acceptance criteria in the issue
+- Limit the scope of files being modified
+
+**4. Use console output mode as fallback**
+If JSON parsing is causing issues:
+```bash
+adw config
+# Select option: "2. Re-detect test framework"
+# Choose "console" output format when prompted
+```
+
+**5. Manual workarounds**
+- Run phases individually with smaller contexts
+- Manually fix failing tests and re-run `adw test`
+- Use `adw review` only on specific files
+
+### Future Enhancements
+
+The following token management features are planned:
+- Pre-flight token counting before API calls
+- Automatic truncation of verbose test output
+- Intelligent summarization of test failures
+- Fallback to higher-capacity models (Opus 4) when available
+- Chunked processing for large test suites

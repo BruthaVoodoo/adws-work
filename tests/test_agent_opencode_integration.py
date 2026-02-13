@@ -26,16 +26,25 @@ from scripts.adw_modules.data_types import (
 class TestExecuteOpenCodePrompt:
     """Test execute_opencode_prompt() function."""
 
+    @patch("scripts.adw_modules.agent.count_tokens")
+    @patch("scripts.adw_modules.agent.get_model_limit")
     @patch("scripts.adw_modules.agent.OpenCodeHTTPClient")
-    def test_execute_opencode_prompt_with_valid_inputs(self, mock_client_class):
+    def test_execute_opencode_prompt_with_valid_inputs(
+        self, mock_client_class, mock_get_model_limit, mock_count_tokens
+    ):
         """Test successful execution with valid inputs."""
+        # Setup token validation mocks
+        mock_count_tokens.return_value = 1000  # Well within limit
+        mock_get_model_limit.return_value = 128_000
+
         # Setup mock client instance
         mock_client = Mock()
         mock_client_class.from_config.return_value = mock_client
+        mock_client.get_model_for_task.return_value = "github-copilot/claude-haiku-4.5"
 
         # Mock successful response
         mock_response = {
-            "parts": [{"type": "text", "content": "AI generated response"}],
+            "parts": [{"type": "text", "text": "AI generated response"}],
             "success": True,
             "session_id": "test-session-123",
         }
@@ -57,6 +66,7 @@ class TestExecuteOpenCodePrompt:
             model_id=None,
             adw_id="test123",
             agent_name="test_agent",
+            timeout=None,
         )
 
         # Verify response format
@@ -65,9 +75,17 @@ class TestExecuteOpenCodePrompt:
         assert "AI generated response" in result.output
         assert result.session_id == "test-session-123"
 
+    @patch("scripts.adw_modules.agent.count_tokens")
+    @patch("scripts.adw_modules.agent.get_model_limit")
     @patch("scripts.adw_modules.agent.OpenCodeHTTPClient")
-    def test_execute_opencode_prompt_with_model_override(self, mock_client_class):
+    def test_execute_opencode_prompt_with_model_override(
+        self, mock_client_class, mock_get_model_limit, mock_count_tokens
+    ):
         """Test execution with explicit model override."""
+        # Setup token validation mocks
+        mock_count_tokens.return_value = 1000
+        mock_get_model_limit.return_value = 128_000
+
         mock_client = Mock()
         mock_client_class.from_config.return_value = mock_client
         mock_response = {"parts": [], "success": True}
@@ -85,12 +103,24 @@ class TestExecuteOpenCodePrompt:
             model_id="github-copilot/claude-sonnet-4",
             adw_id="unknown",
             agent_name="agent",
+            timeout=None,
         )
 
+    @patch("scripts.adw_modules.agent.count_tokens")
+    @patch("scripts.adw_modules.agent.get_model_limit")
     @patch("scripts.adw_modules.agent.OpenCodeHTTPClient")
-    def test_execute_opencode_prompt_handles_client_error(self, mock_client_class):
+    def test_execute_opencode_prompt_handles_client_error(
+        self, mock_client_class, mock_get_model_limit, mock_count_tokens
+    ):
         """Test error handling when OpenCode client fails."""
-        mock_client_class.from_config.side_effect = ConnectionError(
+        # Setup token validation mocks
+        mock_count_tokens.return_value = 1000
+        mock_get_model_limit.return_value = 128_000
+
+        mock_client = Mock()
+        mock_client_class.from_config.return_value = mock_client
+        mock_client.get_model_for_task.return_value = "github-copilot/claude-haiku-4.5"
+        mock_client.send_prompt.side_effect = ConnectionError(
             "OpenCode server unavailable"
         )
 
@@ -101,9 +131,17 @@ class TestExecuteOpenCodePrompt:
         assert "OpenCode execution error" in result.output
         assert "OpenCode server unavailable" in result.output
 
+    @patch("scripts.adw_modules.agent.count_tokens")
+    @patch("scripts.adw_modules.agent.get_model_limit")
     @patch("scripts.adw_modules.agent.OpenCodeHTTPClient")
-    def test_execute_opencode_prompt_with_all_parameters(self, mock_client_class):
+    def test_execute_opencode_prompt_with_all_parameters(
+        self, mock_client_class, mock_get_model_limit, mock_count_tokens
+    ):
         """Test execution with all optional parameters provided."""
+        # Setup token validation mocks
+        mock_count_tokens.return_value = 1000
+        mock_get_model_limit.return_value = 128_000
+
         mock_client = Mock()
         mock_client_class.from_config.return_value = mock_client
         mock_response = {"parts": [], "success": True}
@@ -124,6 +162,7 @@ class TestExecuteOpenCodePrompt:
             model_id="github-copilot/claude-sonnet-4",
             adw_id="adw789",
             agent_name="review_agent",
+            timeout=None,
         )
 
 
@@ -136,8 +175,8 @@ class TestConvertOpenCodeToAgentResponse:
 
         response_data = {
             "parts": [
-                {"type": "text", "content": "First response"},
-                {"type": "text", "content": "Second response"},
+                {"type": "text", "text": "First response"},
+                {"type": "text", "text": "Second response"},
             ],
             "success": True,
             "session_id": "test-session-456",
@@ -208,7 +247,7 @@ class TestConvertOpenCodeToAgentResponse:
         mock_client = Mock()
 
         response_data = {
-            "parts": [{"type": "text", "content": "Error occurred"}],
+            "parts": [{"type": "text", "text": "Error occurred"}],
             "success": False,
             "session_id": "error-session",
         }
@@ -239,7 +278,6 @@ class TestExecuteTemplateRefactor:
             prompt="Implement feature X",
             adw_id="test456",
             model="opus",
-            domain="test",
             workflow_agent_name="workflow",
         )
 
@@ -250,7 +288,7 @@ class TestExecuteTemplateRefactor:
             "Implement feature X",
             "test456",
             "test_agent",
-            domain="test",
+            task_type="implement",
             workflow_agent_name="workflow",
         )
 
@@ -280,7 +318,6 @@ class TestExecuteTemplateRefactor:
             prompt="Classify this issue",
             adw_id="test789",
             model="sonnet",  # Non-opus model (lightweight)
-            domain="test",
         )
 
         result = execute_template(request)
@@ -343,14 +380,23 @@ class TestExecuteTemplateRefactor:
 class TestOpenCodeIntegrationEnd2End:
     """End-to-end integration tests."""
 
+    @patch("scripts.adw_modules.agent.count_tokens")
+    @patch("scripts.adw_modules.agent.get_model_limit")
     @patch("scripts.adw_modules.agent.OpenCodeHTTPClient")
-    def test_full_integration_classify_task(self, mock_client_class):
+    def test_full_integration_classify_task(
+        self, mock_client_class, mock_get_model_limit, mock_count_tokens
+    ):
         """Test full integration for classification task."""
+        # Setup token validation mocks
+        mock_count_tokens.return_value = 500
+        mock_get_model_limit.return_value = 128_000
+
         # Setup mock
         mock_client = Mock()
         mock_client_class.from_config.return_value = mock_client
+        mock_client.get_model_for_task.return_value = "github-copilot/claude-haiku-4.5"
         mock_client.send_prompt.return_value = {
-            "parts": [{"type": "text", "content": "/feature"}],
+            "parts": [{"type": "text", "text": "/feature"}],
             "success": True,
             "session_id": "classify-session",
         }
@@ -374,6 +420,7 @@ class TestOpenCodeIntegrationEnd2End:
             model_id=None,
             adw_id="cls001",
             agent_name="issue_classifier",
+            timeout=None,
         )
 
         # Verify response
@@ -381,15 +428,24 @@ class TestOpenCodeIntegrationEnd2End:
         assert "/feature" in result.output
         assert result.session_id == "classify-session"
 
+    @patch("scripts.adw_modules.agent.count_tokens")
+    @patch("scripts.adw_modules.agent.get_model_limit")
     @patch("scripts.adw_modules.agent.OpenCodeHTTPClient")
-    def test_full_integration_implement_task(self, mock_client_class):
+    def test_full_integration_implement_task(
+        self, mock_client_class, mock_get_model_limit, mock_count_tokens
+    ):
         """Test full integration for implementation task."""
+        # Setup token validation mocks
+        mock_count_tokens.return_value = 2000
+        mock_get_model_limit.return_value = 128_000
+
         # Setup mock
         mock_client = Mock()
         mock_client_class.from_config.return_value = mock_client
+        mock_client.get_model_for_task.return_value = "github-copilot/claude-sonnet-4"
         mock_client.send_prompt.return_value = {
             "parts": [
-                {"type": "text", "content": "Implementation completed successfully"},
+                {"type": "text", "text": "Implementation completed successfully"},
                 {"type": "tool_use", "tool": "edit", "input": {"path": "user.py"}},
                 {"type": "tool_result", "output": "Created user.py with 25 lines"},
             ],
@@ -415,6 +471,7 @@ class TestOpenCodeIntegrationEnd2End:
             model_id=None,
             adw_id="impl001",
             agent_name="code_implementer",
+            timeout=None,
         )
 
         # Verify response includes metrics

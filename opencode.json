@@ -6,5 +6,20 @@
       "url": "http://localhost:8051/mcp",
       "enabled": true
     }
+  },
+  "provider": {
+    "Deluxe": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Deluxe",
+      "options": {
+        "baseURL": "https://dlxai-dev.deluxe.com/proxy",
+        "apiKey": "sk-11fb155d5d5446ff86afaf"
+      },
+      "models": {
+        "Claude-4-Sonnet": {
+          "name": "Claude-4-Sonnet"
+        }
+      }
+    }
   }
 }

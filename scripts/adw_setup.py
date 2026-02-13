@@ -569,16 +569,79 @@ def run_setup() -> int:
         print("❌ FAILED TO UPDATE")
         print("   Warning: Could not update config.yaml with detected settings")
 
-    # Step 3: Get log directory (ADWS/logs/)
+    # Step 3: Test framework configuration
+    print()
+    print("🧪 Step 3: Test framework configuration...")
+
+    # Import detect_test_framework from adw_config_test
+    try:
+        from adw_config_test import (
+            detect_test_framework,
+            save_configuration,
+            setup_custom_framework,
+        )
+
+        # Check if test_configuration already exists
+        config_file = cwd / "ADWS" / "config.yaml"
+        test_config_exists = False
+        if config_file.exists():
+            with open(config_file, "r", encoding="utf-8") as f:
+                config_data = yaml.safe_load(f) or {}
+                test_config_exists = "test_configuration" in config_data
+
+        if test_config_exists:
+            print("   ✅ Test configuration already exists (skipping detection)")
+        else:
+            print("   Detecting test framework and configuration...")
+            detected_config = detect_test_framework()
+
+            if detected_config:
+                print("\n   Apply detected configuration? (y/n/skip): ", end="")
+                response = input().lower().strip()
+
+                if response == "y":
+                    if save_configuration(detected_config):
+                        print("   ✅ Test configuration saved")
+                    else:
+                        print("   ⚠️  Failed to save test configuration")
+                elif response == "skip":
+                    print("   ⏭️  Skipping test configuration")
+                else:
+                    print("   ⏭️  Test configuration not applied")
+            else:
+                print("   ⚠️  Could not detect test framework")
+                print(
+                    "\n   Would you like to configure a custom framework? (y/n): ",
+                    end="",
+                )
+                custom_response = input().lower().strip()
+
+                if custom_response == "y":
+                    custom_config = setup_custom_framework()
+                    if custom_config:
+                        if save_configuration(custom_config):
+                            print("   ✅ Custom test configuration saved")
+                        else:
+                            print("   ⚠️  Failed to save custom configuration")
+                    else:
+                        print("   ⚠️  Custom configuration not created")
+                        print("   💡 Run 'adw config test' later to configure manually")
+                else:
+                    print("   💡 Run 'adw config test' later to configure manually")
+    except Exception as e:
+        print(f"   ⚠️  Test configuration setup failed: {e}")
+        print("   💡 Run 'adw config test' later to configure manually")
+
+    # Step 4: Get log directory (ADWS/logs/)
     try:
         logs_dir = cwd / "ADWS" / "logs"
     except Exception as e:
         print(f"❌ Error determining log directory: {e}")
         return 1
 
-    # Step 4: Run health checks
+    # Step 6: Run health checks
     print()
-    print("🏥 Step 3: Running health checks...")
+    print("🏥 Step 4: Running health checks...")
 
     health_checks = {
         "environment": check_env_vars,
@@ -655,7 +718,7 @@ def run_setup() -> int:
                 f"[{check_name.replace('_', ' ').title()}] {str(e)}"
             )
 
-    # Step 4: Report results
+    # Step 7: Report results
     print()
     if health_result.success:
         print("✅ All health checks passed!")
@@ -670,7 +733,7 @@ def run_setup() -> int:
         for warning in health_result.warnings:
             print(f"   - {warning}")
 
-    # Step 5: Write setup log
+    # Step 8: Write setup log
     overall_success = config_valid and health_result.success
     write_setup_log(
         success=overall_success,
@@ -679,7 +742,7 @@ def run_setup() -> int:
         log_dir=logs_dir,
     )
 
-    # Step 6: Print final status and exit
+    # Step 9: Print final status and exit
     print()
     if overall_success:
         print("✅ Setup completed successfully!")

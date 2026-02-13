@@ -22,6 +22,7 @@ from .data_types import (
     AgentPromptResponse,
     AgentTemplateRequest,
     OpenCodeResponse,
+    TokenLimitExceeded,
 )
 from .config import config
 from .opencode_http_client import (
@@ -29,6 +30,8 @@ from .opencode_http_client import (
     OpenCodeHTTPClient,
     estimate_metrics_from_parts,
 )
+from .token_utils import count_tokens, calculate_overage_percentage
+from .model_limits import get_model_limit
 
 # Note: Environment variables are loaded by main scripts to ensure proper precedence
 # Project .env files take priority over ADWS system .env files
@@ -101,6 +104,12 @@ def execute_opencode_prompt(
     - Supports task_type parameter for intelligent model routing
     - Converts OpenCodeResponse to AgentPromptResponse for backward compatibility
 
+    Token Limit Validation:
+    - Counts tokens in prompt before API call
+    - Checks against target model's limit
+    - Raises TokenLimitExceeded if prompt exceeds model's capacity
+    - Logs token count to prompt log file for debugging
+
     Args:
         prompt: The prompt text to execute
         task_type: Task type for automatic model selection (classify, plan, implement, etc.)
@@ -111,11 +120,63 @@ def execute_opencode_prompt(
 
     Returns:
         AgentPromptResponse: Backward-compatible response format
-    """
-    try:
-        # Create OpenCode client using configuration
-        client = OpenCodeHTTPClient.from_config()
 
+    Raises:
+        TokenLimitExceeded: If prompt token count exceeds model's limit
+    """
+    # Determine which model will be used (for token limit validation)
+    client = OpenCodeHTTPClient.from_config()
+
+    if model_id:
+        final_model_id = model_id
+    else:
+        final_model_id = client.get_model_for_task(task_type)
+
+    # Pre-flight token validation
+    model_limit = get_model_limit(final_model_id)
+    token_count = count_tokens(prompt)
+
+    if token_count > model_limit:
+        # Calculate overage percentage
+        overage_pct = calculate_overage_percentage(token_count, model_limit)
+
+        # Log token limit error to prompt file for debugging
+        prompt_dir = config.logs_dir / adw_id / agent_name / "prompts"
+        os.makedirs(prompt_dir, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        error_log_file = (
+            prompt_dir / f"{task_type}_{timestamp}_TOKEN_LIMIT_EXCEEDED.txt"
+        )
+
+        error_details = (
+            f"TOKEN LIMIT EXCEEDED\n"
+            f"{'=' * 60}\n"
+            f"Model: {final_model_id}\n"
+            f"Token Count: {token_count:,}\n"
+            f"Model Limit: {model_limit:,}\n"
+            f"Overage: {overage_pct:.1f}%\n"
+            f"{'=' * 60}\n\n"
+            f"PROMPT CONTENT:\n"
+            f"{prompt}"
+        )
+
+        with open(error_log_file, "w") as f:
+            f.write(error_details)
+
+        print(f"Token limit exceeded. Details saved to: {error_log_file}")
+
+        # Raise exception with details
+        raise TokenLimitExceeded(
+            token_count=token_count,
+            model_limit=model_limit,
+            overage_percentage=overage_pct,
+            model_id=final_model_id,
+        )
+
+    # Save prompt before execution (only if token validation passed)
+    save_prompt(prompt, adw_id, agent_name, task_type=task_type)
+
+    try:
         # Send prompt with task-aware model selection
         response_data = client.send_prompt(
             prompt=prompt,
@@ -140,6 +201,7 @@ def save_prompt(
     prompt: str,
     adw_id: str,
     agent_name: str = "ops",
+    task_type: str = "prompt",
     domain: str = "ADW_Core",
     workflow_agent_name: Optional[str] = None,
 ) -> None:
@@ -149,15 +211,10 @@ def save_prompt(
         prompt: The prompt text to save
         adw_id: The ADW workflow ID
         agent_name: The AI agent name (issue_classifier, sdlc_planner, etc.)
+        task_type: Task type for filename prefix (classify, plan, implement, test_fix, review)
         domain: Deprecated.
         workflow_agent_name: Deprecated.
     """
-
-    match = re.match(r"^(/\w+)", prompt)
-    if not match:
-        command_name = "prompt"
-    else:
-        command_name = match.group(1)[1:]
 
     # Get base path from config
     logs_base = config.logs_dir
@@ -165,7 +222,7 @@ def save_prompt(
     os.makedirs(prompt_dir, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    prompt_file = prompt_dir / f"{command_name}_{timestamp}.txt"
+    prompt_file = prompt_dir / f"{task_type}_{timestamp}.txt"
     with open(prompt_file, "w") as f:
         f.write(prompt)
     print(f"Saved prompt to: {prompt_file}")
@@ -277,16 +334,24 @@ def execute_template(request: AgentTemplateRequest) -> AgentPromptResponse:
     - other → task_type for lightweight operations
     """
     prompt = request.prompt
+
+    # Map request.model to task_type for save_prompt filename
+    if request.model in ["opus", "heavy", "heavy_lifting"]:
+        task_type_for_save = "implement"
+    else:
+        task_type_for_save = "classify"
+
     save_prompt(
         prompt,
         request.adw_id,
         request.agent_name,
+        task_type=task_type_for_save,
         workflow_agent_name=request.workflow_agent_name,
     )
 
     # Map request.model to task_type for intelligent routing
     # Note: This is a transitional mapping until calling code is updated to provide task_type directly
-    if request.model in ["heavy", "heavy_lifting"]:
+    if request.model in ["opus", "heavy", "heavy_lifting"]:
         # Heavy lifting task - will route to Claude Sonnet 4
         task_type = "implement"  # Default heavy lifting task type
     else:
