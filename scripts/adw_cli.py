@@ -467,6 +467,49 @@ def analyze() -> None:
             raise
 
 
+@cli.group(cls=RichGroup)
+def config():
+    """
+    Configuration management commands.
+
+    Manage ADWS configuration settings including test framework setup,
+    API credentials, and project-specific settings.
+    """
+    pass
+
+
+@config.command(name="test", cls=RichCommand)
+def config_test() -> None:
+    """
+    Reconfigure test settings without full setup.
+
+    This interactive command allows you to:
+    1. Display current test configuration
+    2. Re-detect test framework automatically
+    3. Edit test command manually
+    4. Switch to console fallback mode
+    5. Validate configuration with a quick test run
+    6. Save changes to ADWS/config.yaml
+
+    Returns:
+        Exit code 0 on success, 1 on error
+
+    Example workflow:
+      $ adw config test
+      > Display current config
+      > Re-detect framework
+      > Validate configuration
+      > Save changes
+    """
+    from scripts.adw_config_test import main as config_test_main
+
+    try:
+        config_test_main()
+    except SystemExit as e:
+        if e.code != 0:
+            raise
+
+
 def main():
     """Main entry point for the CLI."""
     try:
