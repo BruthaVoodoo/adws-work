@@ -8,7 +8,7 @@ import os
 # Add the parent directory to the path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from adw_modules.rich_console import RichConsole, get_rich_console, create_rich_console
+from scripts.adw_modules.rich_console import RichConsole, get_rich_console, create_rich_console
 
 
 class TestRichConsole:

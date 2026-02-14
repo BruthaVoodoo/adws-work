@@ -12,7 +12,7 @@ Tests the ADWState class data management.
 import pytest
 import os
 import json
-from adw_modules.state import ADWState
+from scripts.adw_modules.state import ADWState
 
 
 class TestStateCreation:

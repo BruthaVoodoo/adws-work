@@ -25,10 +25,10 @@ import json
 from typing import Optional
 from dotenv import load_dotenv
 
-from adw_modules.state import ADWState
-from adw_modules.git_ops import create_branch, commit_changes, finalize_git_operations
+from scripts.adw_modules.state import ADWState
+from scripts.adw_modules.git_ops import create_branch, commit_changes, finalize_git_operations
 from adw_modules import issue_ops
-from adw_modules.workflow_ops import (
+from scripts.adw_modules.workflow_ops import (
     classify_issue,
     build_plan,
     generate_branch_name,
@@ -37,11 +37,11 @@ from adw_modules.workflow_ops import (
     ensure_adw_id,
     AGENT_PLANNER,
 )
-from adw_modules.utils import setup_logger, get_rich_console_instance
-from adw_modules.data_types import IssueClassSlashCommand, JiraIssue
-from adw_modules.config import config
-from adw_modules.opencode_http_client import check_opencode_server_available
-from adw_modules.hook_resolution import handle_commit_failure
+from scripts.adw_modules.utils import setup_logger, get_rich_console_instance
+from scripts.adw_modules.data_types import IssueClassSlashCommand, JiraIssue
+from scripts.adw_modules.config import config
+from scripts.adw_modules.opencode_http_client import check_opencode_server_available
+from scripts.adw_modules.hook_resolution import handle_commit_failure
 
 
 def check_env_vars(logger: Optional[logging.Logger] = None) -> None:

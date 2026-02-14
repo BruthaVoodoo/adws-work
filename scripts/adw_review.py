@@ -29,14 +29,14 @@ import subprocess
 from typing import Optional, List, Tuple
 from dotenv import load_dotenv
 
-from adw_modules.state import ADWState
-from adw_modules.git_ops import commit_changes, finalize_git_operations
-from adw_modules.issue_ops import (
+from scripts.adw_modules.state import ADWState
+from scripts.adw_modules.git_ops import commit_changes, finalize_git_operations
+from scripts.adw_modules.issue_ops import (
     jira_fetch_issue,
     jira_make_issue_comment,
     jira_add_attachment,
 )
-from adw_modules.workflow_ops import (
+from scripts.adw_modules.workflow_ops import (
     create_commit,
     format_issue_message,
     ensure_adw_id,
@@ -45,13 +45,13 @@ from adw_modules.workflow_ops import (
     find_spec_file,
     AGENT_IMPLEMENTOR,
 )
-from adw_modules.utils import (
+from scripts.adw_modules.utils import (
     setup_logger,
     parse_json,
     get_rich_console_instance,
     load_prompt,
 )
-from adw_modules.data_types import (
+from scripts.adw_modules.data_types import (
     GitHubIssue,
     JiraIssue,
     AgentTemplateRequest,
@@ -59,10 +59,10 @@ from adw_modules.data_types import (
     ReviewIssue,
     AgentPromptResponse,
 )
-from adw_modules.agent import save_prompt, execute_opencode_prompt
-from adw_modules.opencode_http_client import check_opencode_server_available
-from adw_modules.config import config
-from adw_modules.hook_resolution import handle_commit_failure
+from scripts.adw_modules.agent import save_prompt, execute_opencode_prompt
+from scripts.adw_modules.opencode_http_client import check_opencode_server_available
+from scripts.adw_modules.config import config
+from scripts.adw_modules.hook_resolution import handle_commit_failure
 
 # Agent name constants
 AGENT_REVIEWER = "reviewer"

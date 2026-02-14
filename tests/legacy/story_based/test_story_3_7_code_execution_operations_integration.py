@@ -30,14 +30,14 @@ from typing import Optional
 from unittest.mock import Mock
 
 # Add scripts directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from adw_modules.workflow_ops import implement_plan
-from adw_test import resolve_failed_tests
-from adw_review import run_review
-from adw_modules.opencode_http_client import OpenCodeHTTPClient
-from adw_modules.config import config
-from adw_modules.data_types import TestResult as ADWTestResult
+from scripts.adw_modules.workflow_ops import implement_plan
+from scripts.adw_test import resolve_failed_tests
+from scripts.adw_review import run_review
+from scripts.adw_modules.opencode_http_client import OpenCodeHTTPClient
+from scripts.adw_modules.config import config
+from scripts.adw_modules.data_types import TestResult as ADWTestResult
 
 
 class TestCodeExecutionOperationsIntegration:

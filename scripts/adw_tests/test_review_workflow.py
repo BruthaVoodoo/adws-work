@@ -13,9 +13,9 @@ import os
 # Add the parent directory to the path so we can import adw_modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from adw_modules.data_types import ReviewIssue, ReviewResult
-from adw_modules.workflow_ops import create_patch_plan, find_spec_file
-from adw_modules.state import ADWState
+from scripts.adw_modules.data_types import ReviewIssue, ReviewResult
+from scripts.adw_modules.workflow_ops import create_patch_plan, find_spec_file
+from scripts.adw_modules.state import ADWState
 
 # Test ReviewIssue and ReviewResult creation
 print('=== Testing Review Data Types ===')

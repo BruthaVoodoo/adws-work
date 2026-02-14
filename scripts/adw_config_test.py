@@ -27,8 +27,8 @@ from typing import Dict, Any, Optional
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(__file__))
 
-from adw_modules.config import config
-from adw_modules.test_parsers import (
+from scripts.adw_modules.config import config
+from scripts.adw_modules.test_parsers import (
     parse_jest_json,
     parse_pytest_json,
     parse_console_output,

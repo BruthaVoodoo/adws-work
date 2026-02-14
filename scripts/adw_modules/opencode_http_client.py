@@ -74,7 +74,7 @@ TaskType = Literal[
 
 # Model routing configuration
 MODEL_LIGHTWEIGHT = "github-copilot/claude-haiku-4.5"
-MODEL_HEAVY_LIFTING = "github-copilot/claude-sonnet-4"
+MODEL_HEAVY_LIFTING = "github-copilot/claude-sonnet-4.5"
 
 # Task type to model mapping
 TASK_TYPE_TO_MODEL = {

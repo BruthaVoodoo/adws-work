@@ -25,7 +25,7 @@ if env_path.exists():
 # Add scripts directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from adw_modules.issue_ops import (
+from scripts.adw_modules.issue_ops import (
     jira_create_epic,
     jira_create_story,
     jira_get_project_issues,

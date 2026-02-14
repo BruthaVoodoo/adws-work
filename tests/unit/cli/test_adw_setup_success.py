@@ -61,18 +61,20 @@ opencode:
             # Mock health check functions to return success
             with (
                 patch("scripts.adw_setup.check_env_vars") as mock_env,
-                patch("scripts.adw_setup.check_jira_connectivity") as mock_jira,
-                patch("scripts.adw_setup.check_bitbucket_connectivity") as mock_bb,
+                patch("scripts.adw_setup.check_issue_connectivity") as mock_issue,
+                patch("scripts.adw_setup.check_repo_connectivity") as mock_repo,
                 patch("scripts.adw_setup.check_github_cli") as mock_gh,
-                patch("scripts.adw_setup.check_opencode_server") as mock_opencode,
+                patch(
+                    "scripts.adw_setup.check_opencode_server_wrapper"
+                ) as mock_opencode,
             ):
                 from scripts.adw_tests.health_check import CheckResult
 
                 mock_env.return_value = CheckResult(success=True, details={})
-                mock_jira.return_value = CheckResult(
+                mock_issue.return_value = CheckResult(
                     success=True, details={"version": "9.0"}
                 )
-                mock_bb.return_value = CheckResult(
+                mock_repo.return_value = CheckResult(
                     success=True, details={"authenticated_user": "test-user"}
                 )
                 mock_gh.return_value = CheckResult(
@@ -130,16 +132,18 @@ test_command: uv run pytest
             # Mock health check functions
             with (
                 patch("scripts.adw_setup.check_env_vars") as mock_env,
-                patch("scripts.adw_setup.check_jira_connectivity") as mock_jira,
-                patch("scripts.adw_setup.check_bitbucket_connectivity") as mock_bb,
+                patch("scripts.adw_setup.check_issue_connectivity") as mock_issue,
+                patch("scripts.adw_setup.check_repo_connectivity") as mock_repo,
                 patch("scripts.adw_setup.check_github_cli") as mock_gh,
-                patch("scripts.adw_setup.check_opencode_server") as mock_opencode,
+                patch(
+                    "scripts.adw_setup.check_opencode_server_wrapper"
+                ) as mock_opencode,
             ):
                 from scripts.adw_tests.health_check import CheckResult
 
                 mock_env.return_value = CheckResult(success=True, details={})
-                mock_jira.return_value = CheckResult(success=True, details={})
-                mock_bb.return_value = CheckResult(success=True, details={})
+                mock_issue.return_value = CheckResult(success=True, details={})
+                mock_repo.return_value = CheckResult(success=True, details={})
                 mock_gh.return_value = CheckResult(success=True, details={})
                 mock_opencode.return_value = CheckResult(success=True, details={})
 
@@ -196,16 +200,18 @@ language: python
             # Mock all health checks to succeed
             with (
                 patch("scripts.adw_setup.check_env_vars") as mock_env,
-                patch("scripts.adw_setup.check_jira_connectivity") as mock_jira,
-                patch("scripts.adw_setup.check_bitbucket_connectivity") as mock_bb,
+                patch("scripts.adw_setup.check_issue_connectivity") as mock_issue,
+                patch("scripts.adw_setup.check_repo_connectivity") as mock_repo,
                 patch("scripts.adw_setup.check_github_cli") as mock_gh,
-                patch("scripts.adw_setup.check_opencode_server") as mock_opencode,
+                patch(
+                    "scripts.adw_setup.check_opencode_server_wrapper"
+                ) as mock_opencode,
             ):
                 from scripts.adw_tests.health_check import CheckResult
 
                 mock_env.return_value = CheckResult(success=True, details={})
-                mock_jira.return_value = CheckResult(success=True, details={})
-                mock_bb.return_value = CheckResult(success=True, details={})
+                mock_issue.return_value = CheckResult(success=True, details={})
+                mock_repo.return_value = CheckResult(success=True, details={})
                 mock_gh.return_value = CheckResult(success=True, details={})
                 mock_opencode.return_value = CheckResult(success=True, details={})
 

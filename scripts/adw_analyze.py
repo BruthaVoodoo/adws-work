@@ -25,7 +25,7 @@ from typing import Dict, List, Any, Optional
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(__file__))
 
-from adw_modules.config import config
+from scripts.adw_modules.config import config
 
 
 def detect_package_managers(directory: Path) -> Dict[str, Dict[str, Any]]:

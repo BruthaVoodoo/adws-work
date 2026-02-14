@@ -43,7 +43,7 @@ from pydantic import BaseModel
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import required functions
-from adw_modules.opencode_http_client import check_opencode_server_available
+from scripts.adw_modules.opencode_http_client import check_opencode_server_available
 from adw_modules import repo_ops
 from adw_modules import issue_ops
 

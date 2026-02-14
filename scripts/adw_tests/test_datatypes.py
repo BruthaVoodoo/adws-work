@@ -3,7 +3,7 @@
 # dependencies = ["pydantic"]
 # ///
 
-from adw_modules.data_types import ADWStateData, IssueClassSlashCommand, ReviewIssue, ReviewResult
+from scripts.adw_modules.data_types import ADWStateData, IssueClassSlashCommand, ReviewIssue, ReviewResult
 
 # Test /new in IssueClassSlashCommand
 print('=== Testing IssueClassSlashCommand ===')

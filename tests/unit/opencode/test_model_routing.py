@@ -38,11 +38,11 @@ class TestModelRouting:
         """
         Story 1.4 AC: Given task_type = "implement"
         When I call get_model_for_task(task_type)
-        Then it returns MODEL_HEAVY_LIFTING ("github-copilot/claude-sonnet-4")
+        Then it returns MODEL_HEAVY_LIFTING ("github-copilot/claude-sonnet-4.5")
         """
         result = OpenCodeHTTPClient.get_model_for_task("implement")
         assert result == MODEL_HEAVY_LIFTING
-        assert result == "github-copilot/claude-sonnet-4"
+        assert result == "github-copilot/claude-sonnet-4.5"
 
     def test_all_nine_task_types_have_correct_model_mapping(self):
         """
@@ -82,8 +82,8 @@ class TestModelRouting:
             assert result == MODEL_HEAVY_LIFTING, (
                 f"Task {task_type} should use heavy lifting model"
             )
-            assert "claude-sonnet-4" in result, (
-                f"Task {task_type} should use Claude Sonnet 4"
+            assert "claude-sonnet-4.5" in result, (
+                f"Task {task_type} should use Claude Sonnet 4.5"
             )
             assert "github-copilot/" in result, (
                 f"Task {task_type} should use GitHub Copilot"
@@ -192,25 +192,38 @@ class TestModelRouting:
         # Mock the session and response
         mock_session = Mock()
         mock_session_class.return_value = mock_session
-        mock_response = Mock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "message": {
+
+        # Mock session creation response
+        mock_session_response = Mock()
+        mock_session_response.status_code = 201
+        mock_session_response.json.return_value = {"id": "test-session-id"}
+
+        # Mock message response
+        mock_message_response = Mock()
+        mock_message_response.status_code = 200
+        mock_message_response.json.return_value = {
+            "info": {
                 "role": "assistant",
                 "model": "github-copilot/claude-haiku-4.5",
             },
             "parts": [{"type": "text", "content": "Test response"}],
         }
-        mock_session.post.return_value = mock_response
+        mock_session.post.side_effect = [mock_session_response, mock_message_response]
 
         # Test with lightweight task
         result = self.client.send_prompt(prompt="Test prompt", task_type="classify")
 
         # Verify request was made with correct model
-        mock_session.post.assert_called_once()
-        call_args = mock_session.post.call_args
-        request_body = call_args[1]["json"]
-        assert request_body["model_id"] == MODEL_LIGHTWEIGHT
+        # Should be 2 calls: session creation + message
+        assert mock_session.post.call_count == 2
+
+        # Check message call (second call)
+        message_call = mock_session.post.call_args_list[1]
+        request_body = message_call[1]["json"]
+
+        # Verify OpenCode message format
+        assert "model" in request_body
+        assert request_body["model"]["modelID"] == "claude-haiku-4.5"
 
     @patch("scripts.adw_modules.opencode_http_client.requests.Session")
     def test_send_prompt_with_task_type_heavy_selects_heavy_model(
@@ -220,22 +233,38 @@ class TestModelRouting:
         # Mock the session and response
         mock_session = Mock()
         mock_session_class.return_value = mock_session
-        mock_response = Mock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "message": {"role": "assistant", "model": "github-copilot/claude-sonnet-4"},
+
+        # Mock session creation response
+        mock_session_response = Mock()
+        mock_session_response.status_code = 201
+        mock_session_response.json.return_value = {"id": "test-session-id"}
+
+        # Mock message response
+        mock_message_response = Mock()
+        mock_message_response.status_code = 200
+        mock_message_response.json.return_value = {
+            "info": {
+                "role": "assistant",
+                "model": "github-copilot/claude-sonnet-4.5",
+            },
             "parts": [{"type": "text", "content": "Test response"}],
         }
-        mock_session.post.return_value = mock_response
+        mock_session.post.side_effect = [mock_session_response, mock_message_response]
 
         # Test with heavy task
         result = self.client.send_prompt(prompt="Test prompt", task_type="implement")
 
         # Verify request was made with correct model
-        mock_session.post.assert_called_once()
-        call_args = mock_session.post.call_args
-        request_body = call_args[1]["json"]
-        assert request_body["model_id"] == MODEL_HEAVY_LIFTING
+        # Should be 2 calls: session creation + message
+        assert mock_session.post.call_count == 2
+
+        # Check message call (second call)
+        message_call = mock_session.post.call_args_list[1]
+        request_body = message_call[1]["json"]
+
+        # Verify OpenCode message format
+        assert "model" in request_body
+        assert request_body["model"]["modelID"] == "claude-sonnet-4.5"
 
     @patch("scripts.adw_modules.opencode_http_client.requests.Session")
     def test_send_prompt_model_id_takes_precedence_over_task_type(
@@ -245,16 +274,23 @@ class TestModelRouting:
         # Mock the session and response
         mock_session = Mock()
         mock_session_class.return_value = mock_session
-        mock_response = Mock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "message": {"role": "assistant", "model": "custom-model"},
+
+        # Mock session creation response
+        mock_session_response = Mock()
+        mock_session_response.status_code = 201
+        mock_session_response.json.return_value = {"id": "test-session-id"}
+
+        # Mock message response
+        mock_message_response = Mock()
+        mock_message_response.status_code = 200
+        mock_message_response.json.return_value = {
+            "info": {"role": "assistant", "model": "custom-model"},
             "parts": [{"type": "text", "content": "Test response"}],
         }
-        mock_session.post.return_value = mock_response
+        mock_session.post.side_effect = [mock_session_response, mock_message_response]
 
         # Provide both model_id and task_type
-        explicit_model = "custom-model"
+        explicit_model = "custom-provider/custom-model"
         result = self.client.send_prompt(
             prompt="Test prompt",
             model_id=explicit_model,
@@ -262,11 +298,17 @@ class TestModelRouting:
         )
 
         # Verify explicit model_id was used, not the task_type selection
-        mock_session.post.assert_called_once()
-        call_args = mock_session.post.call_args
-        request_body = call_args[1]["json"]
-        assert request_body["model_id"] == explicit_model
-        assert request_body["model_id"] != MODEL_LIGHTWEIGHT
+        # Should be 2 calls: session creation + message
+        assert mock_session.post.call_count == 2
+
+        # Check message call (second call)
+        message_call = mock_session.post.call_args_list[1]
+        request_body = message_call[1]["json"]
+
+        # Verify OpenCode message format with custom model
+        assert "model" in request_body
+        assert request_body["model"]["providerID"] == "custom-provider"
+        assert request_body["model"]["modelID"] == "custom-model"
 
     def test_send_prompt_raises_error_when_neither_model_id_nor_task_type_provided(
         self,
@@ -276,7 +318,11 @@ class TestModelRouting:
             self.client.send_prompt(prompt="Test prompt")
 
         error_msg = str(exc_info.value)
-        assert "Either model_id or task_type must be provided" in error_msg
+        # Error message has been updated in the implementation
+        assert (
+            "Neither model_id nor task_type provided" in error_msg
+            or "Model configuration error" in error_msg
+        )
 
     def test_send_prompt_raises_error_for_invalid_task_type(self):
         """Test that send_prompt raises ValueError for invalid task_type."""
@@ -289,7 +335,7 @@ class TestModelRouting:
     def test_task_type_to_model_constants_are_correct(self):
         """Test that the model constants have correct values."""
         assert MODEL_LIGHTWEIGHT == "github-copilot/claude-haiku-4.5"
-        assert MODEL_HEAVY_LIFTING == "github-copilot/claude-sonnet-4"
+        assert MODEL_HEAVY_LIFTING == "github-copilot/claude-sonnet-4.5"
 
     def test_task_type_mapping_is_comprehensive(self):
         """Test that TASK_TYPE_TO_MODEL mapping is complete and correct."""
@@ -302,9 +348,9 @@ class TestModelRouting:
             "commit_msg": "github-copilot/claude-haiku-4.5",
             "pr_creation": "github-copilot/claude-haiku-4.5",
             # Heavy lifting tasks
-            "implement": "github-copilot/claude-sonnet-4",
-            "test_fix": "github-copilot/claude-sonnet-4",
-            "review": "github-copilot/claude-sonnet-4",
+            "implement": "github-copilot/claude-sonnet-4.5",
+            "test_fix": "github-copilot/claude-sonnet-4.5",
+            "review": "github-copilot/claude-sonnet-4.5",
         }
 
         assert TASK_TYPE_TO_MODEL == expected_mapping

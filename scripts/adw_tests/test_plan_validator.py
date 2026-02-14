@@ -12,7 +12,7 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from adw_modules.plan_validator import (
+from scripts.adw_modules.plan_validator import (
     parse_plan_steps,
     extract_executed_steps_from_output,
     cross_reference_plan_output,

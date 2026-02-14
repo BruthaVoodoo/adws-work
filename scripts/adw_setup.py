@@ -28,7 +28,7 @@ from typing import List, Dict, Any, Tuple, Optional
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(__file__))
 
-from adw_modules.config import config
+from scripts.adw_modules.config import config
 from adw_tests.health_check import (
     check_env_vars,
     check_issue_connectivity,

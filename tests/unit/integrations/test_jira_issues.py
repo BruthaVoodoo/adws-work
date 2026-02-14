@@ -38,6 +38,10 @@ Acceptance Criteria:
                 "displayName": "Test Creator",
                 "emailAddress": "creator@example.com",
             },
+            "reporter": {
+                "displayName": "Test Creator",
+                "emailAddress": "creator@example.com",
+            },
             "created": "2026-01-29T10:00:00.000-0800",
             "updated": "2026-01-29T10:00:00.000-0800",
             "labels": ["types", "typescript", "foundation"],
@@ -87,6 +91,10 @@ Integration Points:
                 "emailAddress": "feature.dev@example.com",
             },
             "creator": {
+                "displayName": "Product Manager",
+                "emailAddress": "pm@example.com",
+            },
+            "reporter": {
                 "displayName": "Product Manager",
                 "emailAddress": "pm@example.com",
             },
@@ -145,6 +153,10 @@ Priority: Critical""",
                 "emailAddress": "mobile.dev@example.com",
             },
             "creator": {"displayName": "QA Engineer", "emailAddress": "qa@example.com"},
+            "reporter": {
+                "displayName": "QA Engineer",
+                "emailAddress": "qa@example.com",
+            },
             "created": "2026-01-29T08:45:00.000-0800",
             "updated": "2026-01-29T09:30:00.000-0800",
             "labels": ["mobile", "login", "redirect", "critical-bug", "ios", "android"],

@@ -36,6 +36,18 @@ class TestPlanGenerationIntegration(unittest.TestCase):
         self.test_issues = get_all_test_issues()
         self.maxDiff = None
 
+    def _create_nested_mock_object(self, data):
+        """Create a nested mock object from dict data."""
+        if isinstance(data, dict):
+            obj = type("MockObject", (), {})()
+            for key, value in data.items():
+                setattr(obj, key, self._create_nested_mock_object(value))
+            return obj
+        elif isinstance(data, list):
+            return [self._create_nested_mock_object(item) for item in data]
+        else:
+            return data
+
     def _create_mock_opencode_response_for_plan(
         self, issue_type: str, issue_key: str
     ) -> dict:
@@ -208,7 +220,9 @@ Add logging for mobile redirect attempts and failures to monitor success rate po
 
         # Get test issue and convert to JiraIssue
         raw_issue = self.test_issues["TEST-001"]
-        issue = JiraIssue.from_raw_jira_issue(type("MockIssue", (), raw_issue)())
+        issue = JiraIssue.from_raw_jira_issue(
+            self._create_nested_mock_object(raw_issue)
+        )
 
         # Test plan generation
         result = build_plan(issue, "/chore", "test123", MagicMock())
@@ -235,7 +249,9 @@ Add logging for mobile redirect attempts and failures to monitor success rate po
 
         # Get test issue and convert to JiraIssue
         raw_issue = self.test_issues["TEST-002"]
-        issue = JiraIssue.from_raw_jira_issue(type("MockIssue", (), raw_issue)())
+        issue = JiraIssue.from_raw_jira_issue(
+            self._create_nested_mock_object(raw_issue)
+        )
 
         # Test plan generation
         result = build_plan(issue, "/feature", "test123", MagicMock())
@@ -260,7 +276,9 @@ Add logging for mobile redirect attempts and failures to monitor success rate po
 
         # Get test issue and convert to JiraIssue
         raw_issue = self.test_issues["TEST-003"]
-        issue = JiraIssue.from_raw_jira_issue(type("MockIssue", (), raw_issue)())
+        issue = JiraIssue.from_raw_jira_issue(
+            self._create_nested_mock_object(raw_issue)
+        )
 
         # Test plan generation
         result = build_plan(issue, "/bug", "test123", MagicMock())
@@ -313,8 +331,13 @@ Add logging for mobile redirect attempts and failures to monitor success rate po
 
                 result = extract_text_response(mock_response["parts"])
 
-                # Check for required plan sections
-                self.assertIn("## Description", result)
+                # Check for required plan sections (different for each type)
+                if issue_type == "chore":
+                    self.assertIn("## Description", result)
+                elif issue_type == "feature":
+                    self.assertIn("## Description", result)
+                elif issue_type == "bug":
+                    self.assertIn("## Issue Description", result)
 
                 if issue_type == "chore":
                     self.assertIn("## Step by Step Tasks", result)

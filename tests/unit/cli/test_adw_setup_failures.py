@@ -160,16 +160,18 @@ language: python
             # Mock health checks but make OpenCode fail
             with (
                 patch("scripts.adw_setup.check_env_vars") as mock_env,
-                patch("scripts.adw_setup.check_jira_connectivity") as mock_jira,
-                patch("scripts.adw_setup.check_bitbucket_connectivity") as mock_bb,
+                patch("scripts.adw_setup.check_issue_connectivity") as mock_issue,
+                patch("scripts.adw_setup.check_repo_connectivity") as mock_repo,
                 patch("scripts.adw_setup.check_github_cli") as mock_gh,
-                patch("scripts.adw_setup.check_opencode_server") as mock_opencode,
+                patch(
+                    "scripts.adw_setup.check_opencode_server_wrapper"
+                ) as mock_opencode,
             ):
                 from scripts.adw_tests.health_check import CheckResult
 
                 mock_env.return_value = CheckResult(success=True, details={})
-                mock_jira.return_value = CheckResult(success=True, details={})
-                mock_bb.return_value = CheckResult(success=True, details={})
+                mock_issue.return_value = CheckResult(success=True, details={})
+                mock_repo.return_value = CheckResult(success=True, details={})
                 mock_gh.return_value = CheckResult(success=True, details={})
                 mock_opencode.return_value = CheckResult(
                     success=False, error="OpenCode server not available"
@@ -224,18 +226,20 @@ language: python
             # Mock health checks but make Jira fail
             with (
                 patch("scripts.adw_setup.check_env_vars") as mock_env,
-                patch("scripts.adw_setup.check_jira_connectivity") as mock_jira,
-                patch("scripts.adw_setup.check_bitbucket_connectivity") as mock_bb,
+                patch("scripts.adw_setup.check_issue_connectivity") as mock_issue,
+                patch("scripts.adw_setup.check_repo_connectivity") as mock_repo,
                 patch("scripts.adw_setup.check_github_cli") as mock_gh,
-                patch("scripts.adw_setup.check_opencode_server") as mock_opencode,
+                patch(
+                    "scripts.adw_setup.check_opencode_server_wrapper"
+                ) as mock_opencode,
             ):
                 from scripts.adw_tests.health_check import CheckResult
 
                 mock_env.return_value = CheckResult(success=True, details={})
-                mock_jira.return_value = CheckResult(
+                mock_issue.return_value = CheckResult(
                     success=False, error="Jira authentication failed"
                 )
-                mock_bb.return_value = CheckResult(success=True, details={})
+                mock_repo.return_value = CheckResult(success=True, details={})
                 mock_gh.return_value = CheckResult(success=True, details={})
                 mock_opencode.return_value = CheckResult(success=True, details={})
 
@@ -285,16 +289,18 @@ language: python
             # Mock health checks but make Bitbucket fail
             with (
                 patch("scripts.adw_setup.check_env_vars") as mock_env,
-                patch("scripts.adw_setup.check_jira_connectivity") as mock_jira,
-                patch("scripts.adw_setup.check_bitbucket_connectivity") as mock_bb,
+                patch("scripts.adw_setup.check_issue_connectivity") as mock_issue,
+                patch("scripts.adw_setup.check_repo_connectivity") as mock_repo,
                 patch("scripts.adw_setup.check_github_cli") as mock_gh,
-                patch("scripts.adw_setup.check_opencode_server") as mock_opencode,
+                patch(
+                    "scripts.adw_setup.check_opencode_server_wrapper"
+                ) as mock_opencode,
             ):
                 from scripts.adw_tests.health_check import CheckResult
 
                 mock_env.return_value = CheckResult(success=True, details={})
-                mock_jira.return_value = CheckResult(success=True, details={})
-                mock_bb.return_value = CheckResult(
+                mock_issue.return_value = CheckResult(success=True, details={})
+                mock_repo.return_value = CheckResult(
                     success=False, error="Bitbucket API returned 401 Unauthorized"
                 )
                 mock_gh.return_value = CheckResult(success=True, details={})

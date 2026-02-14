@@ -35,9 +35,15 @@ class TestOpenCodeHTTPClientResponseErrors:
         client = OpenCodeHTTPClient(server_url=server_url)
 
         mock_session = MagicMock()
-        mock_response = MagicMock()
-        mock_response.status_code = 401
-        mock_session.post.return_value = mock_response
+        # Mock successful session creation, but 401 on message send
+        mock_session_response = MagicMock()
+        mock_session_response.status_code = 201
+        mock_session_response.json.return_value = {"id": "test-session-id"}
+
+        mock_message_response = MagicMock()
+        mock_message_response.status_code = 401
+
+        mock_session.post.side_effect = [mock_session_response, mock_message_response]
         client._session = mock_session
 
         with pytest.raises(OpenCodeAuthenticationError):
@@ -51,9 +57,15 @@ class TestOpenCodeHTTPClientResponseErrors:
         client = OpenCodeHTTPClient(server_url=server_url)
 
         mock_session = MagicMock()
-        mock_response = MagicMock()
-        mock_response.status_code = 403
-        mock_session.post.return_value = mock_response
+        # Mock successful session creation, but 403 on message send
+        mock_session_response = MagicMock()
+        mock_session_response.status_code = 201
+        mock_session_response.json.return_value = {"id": "test-session-id"}
+
+        mock_message_response = MagicMock()
+        mock_message_response.status_code = 403
+
+        mock_session.post.side_effect = [mock_session_response, mock_message_response]
         client._session = mock_session
 
         with pytest.raises(OpenCodeAuthenticationError):
@@ -84,9 +96,15 @@ class TestOpenCodeHTTPClientResponseErrors:
         client = OpenCodeHTTPClient(server_url=server_url)
 
         mock_session = MagicMock()
-        mock_response = MagicMock()
-        mock_response.status_code = 401
-        mock_session.post.return_value = mock_response
+        # Mock successful session creation, but 401 on message send
+        mock_session_response = MagicMock()
+        mock_session_response.status_code = 201
+        mock_session_response.json.return_value = {"id": "test-session-id"}
+
+        mock_message_response = MagicMock()
+        mock_message_response.status_code = 401
+
+        mock_session.post.side_effect = [mock_session_response, mock_message_response]
         client._session = mock_session
 
         with pytest.raises(OpenCodeAuthenticationError):
@@ -94,8 +112,8 @@ class TestOpenCodeHTTPClientResponseErrors:
                 prompt="Hello", model_id="github-copilot/claude-sonnet-4"
             )
 
-        # Verify no retry (post called only once)
-        assert mock_session.post.call_count == 1
+        # Verify no retry (post called twice: once for session, once for message)
+        assert mock_session.post.call_count == 2
 
     def test_send_prompt_does_not_retry_on_403(self):
         """send_prompt() should not retry on forbidden errors (403)"""
@@ -103,9 +121,15 @@ class TestOpenCodeHTTPClientResponseErrors:
         client = OpenCodeHTTPClient(server_url=server_url)
 
         mock_session = MagicMock()
-        mock_response = MagicMock()
-        mock_response.status_code = 403
-        mock_session.post.return_value = mock_response
+        # Mock successful session creation, but 403 on message send
+        mock_session_response = MagicMock()
+        mock_session_response.status_code = 201
+        mock_session_response.json.return_value = {"id": "test-session-id"}
+
+        mock_message_response = MagicMock()
+        mock_message_response.status_code = 403
+
+        mock_session.post.side_effect = [mock_session_response, mock_message_response]
         client._session = mock_session
 
         with pytest.raises(OpenCodeAuthenticationError):
@@ -113,8 +137,8 @@ class TestOpenCodeHTTPClientResponseErrors:
                 prompt="Hello", model_id="github-copilot/claude-sonnet-4"
             )
 
-        # Verify no retry
-        assert mock_session.post.call_count == 1
+        # Verify no retry (post called twice: once for session, once for message)
+        assert mock_session.post.call_count == 2
 
     def test_send_prompt_does_not_retry_on_404(self):
         """send_prompt() should not retry on client errors (404)"""
@@ -168,15 +192,21 @@ class TestOpenCodeHTTPClientRetryLogic:
         client = OpenCodeHTTPClient(server_url=server_url)
 
         mock_session = MagicMock()
-        # First 2 calls timeout, 3rd succeeds
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {"message": {"content": "test"}, "parts": []}
+        # Mock successful session creation
+        mock_session_response = MagicMock()
+        mock_session_response.status_code = 201
+        mock_session_response.json.return_value = {"id": "test-session-id"}
+
+        # First 2 message calls timeout, 3rd succeeds
+        mock_success_response = MagicMock()
+        mock_success_response.status_code = 200
+        mock_success_response.json.return_value = {"info": {}, "parts": []}
 
         mock_session.post.side_effect = [
-            requests.exceptions.Timeout(),
-            requests.exceptions.Timeout(),
-            mock_response,
+            mock_session_response,  # Session creation
+            requests.exceptions.Timeout(),  # 1st message attempt
+            requests.exceptions.Timeout(),  # 2nd message attempt
+            mock_success_response,  # 3rd message attempt succeeds
         ]
         client._session = mock_session
 
@@ -187,8 +217,8 @@ class TestOpenCodeHTTPClientRetryLogic:
             )
 
         assert result is not None
-        # Verify retry happened (post called 3 times)
-        assert mock_session.post.call_count == 3
+        # Verify retry happened (1 session + 3 message attempts = 4 total)
+        assert mock_session.post.call_count == 4
 
     def test_send_prompt_raises_timeout_error_after_max_retries(self):
         """send_prompt() should raise TimeoutError after MAX_RETRIES exhausted"""
@@ -216,14 +246,21 @@ class TestOpenCodeHTTPClientRetryLogic:
         client = OpenCodeHTTPClient(server_url=server_url)
 
         mock_session = MagicMock()
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {"message": {"content": "test"}, "parts": []}
+        # Mock successful session creation
+        mock_session_response = MagicMock()
+        mock_session_response.status_code = 201
+        mock_session_response.json.return_value = {"id": "test-session-id"}
+
+        # First 2 message calls fail with connection error, 3rd succeeds
+        mock_success_response = MagicMock()
+        mock_success_response.status_code = 200
+        mock_success_response.json.return_value = {"info": {}, "parts": []}
 
         mock_session.post.side_effect = [
+            mock_session_response,  # Session creation
             requests.exceptions.ConnectionError(),
             requests.exceptions.ConnectionError(),
-            mock_response,
+            mock_success_response,
         ]
         client._session = mock_session
 
@@ -234,8 +271,8 @@ class TestOpenCodeHTTPClientRetryLogic:
             )
 
         assert result is not None
-        # Verify retry happened
-        assert mock_session.post.call_count == 3
+        # Verify retry happened (1 session + 3 message attempts = 4 total)
+        assert mock_session.post.call_count == 4
 
     def test_send_prompt_raises_connection_error_after_max_retries(self):
         """send_prompt() should raise ConnectionError after MAX_RETRIES exhausted"""
@@ -264,15 +301,26 @@ class TestOpenCodeHTTPClientRetryLogic:
         client = OpenCodeHTTPClient(server_url=server_url)
 
         mock_session = MagicMock()
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {"message": {"content": "test"}, "parts": []}
+        # Mock successful session creation
+        mock_session_response = MagicMock()
+        mock_session_response.status_code = 201
+        mock_session_response.json.return_value = {"id": "test-session-id"}
+
+        # First 2 message calls return 500, 3rd succeeds
+        mock_success_response = MagicMock()
+        mock_success_response.status_code = 200
+        mock_success_response.json.return_value = {"info": {}, "parts": []}
 
         error_response = MagicMock()
         error_response.status_code = 500
         error_response.text = "Internal Server Error"
 
-        mock_session.post.side_effect = [error_response, error_response, mock_response]
+        mock_session.post.side_effect = [
+            mock_session_response,  # Session creation
+            error_response,
+            error_response,
+            mock_success_response,
+        ]
         client._session = mock_session
 
         # Mock time.sleep to avoid actual delays during testing
@@ -282,7 +330,8 @@ class TestOpenCodeHTTPClientRetryLogic:
             )
 
         assert result is not None
-        assert mock_session.post.call_count == 3
+        # Verify retry happened (1 session + 3 message attempts = 4 total)
+        assert mock_session.post.call_count == 4
 
     def test_send_prompt_raises_server_error_after_max_retries(self):
         """send_prompt() should raise error after MAX_RETRIES for 5xx errors"""
@@ -290,10 +339,20 @@ class TestOpenCodeHTTPClientRetryLogic:
         client = OpenCodeHTTPClient(server_url=server_url)
 
         mock_session = MagicMock()
+        # Mock successful session creation
+        mock_session_response = MagicMock()
+        mock_session_response.status_code = 201
+        mock_session_response.json.return_value = {"id": "test-session-id"}
+
+        # All message calls return 503
         error_response = MagicMock()
         error_response.status_code = 503
         error_response.text = "Service Unavailable"
-        mock_session.post.return_value = error_response
+
+        # Session creation succeeds, then all message attempts fail
+        mock_session.post.side_effect = [mock_session_response] + [
+            error_response
+        ] * client.MAX_RETRIES
         client._session = mock_session
 
         # Mock time.sleep to avoid actual delays during testing
@@ -303,7 +362,8 @@ class TestOpenCodeHTTPClientRetryLogic:
                     prompt="Hello", model_id="github-copilot/claude-sonnet-4"
                 )
 
-        assert mock_session.post.call_count == client.MAX_RETRIES
+        # Verify all retries attempted (1 session + MAX_RETRIES message attempts)
+        assert mock_session.post.call_count == 1 + client.MAX_RETRIES
 
     def test_send_prompt_uses_exponential_backoff_delays(self):
         """send_prompt() should use exponential backoff: 1s, 2s, 4s"""
@@ -311,14 +371,21 @@ class TestOpenCodeHTTPClientRetryLogic:
         client = OpenCodeHTTPClient(server_url=server_url)
 
         mock_session = MagicMock()
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {"message": {"content": "test"}, "parts": []}
+        # Mock successful session creation
+        mock_session_response = MagicMock()
+        mock_session_response.status_code = 201
+        mock_session_response.json.return_value = {"id": "test-session-id"}
+
+        # First 2 message calls timeout, 3rd succeeds
+        mock_success_response = MagicMock()
+        mock_success_response.status_code = 200
+        mock_success_response.json.return_value = {"info": {}, "parts": []}
 
         mock_session.post.side_effect = [
+            mock_session_response,  # Session creation
             requests.exceptions.Timeout(),
             requests.exceptions.Timeout(),
-            mock_response,
+            mock_success_response,
         ]
         client._session = mock_session
 

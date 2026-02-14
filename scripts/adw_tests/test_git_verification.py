@@ -15,7 +15,7 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from adw_modules.git_verification import (
+from scripts.adw_modules.git_verification import (
     get_file_changes,
     verify_git_changes,
     validate_expected_changes,

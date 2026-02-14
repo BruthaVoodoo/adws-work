@@ -25,11 +25,14 @@ def mock_opencode_client():
         mock_client = Mock()
         mock_client_class.from_config.return_value = mock_client
 
-        # Mock successful response
+        # Mock model selection for task types
+        mock_client.get_model_for_task.return_value = "github-copilot/claude-sonnet-4"
+
+        # Mock successful session-based response
         mock_client.send_prompt.return_value = {
             "parts": [{"type": "text", "content": "Mock response"}],
             "success": True,
-            "session_id": "test_session",
+            "session_id": "test_session_123",
         }
 
         yield mock_client

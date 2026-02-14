@@ -25,28 +25,28 @@ import argparse
 from typing import Optional
 from dotenv import load_dotenv
 
-from adw_modules.state import ADWState
-from adw_modules.git_ops import (
+from scripts.adw_modules.state import ADWState
+from scripts.adw_modules.git_ops import (
     commit_changes,
     finalize_git_operations,
     get_current_branch,
 )
-from adw_modules.issue_ops import (
+from scripts.adw_modules.issue_ops import (
     jira_fetch_issue,
     jira_make_issue_comment,
     jira_add_attachment,
 )
-from adw_modules.workflow_ops import (
+from scripts.adw_modules.workflow_ops import (
     implement_plan,
     create_commit,
     format_issue_message,
     AGENT_IMPLEMENTOR,
 )
-from adw_modules.utils import setup_logger, get_rich_console_instance
-from adw_modules.data_types import JiraIssue
-from adw_modules.config import config
-from adw_modules.opencode_http_client import check_opencode_server_available
-from adw_modules.hook_resolution import handle_commit_failure
+from scripts.adw_modules.utils import setup_logger, get_rich_console_instance
+from scripts.adw_modules.data_types import JiraIssue
+from scripts.adw_modules.config import config
+from scripts.adw_modules.opencode_http_client import check_opencode_server_available
+from scripts.adw_modules.hook_resolution import handle_commit_failure
 
 
 def check_env_vars(logger: Optional[logging.Logger] = None) -> None:

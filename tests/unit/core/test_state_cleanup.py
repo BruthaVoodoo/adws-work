@@ -92,69 +92,6 @@ class TestStateLoadingDuplication:
             assert load_count == 2, f"Expected 2 loads, got {load_count}"
 
 
-class TestStateSchemaCleaning:
-    """Test cases for state schema cleaning (domain removal, agent_name fixing)."""
-
-    def setup_method(self):
-        """Set up test environment."""
-        self.temp_dir = tempfile.mkdtemp()
-        self.adw_id = "test123"
-
-    def test_domain_field_exists_in_current_schema(self):
-        """Test that domain field currently exists in state schema (to be removed)."""
-        # Test current behavior - domain field exists
-        state_data = ADWStateData(adw_id=self.adw_id)
-        data_dict = state_data.model_dump()
-
-        # Current behavior - domain field exists and has default value
-        assert "domain" in data_dict
-        assert data_dict["domain"] == "ADW_Core"
-
-    def test_agent_name_field_currently_null(self):
-        """Test that agent_name field is currently null (to be fixed)."""
-        # Test current behavior - agent_name is None
-        state_data = ADWStateData(adw_id=self.adw_id)
-        data_dict = state_data.model_dump()
-
-        # Current behavior - agent_name is None
-        assert "agent_name" in data_dict
-        assert data_dict["agent_name"] is None
-
-    @patch("scripts.adw_modules.state.config")
-    def test_state_save_includes_domain_field_currently(self, mock_config):
-        """Test that state save currently includes domain field (to be removed)."""
-        mock_config.logs_dir = Path(self.temp_dir)
-
-        state = ADWState(self.adw_id)
-        state.save("test")
-
-        # Read saved file to verify domain field is present
-        state_file = Path(self.temp_dir) / self.adw_id / "adw_state.json"
-        with open(state_file, "r") as f:
-            data = json.load(f)
-
-        # Current behavior - domain field is saved
-        assert "domain" in data
-        assert data["domain"] == "ADW_Core"
-
-    @patch("scripts.adw_modules.state.config")
-    def test_state_save_agent_name_is_null_currently(self, mock_config):
-        """Test that state save currently has null agent_name (to be fixed)."""
-        mock_config.logs_dir = Path(self.temp_dir)
-
-        state = ADWState(self.adw_id)
-        state.save("test")
-
-        # Read saved file to verify agent_name is null
-        state_file = Path(self.temp_dir) / self.adw_id / "adw_state.json"
-        with open(state_file, "r") as f:
-            data = json.load(f)
-
-        # Current behavior - agent_name is null
-        assert "agent_name" in data
-        assert data["agent_name"] is None
-
-
 class TestStateSchemaAfterCleanup:
     """Test cases for expected behavior after cleanup implementation."""
 

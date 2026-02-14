@@ -67,7 +67,9 @@ language: javascript
             patch("scripts.adw_setup.check_repo_connectivity") as mock_repo,
             patch("scripts.adw_setup.check_github_cli") as mock_gh,
             patch("scripts.adw_setup.check_opencode_server_wrapper") as mock_opencode,
-            patch("builtins.input", return_value="y"),  # User accepts config
+            patch(
+                "builtins.input", side_effect=["a", "y"]
+            ),  # Accept recommended command, then apply config
         ):
             from scripts.adw_tests.health_check import CheckResult
 
