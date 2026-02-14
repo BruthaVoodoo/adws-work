@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T10:12:47.718732",
+  "adw_id": "temp_123",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text for ADW",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5cb61aa3001VLKYJs1zeyy5YE",
+      "sessionID": "ses_3a349e57cffeL88w68Oz20FbPz",
+      "role": "assistant",
+      "time": {
+        "created": 1771081964195,
+        "completed": 1771081967712
+      },
+      "parentID": "msg_c5cb61a92001iHcoRBMXXRHJg6",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16018,
+        "output": 207,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5cb620f4001MgZ4h9T2F49E7p",
+        "sessionID": "ses_3a349e57cffeL88w68Oz20FbPz",
+        "messageID": "msg_c5cb61aa3001VLKYJs1zeyy5YE",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5cb620f5001RJrJ2y1cUakHAP",
+        "sessionID": "ses_3a349e57cffeL88w68Oz20FbPz",
+        "messageID": "msg_c5cb61aa3001VLKYJs1zeyy5YE",
+        "type": "text",
+        "text": "I received your test prompt: \"test text for ADW\"\n\nThis appears to be a simple test message. How can I help you? Here are some things I can do:\n\n1. **Search knowledge base** - Look up documentation or code examples\n2. **Manage projects & tasks** - Create, update, or organize projects and tasks\n3. **Work with documents** - Create, search, or manage project documents\n4. **Execute commands** - Run bash commands, git operations, or other terminal tasks\n5. **Read/edit files** - Read files from your system or make edits\n6. **Search codebase** - Find files and content using glob patterns and grep\n\nCould you clarify what you'd like to do? For example:\n- Do you want to test a specific tool or function?\n- Do you need help with a development task?\n- Are you looking for information about something specific?\n\nLet me know what you need!",
+        "time": {
+          "start": 1771081967615,
+          "end": 1771081967615
+        }
+      },
+      {
+        "id": "prt_c5cb62804001D4fWgHzV1vM9MV",
+        "sessionID": "ses_3a349e57cffeL88w68Oz20FbPz",
+        "messageID": "msg_c5cb61aa3001VLKYJs1zeyy5YE",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16018,
+          "output": 207,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a349e57cffeL88w68Oz20FbPz",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/temp_123/adw_classifier/response_20260214_101247.json",
+    "created_at": "2026-02-14T10:12:47.718743",
+    "log_type": "response"
+  }
+}

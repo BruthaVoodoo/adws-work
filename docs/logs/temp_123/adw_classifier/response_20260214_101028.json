@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T10:10:28.223813",
+  "adw_id": "temp_123",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text for ADW",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5cb3fcaa0013ne7fwF06dD6Q2",
+      "sessionID": "ses_3a34c037bffeSxY9MHNi2YNkur",
+      "role": "assistant",
+      "time": {
+        "created": 1771081825450,
+        "completed": 1771081828215
+      },
+      "parentID": "msg_c5cb3fc98001pvbCGNK34i2s8I",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16018,
+        "output": 153,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5cb402240015MRz7bYs2vVGUa",
+        "sessionID": "ses_3a34c037bffeSxY9MHNi2YNkur",
+        "messageID": "msg_c5cb3fcaa0013ne7fwF06dD6Q2",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5cb4022b001QZdneWBeLuYwOR",
+        "sessionID": "ses_3a34c037bffeSxY9MHNi2YNkur",
+        "messageID": "msg_c5cb3fcaa0013ne7fwF06dD6Q2",
+        "type": "text",
+        "text": "I'd be happy to help! However, I'm not entirely sure what you're asking me to do with this test prompt. Could you clarify:\n\n1. **What is \"ADW\"?** (e.g., is it a project, tool, system, or acronym?)\n2. **What would you like me to do with the test text?** For example:\n   - Test it against a system?\n   - Analyze it?\n   - Create test cases with it?\n   - Store it somewhere?\n   - Validate it in some way?\n3. **What's the expected outcome?**\n\nOnce you provide more context, I'll be able to assist you better!",
+        "time": {
+          "start": 1771081828109,
+          "end": 1771081828109
+        }
+      },
+      {
+        "id": "prt_c5cb40710001PlK4yLS6aS7DaI",
+        "sessionID": "ses_3a34c037bffeSxY9MHNi2YNkur",
+        "messageID": "msg_c5cb3fcaa0013ne7fwF06dD6Q2",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16018,
+          "output": 153,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a34c037bffeSxY9MHNi2YNkur",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/temp_123/adw_classifier/response_20260214_101028.json",
+    "created_at": "2026-02-14T10:10:28.223822",
+    "log_type": "response"
+  }
+}

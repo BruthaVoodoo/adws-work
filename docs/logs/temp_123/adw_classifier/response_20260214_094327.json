@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T09:43:27.485281",
+  "adw_id": "temp_123",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text for ADW",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5c9b4181001a2NffF4DySLDX0",
+      "sessionID": "ses_3a364be8dffeaAgvbkTVXFgzyf",
+      "role": "assistant",
+      "time": {
+        "created": 1771080204673,
+        "completed": 1771080207479
+      },
+      "parentID": "msg_c5c9b417a0011MU4i7iQZ5LKhk",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16018,
+        "output": 173,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5c9b476b001kD6ctmUk750enZ",
+        "sessionID": "ses_3a364be8dffeaAgvbkTVXFgzyf",
+        "messageID": "msg_c5c9b4181001a2NffF4DySLDX0",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5c9b477e001QNtLPMzPOg3u9h",
+        "sessionID": "ses_3a364be8dffeaAgvbkTVXFgzyf",
+        "messageID": "msg_c5c9b4181001a2NffF4DySLDX0",
+        "type": "text",
+        "text": "I've received your test prompt. This appears to be a simple test message with the text \"test text for ADW\".\n\nHow can I help you? Here are some things I can assist with:\n\n1. **Code Development** - Write, review, or debug code\n2. **File Operations** - Read, edit, or create files\n3. **Git Operations** - Manage commits, branches, and version control\n4. **Project Management** - Create tasks, projects, and documents\n5. **Knowledge Base Search** - Look up documentation and examples\n6. **Web Fetching** - Retrieve content from URLs\n7. **Command Execution** - Run terminal commands\n\nPlease let me know what specific task you'd like help with, or provide more context about what you're trying to accomplish!",
+        "time": {
+          "start": 1771080207333,
+          "end": 1771080207333
+        }
+      },
+      {
+        "id": "prt_c5c9b4bea001pRVP26kK34fckp",
+        "sessionID": "ses_3a364be8dffeaAgvbkTVXFgzyf",
+        "messageID": "msg_c5c9b4181001a2NffF4DySLDX0",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16018,
+          "output": 173,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a364be8dffeaAgvbkTVXFgzyf",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/temp_123/adw_classifier/response_20260214_094327.json",
+    "created_at": "2026-02-14T09:43:27.485292",
+    "log_type": "response"
+  }
+}

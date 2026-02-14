@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-13T15:28:23.538143",
+  "adw_id": "test_adw_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c58b0ae66001q6wdbc5dAJPtu1",
+      "sessionID": "ses_3a74f51aeffeCPCvHdlF6oxBQU",
+      "role": "assistant",
+      "time": {
+        "created": 1771014499942,
+        "completed": 1771014503533
+      },
+      "parentID": "msg_c58b0ae59001CAbE3d9wvdYTi1",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16015,
+        "output": 159,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c58b0b572001LeEHHu5ooXiaMa",
+        "sessionID": "ses_3a74f51aeffeCPCvHdlF6oxBQU",
+        "messageID": "msg_c58b0ae66001q6wdbc5dAJPtu1",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c58b0b573001EJrmP06x9oARlQ",
+        "sessionID": "ses_3a74f51aeffeCPCvHdlF6oxBQU",
+        "messageID": "msg_c58b0ae66001q6wdbc5dAJPtu1",
+        "type": "text",
+        "text": "I'd be happy to help! However, I need a bit more context to understand what you're looking for. Your message \"test text\" is quite brief.\n\nCould you clarify what you'd like me to do? For example:\n\n1. **Test a specific feature or functionality** - Do you have code you'd like me to test?\n2. **Test a tool or integration** - Would you like me to verify that certain tools are working?\n3. **Test a system** - Is there a specific system or service you want me to check?\n4. **Something else** - Please provide more details about what you need help with\n\nPlease provide more information about what you'd like to test, and I'll be glad to assist!",
+        "time": {
+          "start": 1771014503396,
+          "end": 1771014503396
+        }
+      },
+      {
+        "id": "prt_c58b0bbf6001ILAgbEIX1A2PV4",
+        "sessionID": "ses_3a74f51aeffeCPCvHdlF6oxBQU",
+        "messageID": "msg_c58b0ae66001q6wdbc5dAJPtu1",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16015,
+          "output": 159,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a74f51aeffeCPCvHdlF6oxBQU",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_adw_id/adw_classifier/response_20260213_152823.json",
+    "created_at": "2026-02-13T15:28:23.538151",
+    "log_type": "response"
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T09:43:35.607289",
+  "adw_id": "test_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "test prompt",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5c9b5e8f001qEyAAa0T0UXOGE",
+      "sessionID": "ses_3a364a34bffeD29TW0S0A00lqn",
+      "role": "assistant",
+      "time": {
+        "created": 1771080212111,
+        "completed": 1771080215593
+      },
+      "parentID": "msg_c5c9b5d1e001xE2yn59zjIj6ir",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16012,
+        "output": 172,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5c9b64ab001a0obw212zJT61f",
+        "sessionID": "ses_3a364a34bffeD29TW0S0A00lqn",
+        "messageID": "msg_c5c9b5e8f001qEyAAa0T0UXOGE",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5c9b64ac001qCFAoJv3fGewkX",
+        "sessionID": "ses_3a364a34bffeD29TW0S0A00lqn",
+        "messageID": "msg_c5c9b5e8f001qEyAAa0T0UXOGE",
+        "type": "text",
+        "text": "Hello! This is a test prompt. I'm ready to help you with various tasks. Here are some things I can assist with:\n\n**Development & Coding:**\n- Read and edit files in your codebase\n- Run bash commands and scripts\n- Search through files with glob patterns and grep\n- Git operations (status, diffs, commits)\n- Create and manage pull requests\n\n**Project Management:**\n- Find and manage projects\n- Create and track tasks\n- Manage documents and specifications\n- Track version history\n\n**Knowledge Base:**\n- Search documentation and code examples\n- Retrieve full page content from knowledge bases\n\n**Other:**\n- Ask questions and get answers\n- Create todo lists for complex tasks\n- Fetch web content\n\nWhat would you like me to help you with today?",
+        "time": {
+          "start": 1771080215272,
+          "end": 1771080215272
+        }
+      },
+      {
+        "id": "prt_c5c9b6af4001hMaIziPSa2oUQi",
+        "sessionID": "ses_3a364a34bffeD29TW0S0A00lqn",
+        "messageID": "msg_c5c9b5e8f001qEyAAa0T0UXOGE",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16012,
+          "output": 172,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a364a34bffeD29TW0S0A00lqn",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_id/adw_classifier/response_20260214_094335.json",
+    "created_at": "2026-02-14T09:43:35.607313",
+    "log_type": "response"
+  }
+}

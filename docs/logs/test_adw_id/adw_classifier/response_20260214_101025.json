@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T10:10:25.356529",
+  "adw_id": "test_adw_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5cb3f0d50010rCay4ErlwKVgL",
+      "sessionID": "ses_3a34c0f39ffeYVlFf81NMmEZrv",
+      "role": "assistant",
+      "time": {
+        "created": 1771081822421,
+        "completed": 1771081825347
+      },
+      "parentID": "msg_c5cb3f0cc001RWzjJjLUDG2mZd",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16015,
+        "output": 146,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5cb3f708001V7jIKNqkND8W5N",
+        "sessionID": "ses_3a34c0f39ffeYVlFf81NMmEZrv",
+        "messageID": "msg_c5cb3f0d50010rCay4ErlwKVgL",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5cb3f7290017Ly24oB46pzW3i",
+        "sessionID": "ses_3a34c0f39ffeYVlFf81NMmEZrv",
+        "messageID": "msg_c5cb3f0d50010rCay4ErlwKVgL",
+        "type": "text",
+        "text": "I'm ready to help! However, your message \"Test prompt: test text\" doesn't specify what you'd like me to do.\n\nCould you please clarify what you need? For example, I can help you with:\n\n- **Code development**: Write, review, or refactor code\n- **File operations**: Read, edit, or create files\n- **Git operations**: Commit, push, manage branches\n- **Project management**: Create/manage projects, tasks, and documents\n- **Knowledge base search**: Find information from available sources\n- **Testing**: Run tests and debug issues\n- **And much more!**\n\nWhat would you like me to assist you with?",
+        "time": {
+          "start": 1771081825230,
+          "end": 1771081825230
+        }
+      },
+      {
+        "id": "prt_c5cb3fbd3001UKOk03BXSh8hjY",
+        "sessionID": "ses_3a34c0f39ffeYVlFf81NMmEZrv",
+        "messageID": "msg_c5cb3f0d50010rCay4ErlwKVgL",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16015,
+          "output": 146,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a34c0f39ffeYVlFf81NMmEZrv",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_adw_id/adw_classifier/response_20260214_101025.json",
+    "created_at": "2026-02-14T10:10:25.356543",
+    "log_type": "response"
+  }
+}

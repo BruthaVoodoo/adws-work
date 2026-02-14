@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T10:10:41.339600",
+  "adw_id": "test_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5cb42d7a001ZYyLmSVgvOs84o",
+      "sessionID": "ses_3a34bdad3ffe6cRzmROHeFCLO5",
+      "role": "assistant",
+      "time": {
+        "created": 1771081837946,
+        "completed": 1771081841307
+      },
+      "parentID": "msg_c5cb42536001Btwaop388dbLwb",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16179,
+        "output": 243,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5cb432bb0014ddHSo3KWW0CtN",
+        "sessionID": "ses_3a34bdad3ffe6cRzmROHeFCLO5",
+        "messageID": "msg_c5cb42d7a001ZYyLmSVgvOs84o",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5cb432bc001Vq45evXt9M11CO",
+        "sessionID": "ses_3a34bdad3ffe6cRzmROHeFCLO5",
+        "messageID": "msg_c5cb42d7a001ZYyLmSVgvOs84o",
+        "type": "text",
+        "text": "Great! The system is healthy and responsive. Here's what I found:\n\n**System Status:**\n- ✅ **Overall Status**: Healthy\n- ✅ **API Service**: Running\n- ⚠️ **Agents Service**: Not currently available\n- **Uptime**: ~122 hours (5+ days)\n- **Last Health Check**: 2026-02-14 at 15:10:37 UTC\n\nThe core API service is functioning properly and ready to help you with:\n- Projects and task management\n- Document management\n- Version control\n- Knowledge base search\n- And more\n\nIs there anything specific you'd like me to help you with? I can:\n1. **Create or manage projects** - Set up new projects or modify existing ones\n2. **Manage tasks** - Create, update, or track tasks\n3. **Handle documents** - Create specs, designs, notes, or other documentation\n4. **Search knowledge base** - Find relevant information\n5. **Version control** - Track and manage document versions\n\nJust let me know what you need!",
+        "time": {
+          "start": 1771081841107,
+          "end": 1771081841107
+        }
+      },
+      {
+        "id": "prt_c5cb439da001Je5BhJPhBuSN4N",
+        "sessionID": "ses_3a34bdad3ffe6cRzmROHeFCLO5",
+        "messageID": "msg_c5cb42d7a001ZYyLmSVgvOs84o",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16179,
+          "output": 243,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a34bdad3ffe6cRzmROHeFCLO5",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_id/adw_classifier/response_20260214_101041.json",
+    "created_at": "2026-02-14T10:10:41.339619",
+    "log_type": "response"
+  }
+}

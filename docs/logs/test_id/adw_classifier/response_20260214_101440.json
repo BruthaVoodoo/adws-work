@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T10:14:40.347378",
+  "adw_id": "test_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "test prompt",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5cb7d56e0019UfLIfOU9M62iU",
+      "sessionID": "ses_3a3482a9dffeyR7lNSBMQ9b2Cp",
+      "role": "assistant",
+      "time": {
+        "created": 1771082077550,
+        "completed": 1771082080334
+      },
+      "parentID": "msg_c5cb7d569001JXPRoxF2Ekbjk9",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16012,
+        "output": 160,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5cb7daf40016hxOFcVm4hMGpl",
+        "sessionID": "ses_3a3482a9dffeyR7lNSBMQ9b2Cp",
+        "messageID": "msg_c5cb7d56e0019UfLIfOU9M62iU",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5cb7daf4002scRFyodTAMpb9o",
+        "sessionID": "ses_3a3482a9dffeyR7lNSBMQ9b2Cp",
+        "messageID": "msg_c5cb7d56e0019UfLIfOU9M62iU",
+        "type": "text",
+        "text": "Hello! I'm here to help you with your coding projects. This is a test prompt, so let me confirm that everything is working correctly.\n\nWhat would you like me to help you with? I can assist with:\n\n- **Code Development**: Write, refactor, or debug code\n- **Project Management**: Create and manage projects, tasks, and documents\n- **File Operations**: Read, edit, and write files\n- **Git Operations**: Manage version control and commits\n- **Testing & Debugging**: Run tests, troubleshoot issues\n- **Documentation**: Create specifications, design docs, and guides\n- **Knowledge Base Search**: Find relevant information and code examples\n\nFeel free to ask me anything or let me know what you're working on!",
+        "time": {
+          "start": 1771082080234,
+          "end": 1771082080234
+        }
+      },
+      {
+        "id": "prt_c5cb7dfef001pkqrXV5johR2r6",
+        "sessionID": "ses_3a3482a9dffeyR7lNSBMQ9b2Cp",
+        "messageID": "msg_c5cb7d56e0019UfLIfOU9M62iU",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16012,
+          "output": 160,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a3482a9dffeyR7lNSBMQ9b2Cp",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_id/adw_classifier/response_20260214_101440.json",
+    "created_at": "2026-02-14T10:14:40.347389",
+    "log_type": "response"
+  }
+}

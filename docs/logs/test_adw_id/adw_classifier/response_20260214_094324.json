@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T09:43:24.631681",
+  "adw_id": "test_adw_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5c9b2df1001IZv9vhLdSqIpW8",
+      "sessionID": "ses_3a364d220ffezo6M5csyyb04qu",
+      "role": "assistant",
+      "time": {
+        "created": 1771080199665,
+        "completed": 1771080204619
+      },
+      "parentID": "msg_c5c9b2de7001qbbjlsvsPVmpp5",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16015,
+        "output": 149,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5c9b356a0012WY3YJ67Pfshzt",
+        "sessionID": "ses_3a364d220ffezo6M5csyyb04qu",
+        "messageID": "msg_c5c9b2df1001IZv9vhLdSqIpW8",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5c9b35e5001quCeKMVTee8vvW",
+        "sessionID": "ses_3a364d220ffezo6M5csyyb04qu",
+        "messageID": "msg_c5c9b2df1001IZv9vhLdSqIpW8",
+        "type": "text",
+        "text": "I'm ready to help! However, I'm not sure what you'd like me to do with \"test text\". Could you provide more context or clarify what you need?\n\nHere are some things I can help with:\n\n1. **Code-related tasks**: Write, edit, review, or debug code\n2. **File operations**: Read, create, or modify files\n3. **Git operations**: Commit, push, manage branches\n4. **Project management**: Create/manage projects, tasks, and documents\n5. **Search and analysis**: Search code, documentation, or knowledge bases\n6. **Web content**: Fetch and analyze web pages\n\nWhat would you like me to do?",
+        "time": {
+          "start": 1771080204527,
+          "end": 1771080204527
+        }
+      },
+      {
+        "id": "prt_c5c9b40f2001Y0bSkBl0QE0eJV",
+        "sessionID": "ses_3a364d220ffezo6M5csyyb04qu",
+        "messageID": "msg_c5c9b2df1001IZv9vhLdSqIpW8",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16015,
+          "output": 149,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a364d220ffezo6M5csyyb04qu",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_adw_id/adw_classifier/response_20260214_094324.json",
+    "created_at": "2026-02-14T09:43:24.631702",
+    "log_type": "response"
+  }
+}

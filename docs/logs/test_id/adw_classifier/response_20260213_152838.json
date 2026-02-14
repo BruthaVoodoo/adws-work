@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-13T15:28:38.509675",
+  "adw_id": "test_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "test prompt",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c58b0ea82001EmD0T9s0OtLdEP",
+      "sessionID": "ses_3a74f1590ffe2j8tarr2F16ONl",
+      "role": "assistant",
+      "time": {
+        "created": 1771014515330,
+        "completed": 1771014518502
+      },
+      "parentID": "msg_c58b0ea78001scbWpvqaSURC44",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16012,
+        "output": 170,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c58b0efb3001OGJIBxMHxCholb",
+        "sessionID": "ses_3a74f1590ffe2j8tarr2F16ONl",
+        "messageID": "msg_c58b0ea82001EmD0T9s0OtLdEP",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c58b0efb5001o7e2GvJpjkTD3j",
+        "sessionID": "ses_3a74f1590ffe2j8tarr2F16ONl",
+        "messageID": "msg_c58b0ea82001EmD0T9s0OtLdEP",
+        "type": "text",
+        "text": "Hello! This is a test prompt response. I'm ready to help you with various tasks. Here are some things I can assist you with:\n\n1. **Code Development** - Writing, editing, and reviewing code\n2. **File Operations** - Reading, writing, and editing files\n3. **Git Operations** - Managing repositories, creating commits, and pull requests\n4. **Project Management** - Creating and managing projects, tasks, and documents\n5. **Knowledge Base Search** - Searching documentation and code examples\n6. **Jira Integration** - Creating and managing Jira issues\n7. **Task Tracking** - Creating and managing todo lists\n\nFeel free to ask me to help you with any of these areas, or let me know what specific task you'd like assistance with!",
+        "time": {
+          "start": 1771014518373,
+          "end": 1771014518373
+        }
+      },
+      {
+        "id": "prt_c58b0f683001owUbWxrt6dyzcV",
+        "sessionID": "ses_3a74f1590ffe2j8tarr2F16ONl",
+        "messageID": "msg_c58b0ea82001EmD0T9s0OtLdEP",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16012,
+          "output": 170,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a74f1590ffe2j8tarr2F16ONl",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_id/adw_classifier/response_20260213_152838.json",
+    "created_at": "2026-02-13T15:28:38.509690",
+    "log_type": "response"
+  }
+}

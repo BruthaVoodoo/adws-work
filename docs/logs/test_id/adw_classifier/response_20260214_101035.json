@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T10:10:35.803427",
+  "adw_id": "test_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "test prompt",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5cb418ab001ccGSfdYrBgNWuX",
+      "sessionID": "ses_3a34be764ffeNx4S4S1wtiM1Ek",
+      "role": "assistant",
+      "time": {
+        "created": 1771081832619,
+        "completed": 1771081835794
+      },
+      "parentID": "msg_c5cb418a1001aBEKAXIGICoxDe",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16012,
+        "output": 175,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5cb41e92001NyZRvhPMG7qBaD",
+        "sessionID": "ses_3a34be764ffeNx4S4S1wtiM1Ek",
+        "messageID": "msg_c5cb418ab001ccGSfdYrBgNWuX",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5cb41e95001c0n7vvzXjARTdG",
+        "sessionID": "ses_3a34be764ffeNx4S4S1wtiM1Ek",
+        "messageID": "msg_c5cb418ab001ccGSfdYrBgNWuX",
+        "type": "text",
+        "text": "Hello! This is a test prompt. I'm ready to help you with whatever you need. \n\nI have access to a variety of tools including:\n\n- **File operations** - reading, writing, and editing files\n- **Git operations** - managing repositories, commits, and pull requests\n- **Development tools** - running commands, npm, docker, etc.\n- **Code exploration** - searching and analyzing code patterns\n- **Project management** - creating and managing projects, tasks, and documents\n- **Knowledge base search** - finding relevant information from available sources\n\nWhat would you like me to help you with? Feel free to ask me to:\n- Write or modify code\n- Manage git repositories\n- Create or update project documentation\n- Search for information\n- Execute commands\n- Or anything else you need!",
+        "time": {
+          "start": 1771081835599,
+          "end": 1771081835599
+        }
+      },
+      {
+        "id": "prt_c5cb42454001rPCu37Aou5KmIM",
+        "sessionID": "ses_3a34be764ffeNx4S4S1wtiM1Ek",
+        "messageID": "msg_c5cb418ab001ccGSfdYrBgNWuX",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16012,
+          "output": 175,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a34be764ffeNx4S4S1wtiM1Ek",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_id/adw_classifier/response_20260214_101035.json",
+    "created_at": "2026-02-14T10:10:35.803437",
+    "log_type": "response"
+  }
+}

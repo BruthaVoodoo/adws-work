@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T10:14:27.874846",
+  "adw_id": "test_adw_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5cb7a53c001SMJe8lbCTvBjQR",
+      "sessionID": "ses_3a3485adcffeek14L3fLvGGl0i",
+      "role": "assistant",
+      "time": {
+        "created": 1771082065212,
+        "completed": 1771082067868
+      },
+      "parentID": "msg_c5cb7a52e001s1AQaNIFwWU6dX",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16015,
+        "output": 137,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5cb7ac9f001UJhdrO6lrq1qXs",
+        "sessionID": "ses_3a3485adcffeek14L3fLvGGl0i",
+        "messageID": "msg_c5cb7a53c001SMJe8lbCTvBjQR",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5cb7acb60017zan0LGMIO7PzM",
+        "sessionID": "ses_3a3485adcffeek14L3fLvGGl0i",
+        "messageID": "msg_c5cb7a53c001SMJe8lbCTvBjQR",
+        "type": "text",
+        "text": "Hello! I received your test prompt with the message \"test text\". \n\nIt looks like you're testing the system. How can I help you today? Here are some things I can assist with:\n\n- **Code development**: Writing, reviewing, and debugging code\n- **File operations**: Reading, editing, and creating files\n- **Git operations**: Committing changes, creating branches, and managing repositories\n- **Project management**: Creating and managing projects, tasks, and documents\n- **Web searches**: Fetching and analyzing web content\n- **And much more**: Any other development or technical tasks\n\nWhat would you like to work on?",
+        "time": {
+          "start": 1771082067781,
+          "end": 1771082067781
+        }
+      },
+      {
+        "id": "prt_c5cb7af47001kzYj6lpMI47dJ2",
+        "sessionID": "ses_3a3485adcffeek14L3fLvGGl0i",
+        "messageID": "msg_c5cb7a53c001SMJe8lbCTvBjQR",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16015,
+          "output": 137,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a3485adcffeek14L3fLvGGl0i",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_adw_id/adw_classifier/response_20260214_101427.json",
+    "created_at": "2026-02-14T10:14:27.874860",
+    "log_type": "response"
+  }
+}
