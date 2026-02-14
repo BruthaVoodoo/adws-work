@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T11:59:02.570821",
+  "adw_id": "test_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "test prompt",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5d176495001Zu6LHBUHwKOgRB",
+      "sessionID": "ses_3a2e8a2aeffefNhgCibGEKSPb2",
+      "role": "assistant",
+      "time": {
+        "created": 1771088340117,
+        "completed": 1771088342563
+      },
+      "parentID": "msg_c5d175d5e001yTI5PpNvj4s5Jf",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16165,
+        "output": 144,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5d1769ac001aMA2fS4IPp3P4U",
+        "sessionID": "ses_3a2e8a2aeffefNhgCibGEKSPb2",
+        "messageID": "msg_c5d176495001Zu6LHBUHwKOgRB",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5d1769ad001WSC10z4OxvnXcL",
+        "sessionID": "ses_3a2e8a2aeffefNhgCibGEKSPb2",
+        "messageID": "msg_c5d176495001Zu6LHBUHwKOgRB",
+        "type": "text",
+        "text": "Great! The system is operational. Here's what I found:\n\n**System Status:**\n- ✅ **Overall Status**: Healthy\n- ✅ **API Service**: Running\n- ⚠️ **Agents Service**: Offline (but not critical)\n- **Uptime**: ~5.2 days (446,587 seconds)\n- **Last Check**: 2026-02-14 at 16:59:00 UTC\n\nThe system is working properly! The API service is fully operational, which means you can use all the tools available. Is there anything specific you'd like me to help you with?",
+        "time": {
+          "start": 1771088342474,
+          "end": 1771088342474
+        }
+      },
+      {
+        "id": "prt_c5d176dce001zcqIgv8VHQ5ZeZ",
+        "sessionID": "ses_3a2e8a2aeffefNhgCibGEKSPb2",
+        "messageID": "msg_c5d176495001Zu6LHBUHwKOgRB",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16165,
+          "output": 144,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a2e8a2aeffefNhgCibGEKSPb2",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_id/adw_classifier/response_20260214_115902.json",
+    "created_at": "2026-02-14T11:59:02.570828",
+    "log_type": "response"
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T12:03:35.789866",
+  "adw_id": "test_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "test prompt",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5d1b8b19001UsYs10uYx76ODF",
+      "sessionID": "ses_3a2e474f5ffebKmD3L9vocfLFi",
+      "role": "assistant",
+      "time": {
+        "created": 1771088612121,
+        "completed": 1771088615785
+      },
+      "parentID": "msg_c5d1b8b10001lCD4huhZOCLe4j",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16012,
+        "output": 208,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5d1b9177001xTySM3F4AsO53S",
+        "sessionID": "ses_3a2e474f5ffebKmD3L9vocfLFi",
+        "messageID": "msg_c5d1b8b19001UsYs10uYx76ODF",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5d1b9177002xcOcaGb59QNBn5",
+        "sessionID": "ses_3a2e474f5ffebKmD3L9vocfLFi",
+        "messageID": "msg_c5d1b8b19001UsYs10uYx76ODF",
+        "type": "text",
+        "text": "Hello! I'm here to help you with a wide variety of tasks. I have access to tools for:\n\n- **File operations** (reading, writing, editing files)\n- **Git operations** (commits, branches, pull requests)\n- **Code exploration** (searching, grepping, globbing)\n- **Bash commands** (running terminal commands)\n- **Project management** (tasks, documents, versions)\n- **Knowledge base search** (RAG-powered documentation search)\n- **Jira integration** (creating and managing issues)\n- **And much more!**\n\nFeel free to ask me to help with:\n- Writing or modifying code\n- Running commands\n- Searching through your codebase\n- Managing project tasks and documentation\n- Creating git commits and pull requests\n- Setting up development environments\n- Debugging issues\n- Or any other development-related task\n\n**What would you like me to help you with?**",
+        "time": {
+          "start": 1771088615674,
+          "end": 1771088615674
+        }
+      },
+      {
+        "id": "prt_c5d1b98fe001eF527OkULq0lUZ",
+        "sessionID": "ses_3a2e474f5ffebKmD3L9vocfLFi",
+        "messageID": "msg_c5d1b8b19001UsYs10uYx76ODF",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16012,
+          "output": 208,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a2e474f5ffebKmD3L9vocfLFi",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_id/adw_classifier/response_20260214_120335.json",
+    "created_at": "2026-02-14T12:03:35.789886",
+    "log_type": "response"
+  }
+}

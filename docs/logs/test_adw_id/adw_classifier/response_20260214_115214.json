@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T11:52:14.663629",
+  "adw_id": "test_adw_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5d1102ad001ECQ8ARHBkc0GDA",
+      "sessionID": "ses_3a2eefd94ffeoLu65klqDd5DnF",
+      "role": "assistant",
+      "time": {
+        "created": 1771087921837,
+        "completed": 1771087934416
+      },
+      "parentID": "msg_c5d11027a001bmq0lvGkOpeP3H",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16015,
+        "output": 139,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5d112e26001Chx034tW73nhwY",
+        "sessionID": "ses_3a2eefd94ffeoLu65klqDd5DnF",
+        "messageID": "msg_c5d1102ad001ECQ8ARHBkc0GDA",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5d112e27001jbHcX4pvVGamcr",
+        "sessionID": "ses_3a2eefd94ffeoLu65klqDd5DnF",
+        "messageID": "msg_c5d1102ad001ECQ8ARHBkc0GDA",
+        "type": "text",
+        "text": "I'll acknowledge your test prompt. This appears to be a simple test message.\n\nIf you'd like me to help you with something specific, please let me know what you need! I can assist with:\n\n- **Code development** - writing, debugging, or reviewing code\n- **File operations** - reading, editing, or creating files\n- **Git operations** - managing commits, branches, and pull requests\n- **Project management** - organizing tasks and tracking progress\n- **Documentation** - creating or updating documentation\n- **Testing** - running tests and validating code\n- **And much more!**\n\nWhat would you like to work on?",
+        "time": {
+          "start": 1771087934143,
+          "end": 1771087934143
+        }
+      },
+      {
+        "id": "prt_c5d1132ce001lah5I1iQdVMCXU",
+        "sessionID": "ses_3a2eefd94ffeoLu65klqDd5DnF",
+        "messageID": "msg_c5d1102ad001ECQ8ARHBkc0GDA",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16015,
+          "output": 139,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a2eefd94ffeoLu65klqDd5DnF",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_adw_id/adw_classifier/response_20260214_115214.json",
+    "created_at": "2026-02-14T11:52:14.663646",
+    "log_type": "response"
+  }
+}

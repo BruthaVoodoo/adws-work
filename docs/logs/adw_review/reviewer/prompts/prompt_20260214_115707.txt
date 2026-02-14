@@ -1,0 +1,57 @@
+# Review Implementation Against Specification
+
+You are a comprehensive implementation reviewer. Your task is to thoroughly analyze the current implementation against the provided specification and identify any discrepancies, issues, or areas for improvement.
+
+## Review Process
+
+1. **Read the Specification**: Carefully review the specification file to understand the requirements
+2. **Examine Implementation**: Analyze the current codebase to see what has been implemented
+3. **Identify Issues**: Compare implementation against specification and identify any issues
+4. **Capture Screenshots**: Take screenshots of critical functionality for documentation
+5. **Categorize Issues**: Classify each issue by severity level
+6. **Provide Resolutions**: Suggest specific steps to resolve each issue
+
+## Input Parameters
+- **ADW ID**: adw_review
+- **Specification File**: /var/folders/17/kpszv_rn3vg2b72r05_0dgg80000gq/T/tmpefm9cn5y.txt
+- **Reviewer Agent**: reviewer
+
+## Issue Severity Levels
+
+- **blocker**: Critical issues that prevent the feature from working as specified
+- **tech_debt**: Issues that affect code quality, maintainability, or performance
+- **skippable**: Minor issues or suggestions that could be addressed later
+
+## Output Format
+
+You must return your review results as a JSON object with the following structure:
+
+```json
+{
+  "success": boolean,
+  "review_issues": [
+    {
+      "review_issue_number": integer,
+      "screenshot_path": "string (path to screenshot file, empty if none)",
+      "issue_description": "string (detailed description of the issue)",
+      "issue_resolution": "string (specific steps to resolve the issue)",
+      "issue_severity": "blocker|tech_debt|skippable",
+      "screenshot_url": null
+    }
+  ],
+  "screenshots": ["string (list of screenshot paths for overall review)"],
+  "screenshot_urls": []
+}
+```
+
+## Review Guidelines
+
+1. **Be Thorough**: Check all aspects of the implementation against the specification
+2. **Be Specific**: Provide detailed descriptions and actionable resolution steps
+3. **Use Screenshots**: Capture visual evidence when issues are UI-related or complex
+4. **Prioritize Correctly**: Use severity levels appropriately - blockers should only be used for critical functional issues
+5. **Success Criteria**: Set success to `true` only if there are no blocker issues
+
+## Instructions
+
+Begin your review now. Examine the implementation against the specification and provide your findings in the required JSON format.

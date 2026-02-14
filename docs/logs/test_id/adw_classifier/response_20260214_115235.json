@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T11:52:35.991043",
+  "adw_id": "test_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "test prompt",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5d117b5a001otxJMGhByO7ZQ4",
+      "sessionID": "ses_3a2ee84bfffe66kCzrFefQp9wY",
+      "role": "assistant",
+      "time": {
+        "created": 1771087952731,
+        "completed": 1771087955979
+      },
+      "parentID": "msg_c5d117b52001KFPyb412hj9BqQ",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16012,
+        "output": 156,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5d118246001HbKwnek7tByTQQ",
+        "sessionID": "ses_3a2ee84bfffe66kCzrFefQp9wY",
+        "messageID": "msg_c5d117b5a001otxJMGhByO7ZQ4",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5d118257001RHvxVpSWq2bGaF",
+        "sessionID": "ses_3a2ee84bfffe66kCzrFefQp9wY",
+        "messageID": "msg_c5d117b5a001otxJMGhByO7ZQ4",
+        "type": "text",
+        "text": "Hello! This is a test prompt. I'm ready to help you with a variety of tasks. Here are some things I can assist with:\n\n**Code & Development:**\n- Read and analyze files in your codebase\n- Search for specific code patterns or implementations\n- Edit and modify files\n- Execute bash commands and git operations\n- Create and manage pull requests\n\n**Project Management:**\n- Create and manage projects, tasks, and documents\n- Track project features and versions\n- Search knowledge bases for relevant information\n\n**General Help:**\n- Answer questions and provide explanations\n- Create task lists for complex projects\n- Help with documentation and planning\n\nWhat would you like to do? Feel free to ask me anything! 😊",
+        "time": {
+          "start": 1771087955862,
+          "end": 1771087955862
+        }
+      },
+      {
+        "id": "prt_c5d11879b001IQQfbu45aUJtrF",
+        "sessionID": "ses_3a2ee84bfffe66kCzrFefQp9wY",
+        "messageID": "msg_c5d117b5a001otxJMGhByO7ZQ4",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16012,
+          "output": 156,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a2ee84bfffe66kCzrFefQp9wY",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_id/adw_classifier/response_20260214_115235.json",
+    "created_at": "2026-02-14T11:52:35.991054",
+    "log_type": "response"
+  }
+}

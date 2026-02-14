@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T11:52:32.684768",
+  "adw_id": "test_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "test prompt",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5d116fa900173pJFnZIkKG0bc",
+      "sessionID": "ses_3a2ee9a1cffekc5NssjwWhyEe4",
+      "role": "assistant",
+      "time": {
+        "created": 1771087949737,
+        "completed": 1771087952679
+      },
+      "parentID": "msg_c5d1165ec001IpnE5jnoDnhXDR",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16310,
+        "output": 171,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5d1174a90019njObkkOc0jfDb",
+        "sessionID": "ses_3a2ee9a1cffekc5NssjwWhyEe4",
+        "messageID": "msg_c5d116fa900173pJFnZIkKG0bc",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5d1174ab001rOtHI6WbPxwRCB",
+        "sessionID": "ses_3a2ee9a1cffekc5NssjwWhyEe4",
+        "messageID": "msg_c5d116fa900173pJFnZIkKG0bc",
+        "type": "text",
+        "text": "✅ **System Status: Operational**\n\nThe system is running and healthy:\n\n- **Overall Status**: Healthy ✓\n- **API Service**: Active ✓\n- **Agents Service**: Offline ⚠️\n- **Server Uptime**: ~123 hours (5+ days)\n- **Active Sessions**: 0\n\nEverything is ready! I have access to a wide range of tools including:\n- **File operations** (read, write, edit, glob)\n- **Git/development** (bash commands, commits, PR creation)\n- **Project management** (tasks, documents, versions)\n- **Knowledge base** (RAG search, code examples)\n- **Web content** fetching\n\nHow can I help you today?",
+        "time": {
+          "start": 1771087952598,
+          "end": 1771087952598
+        }
+      },
+      {
+        "id": "prt_c5d117ad7001LfgbI1kD19zt36",
+        "sessionID": "ses_3a2ee9a1cffekc5NssjwWhyEe4",
+        "messageID": "msg_c5d116fa900173pJFnZIkKG0bc",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16310,
+          "output": 171,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a2ee9a1cffekc5NssjwWhyEe4",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_id/adw_classifier/response_20260214_115232.json",
+    "created_at": "2026-02-14T11:52:32.684780",
+    "log_type": "response"
+  }
+}

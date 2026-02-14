@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T11:58:48.106197",
+  "adw_id": "test_adw_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5d1724d9001r445u2ZXlqGB4O",
+      "sessionID": "ses_3a2e8db36ffe3xvzyUfEuMf2uE",
+      "role": "assistant",
+      "time": {
+        "created": 1771088323801,
+        "completed": 1771088328094
+      },
+      "parentID": "msg_c5d1724d1001b9Ecax7x4IfNOf",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16015,
+        "output": 244,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5d172b63001Id4G5ZTec5gAYD",
+        "sessionID": "ses_3a2e8db36ffe3xvzyUfEuMf2uE",
+        "messageID": "msg_c5d1724d9001r445u2ZXlqGB4O",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5d172b77001D4P1CKAxIBT6jN",
+        "sessionID": "ses_3a2e8db36ffe3xvzyUfEuMf2uE",
+        "messageID": "msg_c5d1724d9001r445u2ZXlqGB4O",
+        "type": "text",
+        "text": "I appreciate you testing the system! I'm ready to help with whatever you need. Here are the main tools and capabilities I have available:\n\n**Core Development Tools:**\n- File operations (read, write, edit files)\n- Git commands (commit, push, branch management)\n- Bash/terminal execution\n- Code search and globbing\n\n**Project Management:**\n- Create and manage projects\n- Manage tasks and track progress\n- Handle documents and specifications\n- Version control for project artifacts\n\n**Knowledge Base & Documentation:**\n- Search through knowledge bases\n- Find code examples\n- Access documentation pages\n\n**GitHub Integration:**\n- Create and manage pull requests\n- Work with issues and releases\n- Run checks and reviews\n\n**Additional Features:**\n- Todo list tracking\n- Jira integration for issue management\n- Health checks and system status\n\nHow can I help you today? You can:\n- Ask me to work on code in your repository\n- Help with project planning and task management\n- Search for information and documentation\n- Create git commits and pull requests\n- Or anything else development-related!\n\nWhat would you like to do?",
+        "time": {
+          "start": 1771088327982,
+          "end": 1771088327982
+        }
+      },
+      {
+        "id": "prt_c5d173535001Q7yOAhcOmm3HlA",
+        "sessionID": "ses_3a2e8db36ffe3xvzyUfEuMf2uE",
+        "messageID": "msg_c5d1724d9001r445u2ZXlqGB4O",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16015,
+          "output": 244,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a2e8db36ffe3xvzyUfEuMf2uE",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_adw_id/adw_classifier/response_20260214_115848.json",
+    "created_at": "2026-02-14T11:58:48.106212",
+    "log_type": "response"
+  }
+}

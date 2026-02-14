@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T12:01:20.354673",
+  "adw_id": "temp_123",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text for ADW",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5d197e65001mjiV9rYI7vv6GN",
+      "sessionID": "ses_3a2e68b5effe4Cg4hC5lKaOKwn",
+      "role": "assistant",
+      "time": {
+        "created": 1771088477797,
+        "completed": 1771088480346
+      },
+      "parentID": "msg_c5d1974a6001i04boeA38sAqvQ",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16316,
+        "output": 148,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5d198430001nvnGlSA2owD0M5",
+        "sessionID": "ses_3a2e68b5effe4Cg4hC5lKaOKwn",
+        "messageID": "msg_c5d197e65001mjiV9rYI7vv6GN",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5d198434001Rkk7njA2BZa4sH",
+        "sessionID": "ses_3a2e68b5effe4Cg4hC5lKaOKwn",
+        "messageID": "msg_c5d197e65001mjiV9rYI7vv6GN",
+        "type": "text",
+        "text": "Great! The system is running successfully. Here's the test status:\n\n✅ **System Health**: Healthy\n- API Service: ✅ Active\n- Agents Service: ⚠️ Currently offline\n- Server Uptime: ~124 hours\n\n✅ **Session Information**:\n- Active Sessions: 0\n- Session Timeout: 3600 seconds (1 hour)\n- Server Uptime: ~124 hours\n\nThe core API service is operational and ready to handle requests. The agents service is currently offline, but the main system is functioning normally. Is there anything specific you'd like me to test or help you with?",
+        "time": {
+          "start": 1771088480256,
+          "end": 1771088480256
+        }
+      },
+      {
+        "id": "prt_c5d198804001lpC1ZIKmMsI57q",
+        "sessionID": "ses_3a2e68b5effe4Cg4hC5lKaOKwn",
+        "messageID": "msg_c5d197e65001mjiV9rYI7vv6GN",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16316,
+          "output": 148,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a2e68b5effe4Cg4hC5lKaOKwn",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/temp_123/adw_classifier/response_20260214_120120.json",
+    "created_at": "2026-02-14T12:01:20.354696",
+    "log_type": "response"
+  }
+}

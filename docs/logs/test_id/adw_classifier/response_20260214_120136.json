@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T12:01:36.105089",
+  "adw_id": "test_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5d19af2b0014AAw8DB2QDMc2i",
+      "sessionID": "ses_3a2e65c6bffebMU6gIijzDJ2WE",
+      "role": "assistant",
+      "time": {
+        "created": 1771088490283,
+        "completed": 1771088496093
+      },
+      "parentID": "msg_c5d19a39e001Cbqb8f6Kuta1sF",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 19074,
+        "output": 289,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5d19b86b001B7bNfVZb2hXKPK",
+        "sessionID": "ses_3a2e65c6bffebMU6gIijzDJ2WE",
+        "messageID": "msg_c5d19af2b0014AAw8DB2QDMc2i",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5d19b86c001fDsaCqnVR0KL0J",
+        "sessionID": "ses_3a2e65c6bffebMU6gIijzDJ2WE",
+        "messageID": "msg_c5d19af2b0014AAw8DB2QDMc2i",
+        "type": "text",
+        "text": "Perfect! ✅ **System test successful!** Here's the status:\n\n## Health & Status\n- **API Service**: ✅ Healthy\n- **Uptime**: ~124 hours (5.2 days)\n- **Active Sessions**: 0\n- **Last Health Check**: 2026-02-14 17:01:29 UTC\n\n## Available Knowledge Sources (13 total)\nThe system has access to 13 knowledge sources including:\n\n**Technical Documentation:**\n- React (174K words)\n- Jira REST API (336K words)\n- BMAD Documentation (57K words)\n- Amazon Strands Agents (751K words)\n- BMAD Github (292K words)\n\n**Local Resources:**\n- Opencode Getting Started, Configuration, Architecture, MCP & Skills, CLI Commands\n- Jest & PyTest JSON output formats\n- Opencode Server Integration Guide\n\n## System Capabilities\n✅ Health checks  \n✅ Session management  \n✅ RAG knowledge base search  \n✅ Project management  \n✅ Task tracking  \n✅ Document management  \n✅ Version control  \n\nThe system is fully operational and ready to assist with code development, documentation, project management, and knowledge queries!",
+        "time": {
+          "start": 1771088495983,
+          "end": 1771088495983
+        }
+      },
+      {
+        "id": "prt_c5d19c571001zNoH6n70dboE2d",
+        "sessionID": "ses_3a2e65c6bffebMU6gIijzDJ2WE",
+        "messageID": "msg_c5d19af2b0014AAw8DB2QDMc2i",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 19074,
+          "output": 289,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a2e65c6bffebMU6gIijzDJ2WE",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_id/adw_classifier/response_20260214_120136.json",
+    "created_at": "2026-02-14T12:01:36.105146",
+    "log_type": "response"
+  }
+}

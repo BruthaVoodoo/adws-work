@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T12:01:08.257768",
+  "adw_id": "test_adw_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5d194db6001m05CPYhCAGzmYZ",
+      "sessionID": "ses_3a2e6b259ffeIn9NvSVR4Ly7IS",
+      "role": "assistant",
+      "time": {
+        "created": 1771088465334,
+        "completed": 1771088468218
+      },
+      "parentID": "msg_c5d194dae0017yKBrcjv4Xyr0T",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16015,
+        "output": 144,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5d1953bb001np1Rfjsrm6s2WT",
+        "sessionID": "ses_3a2e6b259ffeIn9NvSVR4Ly7IS",
+        "messageID": "msg_c5d194db6001m05CPYhCAGzmYZ",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5d1953d9001lDfd2y6eBuRYNY",
+        "sessionID": "ses_3a2e6b259ffeIn9NvSVR4Ly7IS",
+        "messageID": "msg_c5d194db6001m05CPYhCAGzmYZ",
+        "type": "text",
+        "text": "I'm ready to help! You've sent me a test prompt with \"test text\". \n\nHowever, I'm not sure what you'd like me to do with this. Could you clarify what you need? For example, I can help you with:\n\n- **Code development** - writing, reviewing, or debugging code\n- **File operations** - reading, editing, or creating files\n- **Git operations** - commits, branches, pull requests\n- **Project management** - creating/managing tasks, projects, and documents\n- **Search & research** - finding information in knowledge bases\n- **Terminal commands** - running bash commands\n\nWhat would you like to accomplish?",
+        "time": {
+          "start": 1771088468085,
+          "end": 1771088468085
+        }
+      },
+      {
+        "id": "prt_c5d19587a0017IRaiUBnuSIjCG",
+        "sessionID": "ses_3a2e6b259ffeIn9NvSVR4Ly7IS",
+        "messageID": "msg_c5d194db6001m05CPYhCAGzmYZ",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16015,
+          "output": 144,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a2e6b259ffeIn9NvSVR4Ly7IS",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_adw_id/adw_classifier/response_20260214_120108.json",
+    "created_at": "2026-02-14T12:01:08.257776",
+    "log_type": "response"
+  }
+}

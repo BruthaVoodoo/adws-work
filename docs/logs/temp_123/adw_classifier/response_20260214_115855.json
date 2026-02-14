@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T11:58:55.100015",
+  "adw_id": "temp_123",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text for ADW",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5d1742f90019Q6MZmI0HUvM0Z",
+      "sessionID": "ses_3a2e8bd1cffeM1hZab02h6Kjxk",
+      "role": "assistant",
+      "time": {
+        "created": 1771088331513,
+        "completed": 1771088335093
+      },
+      "parentID": "msg_c5d1742ee001qEIOHLzNqze0PK",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16018,
+        "output": 184,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5d1748f7001zoNc2QtV0RaY4f",
+        "sessionID": "ses_3a2e8bd1cffeM1hZab02h6Kjxk",
+        "messageID": "msg_c5d1742f90019Q6MZmI0HUvM0Z",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5d1748f9001B7aGo7FODG6kfw",
+        "sessionID": "ses_3a2e8bd1cffeM1hZab02h6Kjxk",
+        "messageID": "msg_c5d1742f90019Q6MZmI0HUvM0Z",
+        "type": "text",
+        "text": "I'd be happy to help! However, I'm not entirely clear on what you'd like me to do with \"test text for ADW\". \n\nCould you provide more details about:\n\n1. **What is ADW?** (Application Database Workloads? A specific system or tool?)\n2. **What kind of test are you looking for?**\n   - Do you want me to test this text in a specific tool or system?\n   - Do you want feedback on the text itself?\n   - Do you want me to create test cases based on this text?\n   - Something else?\n\n3. **What should the output be?**\n   - A test report?\n   - Validation results?\n   - Code examples?\n\nOnce you clarify what you're trying to accomplish, I'll be able to help you better!",
+        "time": {
+          "start": 1771088334931,
+          "end": 1771088334931
+        }
+      },
+      {
+        "id": "prt_c5d1750630014s0FnogUA66CaN",
+        "sessionID": "ses_3a2e8bd1cffeM1hZab02h6Kjxk",
+        "messageID": "msg_c5d1742f90019Q6MZmI0HUvM0Z",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16018,
+          "output": 184,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a2e8bd1cffeM1hZab02h6Kjxk",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/temp_123/adw_classifier/response_20260214_115855.json",
+    "created_at": "2026-02-14T11:58:55.100029",
+    "log_type": "response"
+  }
+}

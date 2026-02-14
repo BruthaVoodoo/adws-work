@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T12:03:28.912064",
+  "adw_id": "temp_123",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text for ADW",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5d1b73c000121P5c3dNKzLuwF",
+      "sessionID": "ses_3a2e48c4fffeHGpjFLbYovySeg",
+      "role": "assistant",
+      "time": {
+        "created": 1771088606144,
+        "completed": 1771088608900
+      },
+      "parentID": "msg_c5d1b73ba001l5XfzkIep6MfR7",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16018,
+        "output": 138,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5d1b7878001wPKxJFUXK32N5a",
+        "sessionID": "ses_3a2e48c4fffeHGpjFLbYovySeg",
+        "messageID": "msg_c5d1b73c000121P5c3dNKzLuwF",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5d1b787a001ARRtO3hsIeWuyh",
+        "sessionID": "ses_3a2e48c4fffeHGpjFLbYovySeg",
+        "messageID": "msg_c5d1b73c000121P5c3dNKzLuwF",
+        "type": "text",
+        "text": "I understand you've sent a test prompt with some test text. However, I'm not entirely sure what you'd like me to do with this. Could you clarify what you need help with?\n\nHere are some possibilities:\n- **Run a test**: Do you want me to execute a test in a specific codebase or system?\n- **Create a document**: Should I create a test document or specification?\n- **Search/research**: Do you need me to search for information related to \"ADW\"?\n- **Other task**: Something else with this test text?\n\nPlease let me know what action you'd like me to take!",
+        "time": {
+          "start": 1771088608783,
+          "end": 1771088608783
+        }
+      },
+      {
+        "id": "prt_c5d1b7e16001Qj2w6q4ShL1Qfy",
+        "sessionID": "ses_3a2e48c4fffeHGpjFLbYovySeg",
+        "messageID": "msg_c5d1b73c000121P5c3dNKzLuwF",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16018,
+          "output": 138,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a2e48c4fffeHGpjFLbYovySeg",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/temp_123/adw_classifier/response_20260214_120328.json",
+    "created_at": "2026-02-14T12:03:28.912086",
+    "log_type": "response"
+  }
+}

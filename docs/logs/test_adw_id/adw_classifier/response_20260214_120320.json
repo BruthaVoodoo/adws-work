@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T12:03:20.327610",
+  "adw_id": "test_adw_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5d1b4ca9001tB4Ytevo0jJB56",
+      "sessionID": "ses_3a2e4b366ffeAi6F1dlbQZXkE1",
+      "role": "assistant",
+      "time": {
+        "created": 1771088596137,
+        "completed": 1771088600322
+      },
+      "parentID": "msg_c5d1b4ca1001VR6w8glkNkJy7l",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16015,
+        "output": 200,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5d1b529b001lwbxEJGCgwYDqL",
+        "sessionID": "ses_3a2e4b366ffeAi6F1dlbQZXkE1",
+        "messageID": "msg_c5d1b4ca9001tB4Ytevo0jJB56",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5d1b529c001aS37xnXzQNq5T7",
+        "sessionID": "ses_3a2e4b366ffeAi6F1dlbQZXkE1",
+        "messageID": "msg_c5d1b4ca9001tB4Ytevo0jJB56",
+        "type": "text",
+        "text": "I'm ready to help! I received your test message: \"test text\"\n\nI have access to a comprehensive set of tools including:\n\n- **File & Code Operations**: Reading, editing, and searching files in your codebase\n- **Git & Version Control**: Managing commits, branches, and repository operations\n- **Project Management**: Creating and managing projects, tasks, and documents\n- **Web & Knowledge Base**: Searching documentation and fetching web content\n- **Jira Integration**: Creating and managing Jira issues\n- **RAG (Knowledge Base)**: Searching and retrieving information from available sources\n\nHow can I assist you today? Feel free to ask me to:\n- Help with coding tasks\n- Manage projects and tasks\n- Search your codebase\n- Create or modify files\n- Manage version control\n- Work with documentation\n- Or anything else you need!\n\nWhat would you like to do?",
+        "time": {
+          "start": 1771088600143,
+          "end": 1771088600143
+        }
+      },
+      {
+        "id": "prt_c5d1b5c8e001uxq6Ihdnm728lN",
+        "sessionID": "ses_3a2e4b366ffeAi6F1dlbQZXkE1",
+        "messageID": "msg_c5d1b4ca9001tB4Ytevo0jJB56",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16015,
+          "output": 200,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a2e4b366ffeAi6F1dlbQZXkE1",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_adw_id/adw_classifier/response_20260214_120320.json",
+    "created_at": "2026-02-14T12:03:20.327618",
+    "log_type": "response"
+  }
+}

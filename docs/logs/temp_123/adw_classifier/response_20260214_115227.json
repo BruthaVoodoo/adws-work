@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T11:52:27.217344",
+  "adw_id": "temp_123",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text for ADW",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5d115841001LB1e1HAAUNOM54",
+      "sessionID": "ses_3a2eea7d4ffer0x18xmZ0NuVXH",
+      "role": "assistant",
+      "time": {
+        "created": 1771087943745,
+        "completed": 1771087947193
+      },
+      "parentID": "msg_c5d115837001JYzxPwAoNSSQUq",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16018,
+        "output": 202,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5d115d74001OzfXEZxyvkLpbQ",
+        "sessionID": "ses_3a2eea7d4ffer0x18xmZ0NuVXH",
+        "messageID": "msg_c5d115841001LB1e1HAAUNOM54",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5d115d75001sRULOnRBj7vN01",
+        "sessionID": "ses_3a2eea7d4ffer0x18xmZ0NuVXH",
+        "messageID": "msg_c5d115841001LB1e1HAAUNOM54",
+        "type": "text",
+        "text": "I received your test prompt with the message \"test text for ADW\". \n\nHow can I help you? Here are some things I can assist with:\n\n1. **Code Development** - Write, review, or refactor code\n2. **File Operations** - Read, edit, or create files\n3. **Git Operations** - Commit changes, manage branches, create pull requests\n4. **Project Management** - Create/manage projects, tasks, and documents\n5. **Knowledge Base** - Search for documentation and code examples\n6. **Jira Integration** - Create and manage Jira issues\n\nCould you provide more context about what you'd like to do? For example:\n- Are you working on a specific project or codebase?\n- Do you need help with development, testing, or documentation?\n- Do you want to create tasks or manage project work?\n\nPlease let me know what you'd like to accomplish!",
+        "time": {
+          "start": 1771087947008,
+          "end": 1771087947008
+        }
+      },
+      {
+        "id": "prt_c5d116523001FNVe3E0V6PVKVI",
+        "sessionID": "ses_3a2eea7d4ffer0x18xmZ0NuVXH",
+        "messageID": "msg_c5d115841001LB1e1HAAUNOM54",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16018,
+          "output": 202,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a2eea7d4ffer0x18xmZ0NuVXH",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/temp_123/adw_classifier/response_20260214_115227.json",
+    "created_at": "2026-02-14T11:52:27.217356",
+    "log_type": "response"
+  }
+}

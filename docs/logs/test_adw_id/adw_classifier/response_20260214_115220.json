@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T11:52:20.015651",
+  "adw_id": "test_adw_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5d113ea60012EYTgynGHHNrzA",
+      "sessionID": "ses_3a2eecb11ffenQCx1pVCX0LLeF",
+      "role": "assistant",
+      "time": {
+        "created": 1771087937190,
+        "completed": 1771087940008
+      },
+      "parentID": "msg_c5d11351a00131H4M74lS3k5eJ",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16315,
+        "output": 169,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5d11442d0012Qy5g9G54sHLRu",
+        "sessionID": "ses_3a2eecb11ffenQCx1pVCX0LLeF",
+        "messageID": "msg_c5d113ea60012EYTgynGHHNrzA",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5d11442e001A0b1KA3PL0vntU",
+        "sessionID": "ses_3a2eecb11ffenQCx1pVCX0LLeF",
+        "messageID": "msg_c5d113ea60012EYTgynGHHNrzA",
+        "type": "text",
+        "text": "Great! The system is operational. Here's the status:\n\n**System Health:**\n- ✅ **API Service**: Healthy and running\n- ⚠️ **Agents Service**: Currently offline\n- **Server Uptime**: ~124 hours (5+ days)\n- **Last Health Check**: 2026-02-14 at 16:52:17 UTC\n\n**Session Information:**\n- **Active Sessions**: 0 (fresh session)\n- **Session Timeout**: 3600 seconds (1 hour)\n\nThe core API infrastructure is healthy and ready to use. The agents service appears to be offline, which may affect some autonomous task execution features, but the main system is operational.\n\nHow can I help you today?",
+        "time": {
+          "start": 1771087939922,
+          "end": 1771087939922
+        }
+      },
+      {
+        "id": "prt_c5d1149540014n5o00yYcAauDJ",
+        "sessionID": "ses_3a2eecb11ffenQCx1pVCX0LLeF",
+        "messageID": "msg_c5d113ea60012EYTgynGHHNrzA",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16315,
+          "output": 169,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a2eecb11ffenQCx1pVCX0LLeF",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_adw_id/adw_classifier/response_20260214_115220.json",
+    "created_at": "2026-02-14T11:52:20.015660",
+    "log_type": "response"
+  }
+}

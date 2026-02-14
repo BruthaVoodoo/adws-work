@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T11:52:40.543568",
+  "adw_id": "test_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5d118faa0012eCol6AtO8emJ9",
+      "sessionID": "ses_3a2ee77baffehuB1XRCyDLcKXG",
+      "role": "assistant",
+      "time": {
+        "created": 1771087957930,
+        "completed": 1771087960536
+      },
+      "parentID": "msg_c5d11884f001Hhx8J9pr1xXJzG",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16311,
+        "output": 162,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5d119698001LpPPBqM6MUyLD5",
+        "sessionID": "ses_3a2ee77baffehuB1XRCyDLcKXG",
+        "messageID": "msg_c5d118faa0012eCol6AtO8emJ9",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5d11969f001UXclE3RjfLqV2y",
+        "sessionID": "ses_3a2ee77baffehuB1XRCyDLcKXG",
+        "messageID": "msg_c5d118faa0012eCol6AtO8emJ9",
+        "type": "text",
+        "text": "Great! The system is functioning properly. Here's the status:\n\n**Health Check Results:**\n- ✅ **Status**: Healthy\n- ✅ **API Service**: Running\n- ⚠️ **Agents Service**: Currently offline (non-critical)\n- **Last Check**: 2026-02-14 16:52:37 UTC\n- **Uptime**: ~123 hours\n\n**Session Information:**\n- **Active Sessions**: 0\n- **Session Timeout**: 3600 seconds (1 hour)\n- **Server Uptime**: ~123 hours\n\nThe system is ready to use! All core services are operational. What would you like me to help you with?",
+        "time": {
+          "start": 1771087960441,
+          "end": 1771087960441
+        }
+      },
+      {
+        "id": "prt_c5d11997c001hddqdSA4W54YmM",
+        "sessionID": "ses_3a2ee77baffehuB1XRCyDLcKXG",
+        "messageID": "msg_c5d118faa0012eCol6AtO8emJ9",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16311,
+          "output": 162,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a2ee77baffehuB1XRCyDLcKXG",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_id/adw_classifier/response_20260214_115240.json",
+    "created_at": "2026-02-14T11:52:40.543588",
+    "log_type": "response"
+  }
+}

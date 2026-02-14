@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T11:58:58.186382",
+  "adw_id": "test_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "test prompt",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5d175122001vfn16HHfAO3B0b",
+      "sessionID": "ses_3a2e8aeefffe5Tk6lvSbe4vWAs",
+      "role": "assistant",
+      "time": {
+        "created": 1771088335138,
+        "completed": 1771088338145
+      },
+      "parentID": "msg_c5d175119001XZsAEFwIBU0CYF",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16012,
+        "output": 183,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5d175675001XDLjBx1uDkbIfm",
+        "sessionID": "ses_3a2e8aeefffe5Tk6lvSbe4vWAs",
+        "messageID": "msg_c5d175122001vfn16HHfAO3B0b",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5d1756870015oAqjfDsPWRDk0",
+        "sessionID": "ses_3a2e8aeefffe5Tk6lvSbe4vWAs",
+        "messageID": "msg_c5d175122001vfn16HHfAO3B0b",
+        "type": "text",
+        "text": "Hello! I'm ready to help you. This appears to be a test prompt. \n\nHere's what I can do for you:\n\n1. **Code & Development**: Help with coding, debugging, refactoring, and technical implementations\n2. **File Operations**: Read, create, edit, and search files in your codebase\n3. **Git Operations**: Manage commits, branches, and repository tasks\n4. **Project Management**: Create and manage projects, tasks, documents, and versions\n5. **Knowledge Base**: Search documentation and code examples\n6. **Testing**: Run tests, execute commands, and validate code\n\nHow can I assist you today? Feel free to:\n- Ask me to help with a coding task\n- Manage a project or task\n- Search for information\n- Execute commands\n- Or anything else you need help with!",
+        "time": {
+          "start": 1771088338048,
+          "end": 1771088338048
+        }
+      },
+      {
+        "id": "prt_c5d175c84001CjGlYr0cTfziAz",
+        "sessionID": "ses_3a2e8aeefffe5Tk6lvSbe4vWAs",
+        "messageID": "msg_c5d175122001vfn16HHfAO3B0b",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16012,
+          "output": 183,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a2e8aeefffe5Tk6lvSbe4vWAs",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_id/adw_classifier/response_20260214_115858.json",
+    "created_at": "2026-02-14T11:58:58.186395",
+    "log_type": "response"
+  }
+}
