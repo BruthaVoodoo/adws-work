@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T09:43:31.621936",
+  "adw_id": "test_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "test prompt",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5c9b4ca8001kYkXqcX4dFfkzV",
+      "sessionID": "ses_3a364b36dffeDIeDn1aJJJfiqb",
+      "role": "assistant",
+      "time": {
+        "created": 1771080207528,
+        "completed": 1771080211533
+      },
+      "parentID": "msg_c5c9b4c9b001wCMxm0iIG9P97D",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16012,
+        "output": 217,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5c9b5224001v5P7m9gYwZsuK5",
+        "sessionID": "ses_3a364b36dffeDIeDn1aJJJfiqb",
+        "messageID": "msg_c5c9b4ca8001kYkXqcX4dFfkzV",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5c9b5225001NjCTSy2dhBbhUx",
+        "sessionID": "ses_3a364b36dffeDIeDn1aJJJfiqb",
+        "messageID": "msg_c5c9b4ca8001kYkXqcX4dFfkzV",
+        "type": "text",
+        "text": "Hello! This is a test prompt. I'm ready to help you with various tasks. Here are some things I can assist you with:\n\n1. **Code Development** - Writing, editing, and reviewing code\n2. **File Operations** - Reading, writing, and editing files\n3. **Git Operations** - Committing, pushing, and managing repositories\n4. **Project Management** - Creating and managing projects, tasks, and documents\n5. **Web Fetching** - Retrieving and analyzing web content\n6. **Knowledge Base Search** - Searching through available documentation and code examples\n7. **Terminal Commands** - Running bash commands and scripts\n\nWhat would you like me to help you with? Feel free to ask me to:\n- Write or modify code\n- Search your codebase\n- Manage git commits\n- Create or update project tasks\n- Fetch information from the web\n- Or anything else you need!\n\nJust let me know what you'd like to do! 😊",
+        "time": {
+          "start": 1771080210778,
+          "end": 1771080210778
+        }
+      },
+      {
+        "id": "prt_c5c9b59c9001z7gOjQb9HooxQD",
+        "sessionID": "ses_3a364b36dffeDIeDn1aJJJfiqb",
+        "messageID": "msg_c5c9b4ca8001kYkXqcX4dFfkzV",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16012,
+          "output": 217,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a364b36dffeDIeDn1aJJJfiqb",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_id/adw_classifier/response_20260214_094331.json",
+    "created_at": "2026-02-14T09:43:31.621968",
+    "log_type": "response"
+  }
+}

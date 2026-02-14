@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T10:12:44.000327",
+  "adw_id": "test_adw_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5cb60c5e001MwMrEJk58mgjOp",
+      "sessionID": "ses_3a349f3b4ffe97R7FAIapjck7w",
+      "role": "assistant",
+      "time": {
+        "created": 1771081960542,
+        "completed": 1771081963951
+      },
+      "parentID": "msg_c5cb60c57001md8mCqYfgQOfMW",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16015,
+        "output": 171,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5cb61241001xEYfNfnHDfGxUr",
+        "sessionID": "ses_3a349f3b4ffe97R7FAIapjck7w",
+        "messageID": "msg_c5cb60c5e001MwMrEJk58mgjOp",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5cb61246001J4olug24AvsXqV",
+        "sessionID": "ses_3a349f3b4ffe97R7FAIapjck7w",
+        "messageID": "msg_c5cb60c5e001MwMrEJk58mgjOp",
+        "type": "text",
+        "text": "I appreciate you providing a test prompt! It looks like you're testing the system with a simple message.\n\nHow can I help you? Here are some things I can assist with:\n\n1. **Code Development** - Writing, editing, or reviewing code\n2. **Git Operations** - Managing commits, branches, and pull requests\n3. **File Operations** - Reading, writing, or editing files\n4. **Project Management** - Managing projects, tasks, documents, and versions\n5. **Knowledge Base Search** - Finding information in available knowledge sources\n6. **Jira Integration** - Creating and managing Jira issues\n7. **Web Content** - Fetching and analyzing web pages\n\nFeel free to describe what you'd like to work on, and I'll be happy to help!",
+        "time": {
+          "start": 1771081963570,
+          "end": 1771081963570
+        }
+      },
+      {
+        "id": "prt_c5cb6186b001SHPllBdsHkh4Oo",
+        "sessionID": "ses_3a349f3b4ffe97R7FAIapjck7w",
+        "messageID": "msg_c5cb60c5e001MwMrEJk58mgjOp",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16015,
+          "output": 171,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a349f3b4ffe97R7FAIapjck7w",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_adw_id/adw_classifier/response_20260214_101244.json",
+    "created_at": "2026-02-14T10:12:44.000348",
+    "log_type": "response"
+  }
+}

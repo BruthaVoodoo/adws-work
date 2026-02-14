@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T09:43:39.767760",
+  "adw_id": "test_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5c9b6c67001AwEdkbwVd9X7h9",
+      "sessionID": "ses_3a36493b7ffeCgtK2eTDA8Xlwn",
+      "role": "assistant",
+      "time": {
+        "created": 1771080215655,
+        "completed": 1771080219753
+      },
+      "parentID": "msg_c5c9b6c57001hqIrsrP9m1SfEJ",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16014,
+        "output": 284,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5c9b723e001T7h0vbOA0q5xzd",
+        "sessionID": "ses_3a36493b7ffeCgtK2eTDA8Xlwn",
+        "messageID": "msg_c5c9b6c67001AwEdkbwVd9X7h9",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5c9b7240001Ap3d13BxwhT3E7",
+        "sessionID": "ses_3a36493b7ffeCgtK2eTDA8Xlwn",
+        "messageID": "msg_c5c9b6c67001AwEdkbwVd9X7h9",
+        "type": "text",
+        "text": "Hello! It looks like you're testing the system. I'm ready to help! Here's what I can do:\n\n**Available Tools & Capabilities:**\n\n1. **Code & File Management**\n   - Read, edit, and write files\n   - Search code patterns and find files\n   - Execute bash commands and git operations\n\n2. **Project Management**\n   - Create, update, and delete projects\n   - Manage tasks and track progress\n   - Create and manage documents\n   - Version control for project content\n\n3. **Knowledge Base**\n   - Search documentation\n   - Read full pages from knowledge sources\n   - Browse available resources\n\n4. **Jira Integration**\n   - Manage Jira issues and sprints\n   - Create, update, and transition issues\n   - Add comments and attachments\n\n5. **Task Organization**\n   - Create todo lists to track complex work\n   - Monitor progress across multiple steps\n\n**How can I help you today?** \n\nFeel free to:\n- Ask me to write, edit, or analyze code\n- Help with your project using Jira, git, or file operations\n- Search for information in documentation\n- Break down complex tasks into manageable steps\n- Or anything else you have in mind!\n\nWhat would you like to work on?",
+        "time": {
+          "start": 1771080219621,
+          "end": 1771080219621
+        }
+      },
+      {
+        "id": "prt_c5c9b7bec001jNEbSO5iujFvdd",
+        "sessionID": "ses_3a36493b7ffeCgtK2eTDA8Xlwn",
+        "messageID": "msg_c5c9b6c67001AwEdkbwVd9X7h9",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16014,
+          "output": 284,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a36493b7ffeCgtK2eTDA8Xlwn",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_id/adw_classifier/response_20260214_094339.json",
+    "created_at": "2026-02-14T09:43:39.767802",
+    "log_type": "response"
+  }
+}

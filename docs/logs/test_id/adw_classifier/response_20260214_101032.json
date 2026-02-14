@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T10:10:32.584605",
+  "adw_id": "test_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "test prompt",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5cb407a9001A7PWcxAEIPnMo5",
+      "sessionID": "ses_3a34bf869ffejalyMDFGCh7UMb",
+      "role": "assistant",
+      "time": {
+        "created": 1771081828265,
+        "completed": 1771081832540
+      },
+      "parentID": "msg_c5cb4079c001V009idJMZRDuNU",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16012,
+        "output": 197,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5cb40d2c001e5U56fKCURXBVC",
+        "sessionID": "ses_3a34bf869ffejalyMDFGCh7UMb",
+        "messageID": "msg_c5cb407a9001A7PWcxAEIPnMo5",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5cb40d2d001WiESFwj0g1hWTG",
+        "sessionID": "ses_3a34bf869ffejalyMDFGCh7UMb",
+        "messageID": "msg_c5cb407a9001A7PWcxAEIPnMo5",
+        "type": "text",
+        "text": "Hello! I'm here to help you with a variety of tasks. Here are some things I can do:\n\n**Code & Development:**\n- Read, edit, and write files\n- Execute bash commands and terminal operations\n- Search and explore codebases\n- Create and manage git commits\n- Create pull requests on GitHub\n\n**Project Management:**\n- Create and manage projects\n- Create and manage tasks with different statuses\n- Track project features and documents\n- Manage version history\n- Search knowledge bases\n\n**Other Capabilities:**\n- Ask clarifying questions when needed\n- Create todo lists for complex tasks\n- Fetch and analyze web content\n- Search code examples and documentation\n\nWhat would you like me to help you with today? Feel free to ask me to:\n- Work on code in your repository\n- Help with git operations\n- Manage project tasks\n- Search documentation\n- Or anything else you need!",
+        "time": {
+          "start": 1771081832433,
+          "end": 1771081832433
+        }
+      },
+      {
+        "id": "prt_c5cb417f3001oH5UQd47S11X6K",
+        "sessionID": "ses_3a34bf869ffejalyMDFGCh7UMb",
+        "messageID": "msg_c5cb407a9001A7PWcxAEIPnMo5",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16012,
+          "output": 197,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a34bf869ffejalyMDFGCh7UMb",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_id/adw_classifier/response_20260214_101032.json",
+    "created_at": "2026-02-14T10:10:32.584614",
+    "log_type": "response"
+  }
+}

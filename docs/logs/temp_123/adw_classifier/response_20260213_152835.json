@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-13T15:28:35.295274",
+  "adw_id": "temp_123",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text for ADW",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c58b0df00001AInIRSJqnBOpkc",
+      "sessionID": "ses_3a74f210bfferaIQx5Hlk81429",
+      "role": "assistant",
+      "time": {
+        "created": 1771014512384,
+        "completed": 1771014515287
+      },
+      "parentID": "msg_c58b0def9001OUzRBEFdtr4gxb",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16018,
+        "output": 175,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c58b0e4180014x6D9H9HJFtLAD",
+        "sessionID": "ses_3a74f210bfferaIQx5Hlk81429",
+        "messageID": "msg_c58b0df00001AInIRSJqnBOpkc",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c58b0e419001TSERpmff4uOJfY",
+        "sessionID": "ses_3a74f210bfferaIQx5Hlk81429",
+        "messageID": "msg_c58b0df00001AInIRSJqnBOpkc",
+        "type": "text",
+        "text": "I understand you've provided a test prompt with the text \"test text for ADW\". However, I'm not entirely sure what you'd like me to do with this. Could you clarify what you're looking for?\n\nAre you:\n1. **Testing my functionality** - just checking that I can receive and acknowledge messages?\n2. **Working with a project or document** - would you like me to create, search, or update something related to \"ADW\"?\n3. **Looking for information** - do you need me to search a knowledge base for content related to ADW?\n4. **Setting up a task or project** - would you like me to create a project or task labeled \"ADW\"?\n\nPlease let me know what you'd like to accomplish, and I'll be happy to help!",
+        "time": {
+          "start": 1771014515163,
+          "end": 1771014515163
+        }
+      },
+      {
+        "id": "prt_c58b0e9e30011ky6nGbunRSk0h",
+        "sessionID": "ses_3a74f210bfferaIQx5Hlk81429",
+        "messageID": "msg_c58b0df00001AInIRSJqnBOpkc",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16018,
+          "output": 175,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a74f210bfferaIQx5Hlk81429",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/temp_123/adw_classifier/response_20260213_152835.json",
+    "created_at": "2026-02-13T15:28:35.295284",
+    "log_type": "response"
+  }
+}

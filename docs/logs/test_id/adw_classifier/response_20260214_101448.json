@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T10:14:48.968620",
+  "adw_id": "test_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5cb7f8a6001byUWfGnuMVZEWL",
+      "sessionID": "ses_3a348101bffeyJTKkn9PpE9e50",
+      "role": "assistant",
+      "time": {
+        "created": 1771082086566,
+        "completed": 1771082088961
+      },
+      "parentID": "msg_c5cb7efee001S14z5gQxc5Oa5M",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16315,
+        "output": 150,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5cb7fe0800178A0S1TGiamKtC",
+        "sessionID": "ses_3a348101bffeyJTKkn9PpE9e50",
+        "messageID": "msg_c5cb7f8a6001byUWfGnuMVZEWL",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5cb7fe09001W7kdeFjFdRiRxD",
+        "sessionID": "ses_3a348101bffeyJTKkn9PpE9e50",
+        "messageID": "msg_c5cb7f8a6001byUWfGnuMVZEWL",
+        "type": "text",
+        "text": "Great! The system is working. Here's the status:\n\n**Health Check Results:**\n- ✅ Overall Status: **Healthy**\n- ✅ API Service: **Running**\n- ⚠️ Agents Service: **Offline**\n- Server Uptime: ~5.1 days\n\n**Session Information:**\n- Active Sessions: 0\n- Session Timeout: 1 hour\n- Server Uptime: ~5.1 days\n\nThe system is operational with the API service running properly. The agents service appears to be offline, but the core functionality is available. Is there anything specific you'd like me to help you with?",
+        "time": {
+          "start": 1771082088853,
+          "end": 1771082088853
+        }
+      },
+      {
+        "id": "prt_c5cb8019a0013KzAbGHGBWLxIu",
+        "sessionID": "ses_3a348101bffeyJTKkn9PpE9e50",
+        "messageID": "msg_c5cb7f8a6001byUWfGnuMVZEWL",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16315,
+          "output": 150,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a348101bffeyJTKkn9PpE9e50",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_id/adw_classifier/response_20260214_101448.json",
+    "created_at": "2026-02-14T10:14:48.968630",
+    "log_type": "response"
+  }
+}

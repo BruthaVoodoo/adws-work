@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T10:12:58.251460",
+  "adw_id": "test_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5cb6464b001ClgCoaWYjVq3dI",
+      "sessionID": "ses_3a349b9caffesbkcYJwL5fBK4K",
+      "role": "assistant",
+      "time": {
+        "created": 1771081975371,
+        "completed": 1771081978244
+      },
+      "parentID": "msg_c5cb6463e001Mv2g1vU5Xr5WTr",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16014,
+        "output": 172,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5cb64bc20011AqRY10n83Gp07",
+        "sessionID": "ses_3a349b9caffesbkcYJwL5fBK4K",
+        "messageID": "msg_c5cb6464b001ClgCoaWYjVq3dI",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5cb64bc8001r3NzLcMxQxV4ri",
+        "sessionID": "ses_3a349b9caffesbkcYJwL5fBK4K",
+        "messageID": "msg_c5cb6464b001ClgCoaWYjVq3dI",
+        "type": "text",
+        "text": "I'd be happy to help! However, I need more context about what you'd like me to test. Could you provide more details about:\n\n1. **What you want to test** - Are you testing code, a feature, a function, or something else?\n2. **What system or project** - Is this related to a specific project or codebase?\n3. **What kind of testing** - Unit tests, integration tests, end-to-end tests, manual testing, etc.?\n4. **Any specific requirements** - Test framework preferences, coverage targets, specific scenarios to cover?\n\nOnce you provide more information, I can help you with:\n- Writing test cases\n- Running tests\n- Debugging test failures\n- Setting up testing infrastructure\n- Or whatever else you need!",
+        "time": {
+          "start": 1771081978150,
+          "end": 1771081978150
+        }
+      },
+      {
+        "id": "prt_c5cb6512a001aJC8mXbwnefV7f",
+        "sessionID": "ses_3a349b9caffesbkcYJwL5fBK4K",
+        "messageID": "msg_c5cb6464b001ClgCoaWYjVq3dI",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16014,
+          "output": 172,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a349b9caffesbkcYJwL5fBK4K",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_id/adw_classifier/response_20260214_101258.json",
+    "created_at": "2026-02-14T10:12:58.251470",
+    "log_type": "response"
+  }
+}

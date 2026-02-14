@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-02-14T10:14:33.815563",
+  "adw_id": "test_adw_id",
+  "agent_name": "adw_classifier",
+  "server_url": "http://localhost:4096",
+  "model_id": "github-copilot/claude-haiku-4.5",
+  "prompt_preview": "Test prompt: test text",
+  "error_context": null,
+  "response": {
+    "message": {
+      "id": "msg_c5cb7ba7d001k8YNWa1K9Sl2gx",
+      "sessionID": "ses_3a3484597ffe7DMv6YlnRu4Twd",
+      "role": "assistant",
+      "time": {
+        "created": 1771082070653,
+        "completed": 1771082073773
+      },
+      "parentID": "msg_c5cb7ba72001DODK6mJtZxpp49",
+      "modelID": "claude-haiku-4.5",
+      "providerID": "github-copilot",
+      "mode": "build",
+      "agent": "build",
+      "path": {
+        "cwd": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira",
+        "root": "/Users/t449579/Desktop/DEV/Atlassian/DpapJira"
+      },
+      "cost": 0,
+      "tokens": {
+        "input": 16015,
+        "output": 135,
+        "reasoning": 0,
+        "cache": {
+          "read": 0,
+          "write": 0
+        }
+      },
+      "finish": "stop"
+    },
+    "parts": [
+      {
+        "id": "prt_c5cb7bffb001rlnIi8G5gq0ATN",
+        "sessionID": "ses_3a3484597ffe7DMv6YlnRu4Twd",
+        "messageID": "msg_c5cb7ba7d001k8YNWa1K9Sl2gx",
+        "type": "step-start",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb"
+      },
+      {
+        "id": "prt_c5cb7c00e001ILr9bNxQ66YJ7c",
+        "sessionID": "ses_3a3484597ffe7DMv6YlnRu4Twd",
+        "messageID": "msg_c5cb7ba7d001k8YNWa1K9Sl2gx",
+        "type": "text",
+        "text": "I received your test prompt with \"test text\". I'm ready to help you with whatever you need!\n\nTo get started, could you tell me what you'd like to do? I can help with:\n\n- **Code tasks**: Reading, writing, and editing files; running commands\n- **Git operations**: Committing changes, creating pull requests\n- **Project management**: Managing tasks, documents, and projects\n- **Web content**: Fetching and analyzing web pages\n- **Search & exploration**: Searching codebases and knowledge bases\n- **And much more!**\n\nWhat would you like me to help you with?",
+        "time": {
+          "start": 1771082073459,
+          "end": 1771082073459
+        }
+      },
+      {
+        "id": "prt_c5cb7c589001UAKh8fvfAf2OC2",
+        "sessionID": "ses_3a3484597ffe7DMv6YlnRu4Twd",
+        "messageID": "msg_c5cb7ba7d001k8YNWa1K9Sl2gx",
+        "type": "step-finish",
+        "reason": "stop",
+        "snapshot": "ee03f99ccaa5692fb85d553c40d4e1166773c2fb",
+        "cost": 0,
+        "tokens": {
+          "input": 16015,
+          "output": 135,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        }
+      }
+    ],
+    "session_id": "ses_3a3484597ffe7DMv6YlnRu4Twd",
+    "success": true
+  },
+  "log_metadata": {
+    "log_file": "/Users/t449579/Desktop/DEV/ADWS/docs/logs/test_adw_id/adw_classifier/response_20260214_101433.json",
+    "created_at": "2026-02-14T10:14:33.815585",
+    "log_type": "response"
+  }
+}
