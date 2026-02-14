@@ -993,7 +993,7 @@ def extract_text_response(parts: List[Dict[str, Any]]) -> str:
 
         # Extract conversational text
         if part_type == "text":
-            content = part.get("text", "")
+            content = part.get("content", "")
             if content and isinstance(content, str):
                 text_content.append(content.strip())
 
