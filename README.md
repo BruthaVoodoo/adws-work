@@ -133,6 +133,7 @@ For detailed information on architecture, configuration, components, and advance
 
 -   **[Detailed Documentation](docs/DOCUMENTATION.md)**: Complete system reference.
 -   **[Troubleshooting](docs/TROUBLESHOOTING.md)**: Solutions for common issues.
+-   **[Test Suite Documentation](tests/README.md)**: Testing guidelines and how to run tests.
 
 ## 🏗️ Architecture
 
@@ -142,6 +143,26 @@ ADWS operates on a **Portable Architecture** model. All configuration and logs a
 -   **Logs**: Comprehensive execution logs and prompt audit trails are stored in `ADWS/logs/`.
 -   **Configuration**: Project-specific settings live in `ADWS/config.yaml`.
 -   **AI Integration**: Uses **OpenCode** as an agnostic gateway. By default, it is configured for GitHub Copilot (Claude Sonnet/Haiku), but can be adapted for other providers supported by OpenCode.
+
+## 🧪 Testing
+
+ADWS includes a comprehensive test suite with 663+ tests:
+
+```bash
+# Run all tests
+pytest tests/
+
+# Run unit tests only
+pytest tests/unit/ -m unit
+
+# Run with coverage
+pytest tests/ --cov=scripts --cov-report=term-missing
+```
+
+For detailed testing guidelines, see:
+- **[Test Suite Documentation](tests/README.md)**: Complete testing guide
+- **[Unit Test Guidelines](tests/unit/README.md)**: Writing unit tests
+- **[Integration Test Guidelines](tests/integration/README.md)**: Writing integration tests
 
 
 ## 🤝 Support

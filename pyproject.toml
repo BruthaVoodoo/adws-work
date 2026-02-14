@@ -47,10 +47,28 @@ scripts = ["**/*.yaml", "**/*.md"]
 prompts = ["**/*.md"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests", "scripts/adw_tests"]
+testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
+addopts = "-v --strict-markers"
+markers = [
+    "unit: Unit tests - fast, isolated tests of individual components",
+    "integration: Integration tests - tests that involve multiple components or external systems",
+    "slow: Slow running tests - tests that take more than 1 second",
+    "git: Tests that involve git operations",
+    "cli: Tests for CLI commands and interfaces",
+    "parser: Tests for parsing functionality",
+    "config: Tests for configuration management",
+    "hooks: Tests for hook functionality",
+    "token: Tests for token management",
+    "logging: Tests for logging functionality",
+    "opencode: Tests for opencode functionality",
+]
+# Test discovery patterns
+norecursedirs = [".git", ".tox", "dist", "build", "*.egg", "__pycache__", "node_modules"]
+# Output options
+console_output_style = "progress"
 
 [tool.black]
 line-length = 88
